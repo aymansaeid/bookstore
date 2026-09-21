@@ -1,0 +1,43 @@
+﻿using FluentValidation;
+
+namespace BookStore.Application.Orders.Checkout;
+
+public sealed class CheckoutCartCommandValidator : AbstractValidator<CheckoutCartCommand>
+{
+    public CheckoutCartCommandValidator()
+    {
+        RuleFor(x => x.CustomerEmail).NotEmpty().EmailAddress().MaximumLength(320);
+
+        RuleFor(x => x.Lines)
+            .Cascade(CascadeMode.Stop)
+            .NotEmpty()
+            .Must(lines => lines.Select(l => l.BookId).Distinct().Count() == lines.Count)
+            .WithMessage("Each book may appear only once in the cart.");
+
+        RuleForEach(x => x.Lines).ChildRules(line =>
+        {
+            line.RuleFor(l => l.BookId).GreaterThan(0);
+            // Anti-abuse cap: one guest can't reserve your whole stock in
+            // a single abandoned cart. Adjust as needed.
+            line.RuleFor(l => l.Quantity).InclusiveBetween(1, 10);
+        });
+
+        RuleFor(x => x.ShippingAddress).NotNull().SetValidator(new ShippingAddressDtoValidator());
+        RuleFor(x => x.CouponCode).MaximumLength(50);
+        RuleFor(x => x.Currency).NotEmpty().Length(3);
+    }
+}
+
+public sealed class ShippingAddressDtoValidator : AbstractValidator<ShippingAddressDto>
+{
+    public ShippingAddressDtoValidator()
+    {
+        RuleFor(x => x.RecipientName).NotEmpty().MaximumLength(200);
+        RuleFor(x => x.Line1).NotEmpty().MaximumLength(300);
+        RuleFor(x => x.Line2).MaximumLength(300);
+        RuleFor(x => x.City).NotEmpty().MaximumLength(150);
+        RuleFor(x => x.StateOrProvince).MaximumLength(150);
+        RuleFor(x => x.PostalCode).NotEmpty().MaximumLength(20);
+        RuleFor(x => x.CountryCode).NotEmpty().Length(2);
+    }
+}

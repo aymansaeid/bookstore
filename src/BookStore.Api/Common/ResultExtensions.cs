@@ -6,20 +6,27 @@ namespace BookStore.Api.Common;
 public static class ResultExtensions
 {
     public static IActionResult ToActionResult(this Result result) =>
-        result.IsSuccess ? new NoContentResult() : Problem(result.Error);
+        result.IsSuccess ? new NoContentResult() : result.Error.ToProblem();
 
     public static IActionResult ToActionResult<TValue>(this Result<TValue> result) =>
-        result.IsSuccess ? new OkObjectResult(result.Value) : Problem(result.Error);
+        result.IsSuccess ? new OkObjectResult(result.Value) : result.Error.ToProblem();
 
-    private static IActionResult Problem(Error error)
+    public static IActionResult ToProblem(this Error error)
     {
-        var statusCode = error.Code.Contains("NotFound", StringComparison.OrdinalIgnoreCase)
-            ? StatusCodes.Status404NotFound
-            : StatusCodes.Status400BadRequest;
-
-        return new ObjectResult(new ProblemDetails { Title = error.Code, Detail = error.Message, Status = statusCode })
+        var statusCode = error.Type switch
         {
-            StatusCode = statusCode
+            ErrorType.NotFound => StatusCodes.Status404NotFound,
+            ErrorType.Validation => StatusCodes.Status400BadRequest,
+            ErrorType.Conflict => StatusCodes.Status409Conflict,
+            _ => StatusCodes.Status400BadRequest
         };
+
+        return new ObjectResult(new ProblemDetails
+        {
+            Title = error.Code,
+            Detail = error.Message,
+            Status = statusCode
+        })
+        { StatusCode = statusCode };
     }
 }
