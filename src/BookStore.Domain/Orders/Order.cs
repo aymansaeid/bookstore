@@ -42,16 +42,10 @@ public sealed class Order : AggregateRoot<int>
 
     private Order() { } // EF Core
 
-    public static Order Create(
-        string customerEmail,
-        Address shippingAddress,
-        string currency,
-        string stripeCheckoutSessionId)
+    public static Order Create(string customerEmail, Address shippingAddress, string currency)
     {
         if (string.IsNullOrWhiteSpace(customerEmail))
             throw new ArgumentException("Customer email is required.", nameof(customerEmail));
-        if (string.IsNullOrWhiteSpace(stripeCheckoutSessionId))
-            throw new ArgumentException("Stripe checkout session id is required.", nameof(stripeCheckoutSessionId));
 
         return new Order
         {
@@ -63,9 +57,23 @@ public sealed class Order : AggregateRoot<int>
             DiscountAmount = Money.Zero(currency),
             Total = Money.Zero(currency),
             Status = OrderStatus.PendingPayment,
-            StripeCheckoutSessionId = stripeCheckoutSessionId,
             CreatedAtUtc = DateTimeOffset.UtcNow
         };
+    }
+
+    /// <summary>
+    /// Links the order to its Stripe Checkout Session once Stripe has returned
+    /// one. Separate from Create() because the order's total needs to exist
+    /// in memory before we can ask Stripe for a session in the first place.
+    /// </summary>
+    public void AttachStripeCheckoutSession(string stripeCheckoutSessionId)
+    {
+        if (Status != OrderStatus.PendingPayment)
+            throw new InvalidOrderStateTransitionException(Id, Status, "attach a checkout session to");
+        if (string.IsNullOrWhiteSpace(stripeCheckoutSessionId))
+            throw new ArgumentException("Stripe checkout session id is required.", nameof(stripeCheckoutSessionId));
+
+        StripeCheckoutSessionId = stripeCheckoutSessionId;
     }
 
     private static string GenerateOrderNumber()
