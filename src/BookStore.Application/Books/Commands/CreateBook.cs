@@ -5,6 +5,7 @@ using BookStore.Application.Common;
 using BookStore.Domain.Books;
 using BookStore.Domain.Common;
 using FluentValidation;
+using Microsoft.Extensions.Options;
 
 namespace BookStore.Application.Books.Commands;
 
@@ -14,7 +15,6 @@ public sealed record CreateBookCommand(
     string? Isbn,
     string? Description,
     decimal Price,
-    string Currency,
     int InitialStock) : ICommand<AdminBookDto>;
 
 public sealed class CreateBookCommandValidator : AbstractValidator<CreateBookCommand>
@@ -26,12 +26,14 @@ public sealed class CreateBookCommandValidator : AbstractValidator<CreateBookCom
         RuleFor(x => x.Isbn).MaximumLength(20);
         RuleFor(x => x.Description).MaximumLength(4000);
         RuleFor(x => x.Price).GreaterThan(0).PrecisionScale(18, 2, ignoreTrailingZeros: true);
-        RuleFor(x => x.Currency).NotEmpty().Length(3);
         RuleFor(x => x.InitialStock).GreaterThanOrEqualTo(0);
     }
 }
 
-public sealed class CreateBookCommandHandler(IBookRepository bookRepository, IUnitOfWork unitOfWork)
+public sealed class CreateBookCommandHandler(
+    IBookRepository bookRepository,
+    IUnitOfWork unitOfWork,
+    IOptions<StoreOptions> storeOptions)
     : ICommandHandler<CreateBookCommand, AdminBookDto>
 {
     public async Task<Result<AdminBookDto>> Handle(CreateBookCommand command, CancellationToken ct)
@@ -46,7 +48,7 @@ public sealed class CreateBookCommandHandler(IBookRepository bookRepository, IUn
             command.Author.Trim(),
             isbn,
             command.Description?.Trim() ?? string.Empty,
-            Money.From(command.Price, command.Currency),
+            Money.From(command.Price, storeOptions.Value.Currency),
             command.InitialStock);
 
         bookRepository.Add(book);

@@ -42,9 +42,13 @@ public sealed class ShippingZone : AggregateRoot<int>
 
     public void RemoveCountry(string countryCode)
     {
-        _countryCodes.Remove(NormalizeCountryCode(countryCode));
-        if (_countryCodes.Count == 0)
+        var normalized = NormalizeCountryCode(countryCode);
+
+        // Check BEFORE mutating, so a failed call leaves the zone untouched.
+        if (_countryCodes.Count == 1 && _countryCodes[0] == normalized)
             throw new InvalidOperationException("Cannot remove the last country from a shipping zone.");
+
+        _countryCodes.Remove(normalized);
     }
 
     public void UpdateRate(Money newRate) => FlatRate = newRate;
@@ -58,5 +62,26 @@ public sealed class ShippingZone : AggregateRoot<int>
             throw new ArgumentException("Country code must be a 2-letter ISO code.", nameof(code));
 
         return code.Trim().ToUpperInvariant();
+    }
+    public void Rename(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Zone name is required.", nameof(name));
+
+        Name = name.Trim();
+    }
+
+    /// Full replacement of the country list, which is what an admin edit
+    /// form actually does. Normalizes everything first, so an invalid code
+    /// throws before the existing list is touched.
+    public void ReplaceCountries(IEnumerable<string> countryCodes)
+    {
+        var normalized = countryCodes.Select(NormalizeCountryCode).Distinct().ToList();
+
+        if (normalized.Count == 0)
+            throw new ArgumentException("A shipping zone needs at least one country.", nameof(countryCodes));
+
+        _countryCodes.Clear();
+        _countryCodes.AddRange(normalized);
     }
 }
