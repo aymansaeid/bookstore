@@ -15,6 +15,8 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
+        Stripe.StripeConfiguration.ApiKey = configuration["Stripe:SecretKey"];
+
         services.AddSingleton<DomainEventsToOutboxInterceptor>();
 
         services.AddDbContext<BookStoreDbContext>((sp, options) =>
