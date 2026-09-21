@@ -17,7 +17,7 @@ public sealed class BookRepository(BookStoreDbContext dbContext) : IBookReposito
         // possibly match the WHERE clause. The other gets 0 rows affected —
         // no exception, no partial state, just "you lost the race."
         var rowsAffected = await dbContext.Books
-            .Where(b => b.Id == bookId && (b.StockQuantity - b.ReservedQuantity) >= quantity)
+          .Where(b => b.Id == bookId && b.IsActive && (b.StockQuantity - b.ReservedQuantity) >= quantity)
             .ExecuteUpdateAsync(setters => setters
                 .SetProperty(b => b.ReservedQuantity, b => b.ReservedQuantity + quantity), ct);
 
@@ -40,4 +40,16 @@ public sealed class BookRepository(BookStoreDbContext dbContext) : IBookReposito
                 .SetProperty(b => b.ReservedQuantity, b => b.ReservedQuantity - quantity)
                 .SetProperty(b => b.StockQuantity, b => b.StockQuantity - quantity), ct);
     }
+
+    public void Add(Book book) => dbContext.Books.Add(book);
+
+    public async Task<IReadOnlyList<Book>> ListAsync(bool includeInactive, CancellationToken ct = default) =>
+        await dbContext.Books
+            .AsNoTracking()
+            .Where(b => includeInactive || b.IsActive)
+            .OrderBy(b => b.Title)
+            .ToListAsync(ct);
+
+    public Task<bool> IsbnExistsAsync(string isbn, int? excludeBookId, CancellationToken ct = default) =>
+        dbContext.Books.AnyAsync(b => b.Isbn == isbn && (excludeBookId == null || b.Id != excludeBookId), ct);
 }

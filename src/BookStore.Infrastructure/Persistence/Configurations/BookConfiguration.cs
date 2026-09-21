@@ -23,6 +23,7 @@ public sealed class BookConfiguration : IEntityTypeConfiguration<Book>
         builder.Property(b => b.Author).HasMaxLength(300).IsRequired();
         builder.Property(b => b.Isbn).HasMaxLength(20);
         builder.Property(b => b.Description).HasMaxLength(4000);
+        builder.Property(b => b.IsActive).IsRequired();
 
         builder.OwnsOne(b => b.Price, price =>
         {

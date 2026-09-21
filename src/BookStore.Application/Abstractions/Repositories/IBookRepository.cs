@@ -18,4 +18,8 @@ public interface IBookRepository
     Task ReleaseReservationAsync(int bookId, int quantity, CancellationToken ct = default);
 
     Task ConfirmSaleAsync(int bookId, int quantity, CancellationToken ct = default);
+
+    void Add(Book book);
+    Task<IReadOnlyList<Book>> ListAsync(bool includeInactive, CancellationToken ct = default);
+    Task<bool> IsbnExistsAsync(string isbn, int? excludeBookId, CancellationToken ct = default);
 }

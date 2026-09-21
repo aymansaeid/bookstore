@@ -40,7 +40,7 @@ public sealed class CheckoutCartCommandHandler(
         foreach (var line in command.Lines)
         {
             var book = await bookRepository.GetByIdAsync(line.BookId, ct);
-            if (book is null)
+            if (book is null || !book.IsActive)
                 return Result.Failure<CheckoutCartResponse>(CheckoutErrors.BookNotFound(line.BookId));
 
             if (book.AvailableToSell < line.Quantity)
