@@ -62,11 +62,23 @@ public sealed class Coupon : AggregateRoot<int>
     public void Deactivate() => IsActive = false;
     public void Activate() => IsActive = true;
 
-    public void ExtendExpiry(DateTimeOffset newExpiresAtUtc)
+    /// Edits everything about a coupon except its code (see CreateCoupon for why).
+    public void UpdateTerms(int discountPercentage, DateTimeOffset expiresAtUtc, int? maxRedemptions)
     {
-        if (newExpiresAtUtc <= DateTimeOffset.UtcNow)
-            throw new ArgumentException("New expiry must be in the future.", nameof(newExpiresAtUtc));
+        if (discountPercentage is <= 0 or > 100)
+            throw new ArgumentOutOfRangeException(nameof(discountPercentage), "Must be between 1 and 100.");
+        if (expiresAtUtc <= DateTimeOffset.UtcNow)
+            throw new ArgumentException("Expiry must be in the future.", nameof(expiresAtUtc));
+        if (maxRedemptions is <= 0)
+            throw new ArgumentOutOfRangeException(nameof(maxRedemptions), "Must be positive if specified.");
+        if (maxRedemptions.HasValue && maxRedemptions.Value < TimesRedeemed)
+            throw new InvalidOperationException(
+                $"Cannot set the usage limit to {maxRedemptions}; the coupon has already been used {TimesRedeemed} time(s).");
 
-        ExpiresAtUtc = newExpiresAtUtc;
+        DiscountPercentage = discountPercentage;
+        ExpiresAtUtc = expiresAtUtc;
+        MaxRedemptions = maxRedemptions;
     }
+
+    public bool HasBeenUsed => TimesRedeemed > 0;
 }
