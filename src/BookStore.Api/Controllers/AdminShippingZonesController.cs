@@ -1,15 +1,17 @@
 ﻿using BookStore.Api.Common;
+using BookStore.Api.Contracts;
 using BookStore.Application.Shipping;
 using BookStore.Application.Shipping.Commands;
 using BookStore.Application.Shipping.Queries;
+using BookStore.Domain.Users;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
 namespace BookStore.Api.Controllers;
 
 public sealed record UpdateShippingZoneRequest(string Name, decimal FlatRate, IReadOnlyList<string> CountryCodes);
 
-// TODO (step 6): [Authorize(Roles = "Admin")]
+[Authorize(Roles = nameof(AdminRole.Admin))]
 [ApiController]
 [Route("api/admin/shipping-zones")]
 public sealed class AdminShippingZonesController(ISender sender) : ControllerBase

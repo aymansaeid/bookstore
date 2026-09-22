@@ -1,7 +1,9 @@
 ﻿using BookStore.Application.Abstractions;
+using BookStore.Application.Abstractions.Auth;
 using BookStore.Application.Abstractions.Payments;
 using BookStore.Application.Abstractions.Queries;
 using BookStore.Application.Abstractions.Repositories;
+using BookStore.Infrastructure.Auth;
 using BookStore.Infrastructure.Payments;
 using BookStore.Infrastructure.Persistence;
 using BookStore.Infrastructure.Persistence.Interceptors;
@@ -10,6 +12,7 @@ using BookStore.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System.Text;
 
 namespace BookStore.Infrastructure;
 
@@ -38,7 +41,19 @@ public static class DependencyInjection
 
         services.AddScoped<IOrderQueries, OrderQueries>();
 
+        services.AddOptions<JwtOptions>()
+    .Bind(configuration.GetSection(JwtOptions.SectionName))
+    .Validate(o => !string.IsNullOrWhiteSpace(o.Issuer) && !string.IsNullOrWhiteSpace(o.Audience),
+        "Jwt:Issuer and Jwt:Audience are required.")
+    .Validate(o => Encoding.UTF8.GetByteCount(o.SigningKey ?? string.Empty) >= 32,
+        "Jwt:SigningKey must be at least 32 bytes. Set it with dotnet user-secrets.")
+    .Validate(o => o.ExpiryMinutes is > 0 and <= 1440,
+        "Jwt:ExpiryMinutes must be between 1 and 1440.")
+    // Fail at startup, not on the first login attempt at 2am.
+    .ValidateOnStart();
 
+        services.AddSingleton<IPasswordHasher, IdentityPasswordHasher>();
+        services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
         return services;
     }
 }

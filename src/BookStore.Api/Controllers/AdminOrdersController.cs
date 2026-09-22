@@ -4,7 +4,9 @@ using BookStore.Application.Orders;
 using BookStore.Application.Orders.Commands;
 using BookStore.Application.Orders.Queries;
 using BookStore.Domain.Orders;
+using BookStore.Domain.Users;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BookStore.Api.Controllers;
@@ -12,7 +14,7 @@ namespace BookStore.Api.Controllers;
 public sealed record ShipOrderRequest(string Carrier, string TrackingNumber);
 public sealed record CancelOrderRequest(string Reason);
 
-// TODO (step 6): [Authorize(Roles = "Admin")]
+[Authorize(Roles = nameof(AdminRole.Admin))]
 [ApiController]
 [Route("api/admin/orders")]
 public sealed class AdminOrdersController(ISender sender) : ControllerBase

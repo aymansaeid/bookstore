@@ -1,17 +1,19 @@
 ﻿using BookStore.Api.Common;
+using BookStore.Api.Contracts;
 using BookStore.Application.Books;
 using BookStore.Application.Books.Commands;
 using BookStore.Application.Books.Queries;
+using BookStore.Domain.Users;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BookStore.Api.Controllers;
 
 public sealed record UpdateBookRequest(string Title, string Author, string? Isbn, string? Description, decimal Price);
 public sealed record AdjustStockRequest(int NewStockQuantity);
-public sealed record SetActiveRequest(bool IsActive);
 
-// TODO (step 6): [Authorize(Roles = "Admin")] goes here once JWT auth exists.
+[Authorize(Roles = nameof(AdminRole.Admin))]
 [ApiController]
 [Route("api/admin/books")]
 public sealed class AdminBooksController(ISender sender) : ControllerBase

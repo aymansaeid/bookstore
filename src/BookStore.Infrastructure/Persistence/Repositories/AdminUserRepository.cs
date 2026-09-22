@@ -13,4 +13,6 @@ public sealed class AdminUserRepository(BookStoreDbContext dbContext) : IAdminUs
         dbContext.AdminUsers.AnyAsync(u => u.Email == email.ToLowerInvariant(), ct);
 
     public void Add(AdminUser adminUser) => dbContext.AdminUsers.Add(adminUser);
+    public Task<AdminUser?> GetByIdAsync(int id, CancellationToken ct = default) =>
+    dbContext.AdminUsers.FirstOrDefaultAsync(u => u.Id == id, ct);
 }

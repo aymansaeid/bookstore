@@ -1,15 +1,18 @@
 ﻿using BookStore.Api.Common;
+using BookStore.Api.Contracts;
 using BookStore.Application.Coupons;
 using BookStore.Application.Coupons.Commands;
 using BookStore.Application.Coupons.Queries;
+using BookStore.Domain.Users;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BookStore.Api.Controllers;
 
 public sealed record UpdateCouponRequest(int DiscountPercentage, DateTimeOffset ExpiresAtUtc, int? MaxRedemptions);
 
-// TODO (step 6): [Authorize(Roles = "Admin")]
+[Authorize(Roles = nameof(AdminRole.Admin))]
 [ApiController]
 [Route("api/admin/coupons")]
 public sealed class AdminCouponsController(ISender sender) : ControllerBase
