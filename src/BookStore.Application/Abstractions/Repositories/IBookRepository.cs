@@ -25,4 +25,6 @@ public interface IBookRepository
 
     /// Returns sold-but-never-shipped units to stock (cancelling a paid order).
     Task RestockAsync(int bookId, int quantity, CancellationToken ct = default);
+    Task<Book?> GetBySlugAsync(string slug, CancellationToken ct = default);
+    Task<bool> SlugExistsAsync(string slug, CancellationToken ct = default);
 }

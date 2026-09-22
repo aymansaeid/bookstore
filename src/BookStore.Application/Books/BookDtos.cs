@@ -1,26 +1,43 @@
-﻿using BookStore.Domain.Books;
+﻿using BookStore.Application.Abstractions.Storage;
+using BookStore.Domain.Books;
 
 namespace BookStore.Application.Books;
 
-// What customers see: "in stock" yes/no, not your exact inventory numbers.
-public sealed record PublicBookDto(
-    int Id, string Title, string Author, string Isbn, string Description,
-    decimal Price, string Currency, bool InStock);
+public sealed record BookImageDto(int Id, string Url, string AltText, int DisplayOrder, bool IsCover);
 
-// What the admin sees: the full inventory picture.
+public sealed record PublicBookDto(
+    int Id, string Slug, string Title, string? Subtitle, string Author, string Isbn, string Description,
+    string Format, int PageCount, string Language, string? Publisher, DateOnly? PublicationDate,
+    int WeightGrams, int HeightMm, int WidthMm, int DepthMm,
+    decimal Price, string Currency, bool InStock,
+    string? CoverImageUrl, IReadOnlyList<BookImageDto> Images);
+
 public sealed record AdminBookDto(
-    int Id, string Title, string Author, string Isbn, string Description,
+    int Id, string Slug, string Title, string? Subtitle, string Author, string Isbn, string Description,
+    string Format, int PageCount, string Language, string? Publisher, DateOnly? PublicationDate,
+    int WeightGrams, int HeightMm, int WidthMm, int DepthMm,
     decimal Price, string Currency,
-    int StockQuantity, int ReservedQuantity, int AvailableToSell, bool IsActive);
+    int StockQuantity, int ReservedQuantity, int AvailableToSell, bool IsActive,
+    IReadOnlyList<BookImageDto> Images);
 
 public static class BookMappings
 {
-    public static PublicBookDto ToPublicDto(this Book b) =>
-        new(b.Id, b.Title, b.Author, b.Isbn, b.Description,
-            b.Price.Amount, b.Price.Currency, b.AvailableToSell > 0);
+    public static PublicBookDto ToPublicDto(this Book b, IFileStorage storage) =>
+        new(b.Id, b.Slug.Value, b.Title, b.Subtitle, b.Author, b.Isbn, b.Description,
+            b.Format.ToString(), b.PageCount, b.Language, b.Publisher, b.PublicationDate,
+            b.Dimensions.WeightGrams, b.Dimensions.HeightMm, b.Dimensions.WidthMm, b.Dimensions.DepthMm,
+            b.Price.Amount, b.Price.Currency, b.AvailableToSell > 0,
+            b.CoverImage is null ? null : storage.GetPublicUrl(b.CoverImage.StorageKey),
+            b.OrderedImages.Select(i => i.ToDto(storage)).ToList());
 
-    public static AdminBookDto ToAdminDto(this Book b) =>
-        new(b.Id, b.Title, b.Author, b.Isbn, b.Description,
+    public static AdminBookDto ToAdminDto(this Book b, IFileStorage storage) =>
+        new(b.Id, b.Slug.Value, b.Title, b.Subtitle, b.Author, b.Isbn, b.Description,
+            b.Format.ToString(), b.PageCount, b.Language, b.Publisher, b.PublicationDate,
+            b.Dimensions.WeightGrams, b.Dimensions.HeightMm, b.Dimensions.WidthMm, b.Dimensions.DepthMm,
             b.Price.Amount, b.Price.Currency,
-            b.StockQuantity, b.ReservedQuantity, b.AvailableToSell, b.IsActive);
+            b.StockQuantity, b.ReservedQuantity, b.AvailableToSell, b.IsActive,
+            b.OrderedImages.Select(i => i.ToDto(storage)).ToList());
+
+    public static BookImageDto ToDto(this BookImage i, IFileStorage storage) =>
+        new(i.Id, storage.GetPublicUrl(i.StorageKey), i.AltText, i.DisplayOrder, i.IsCover);
 }

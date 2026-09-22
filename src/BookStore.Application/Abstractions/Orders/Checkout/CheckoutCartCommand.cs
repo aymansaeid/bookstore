@@ -6,6 +6,7 @@ public sealed record CartLineDto(int BookId, int Quantity);
 
 public sealed record ShippingAddressDto(
     string RecipientName,
+    string Phone,
     string Line1,
     string? Line2,
     string City,

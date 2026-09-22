@@ -39,5 +39,6 @@ public sealed class ShippingAddressDtoValidator : AbstractValidator<ShippingAddr
         RuleFor(x => x.StateOrProvince).MaximumLength(150);
         RuleFor(x => x.PostalCode).NotEmpty().MaximumLength(20);
         RuleFor(x => x.CountryCode).NotEmpty().Length(2);
+        RuleFor(x => x.Phone).NotEmpty().MaximumLength(30);
     }
 }

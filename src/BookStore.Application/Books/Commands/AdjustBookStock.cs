@@ -1,6 +1,7 @@
 ﻿using BookStore.Application.Abstractions;
 using BookStore.Application.Abstractions.Messaging;
 using BookStore.Application.Abstractions.Repositories;
+using BookStore.Application.Abstractions.Storage;
 using BookStore.Application.Common;
 using FluentValidation;
 
@@ -17,7 +18,10 @@ public sealed class AdjustBookStockCommandValidator : AbstractValidator<AdjustBo
     }
 }
 
-public sealed class AdjustBookStockCommandHandler(IBookRepository bookRepository, IUnitOfWork unitOfWork)
+public sealed class AdjustBookStockCommandHandler(
+    IBookRepository bookRepository,
+    IUnitOfWork unitOfWork,
+    IFileStorage fileStorage)
     : ICommandHandler<AdjustBookStockCommand, AdminBookDto>
 {
     public async Task<Result<AdminBookDto>> Handle(AdjustBookStockCommand command, CancellationToken ct)
@@ -38,6 +42,6 @@ public sealed class AdjustBookStockCommandHandler(IBookRepository bookRepository
         // was kept on Book for.
         await unitOfWork.SaveChangesAsync(ct);
 
-        return Result.Success(book.ToAdminDto());
+        return Result.Success(book.ToAdminDto(fileStorage));
     }
 }

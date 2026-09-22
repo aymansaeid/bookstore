@@ -20,4 +20,12 @@ public sealed class BooksController(ISender sender) : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById(int id, CancellationToken ct) =>
         (await sender.Send(new GetPublicBookByIdQuery(id), ct)).ToActionResult();
+
+    // Route constraint keeps this from swallowing /api/books/123, which the
+    // int route above handles.
+    [HttpGet("{slug:regex(^[[a-z0-9-]]+$)}")]
+    [ProducesResponseType(typeof(PublicBookDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetBySlug(string slug, CancellationToken ct) =>
+        (await sender.Send(new GetPublicBookBySlugQuery(slug), ct)).ToActionResult();
 }

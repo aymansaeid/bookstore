@@ -28,6 +28,7 @@ public sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
             address.Property(a => a.StateOrProvince).HasColumnName("ShipTo_State").HasMaxLength(150);
             address.Property(a => a.PostalCode).HasColumnName("ShipTo_PostalCode").HasMaxLength(20).IsRequired();
             address.Property(a => a.CountryCode).HasColumnName("ShipTo_CountryCode").HasMaxLength(2).IsRequired();
+            address.Property(a => a.Phone).HasColumnName("ShipTo_Phone").HasMaxLength(30).IsRequired();
         });
         builder.Navigation(o => o.ShippingAddress).IsRequired();
 

@@ -25,6 +25,7 @@ builder.Services.ConfigureHttpJsonOptions(o =>
 builder.Services.AddOpenApi(o => o.AddDocumentTransformer<BearerSecuritySchemeTransformer>());
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddStorefrontCors(builder.Configuration);
 
 builder.Services.AddRateLimiter(options =>
 {
@@ -59,6 +60,9 @@ if (app.Environment.IsDevelopment())
         options.EnablePersistAuthorization();
     });
 }
+// Serves uploaded images from wwwroot.
+app.UseStaticFiles();
+app.UseCors(CorsExtensions.PolicyName);
 
 app.UseExceptionHandler();
 app.UseHttpsRedirection();

@@ -3,12 +3,14 @@ using BookStore.Application.Abstractions.Auth;
 using BookStore.Application.Abstractions.Payments;
 using BookStore.Application.Abstractions.Queries;
 using BookStore.Application.Abstractions.Repositories;
+using BookStore.Application.Abstractions.Storage;
 using BookStore.Infrastructure.Auth;
 using BookStore.Infrastructure.Payments;
 using BookStore.Infrastructure.Persistence;
 using BookStore.Infrastructure.Persistence.Interceptors;
 using BookStore.Infrastructure.Persistence.Queries;
 using BookStore.Infrastructure.Persistence.Repositories;
+using BookStore.Infrastructure.Storage;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -51,6 +53,9 @@ public static class DependencyInjection
         "Jwt:ExpiryMinutes must be between 1 and 1440.")
     // Fail at startup, not on the first login attempt at 2am.
     .ValidateOnStart();
+
+        services.Configure<LocalFileStorageOptions>(configuration.GetSection(LocalFileStorageOptions.SectionName));
+        services.AddSingleton<IFileStorage, LocalFileStorage>();
 
         services.AddSingleton<IPasswordHasher, IdentityPasswordHasher>();
         services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();

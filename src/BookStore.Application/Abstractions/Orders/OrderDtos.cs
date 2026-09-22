@@ -19,7 +19,7 @@ public sealed record AdminOrderSummaryDto(
 public sealed record OrderLineDto(int BookId, string Title, int Quantity, decimal UnitPrice, decimal LineTotal);
 
 public sealed record AddressDto(
-    string RecipientName, string Line1, string? Line2, string City,
+    string RecipientName, string Phone, string Line1, string? Line2, string City,
     string? StateOrProvince, string PostalCode, string CountryCode);
 
 public sealed record AdminOrderDetailsDto(
@@ -70,7 +70,7 @@ public static class OrderMappings
 {
     public static AdminOrderDetailsDto ToAdminDetailsDto(this Order o) =>
         new(o.Id, o.OrderNumber, o.CustomerEmail, o.Status,
-            new AddressDto(o.ShippingAddress.RecipientName, o.ShippingAddress.Line1, o.ShippingAddress.Line2,
+            new AddressDto(o.ShippingAddress.RecipientName, o.ShippingAddress.Phone, o.ShippingAddress.Line1, o.ShippingAddress.Line2,
                 o.ShippingAddress.City, o.ShippingAddress.StateOrProvince, o.ShippingAddress.PostalCode,
                 o.ShippingAddress.CountryCode),
             o.Lines.Select(l => new OrderLineDto(

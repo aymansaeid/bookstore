@@ -6,8 +6,6 @@ namespace BookStore.Infrastructure.Persistence.Repositories;
 
 public sealed class BookRepository(BookStoreDbContext dbContext) : IBookRepository
 {
-    public Task<Book?> GetByIdAsync(int id, CancellationToken ct = default) =>
-        dbContext.Books.FirstOrDefaultAsync(b => b.Id == id, ct);
 
     public async Task<bool> TryReserveStockAsync(int bookId, int quantity, CancellationToken ct = default)
     {
@@ -43,13 +41,6 @@ public sealed class BookRepository(BookStoreDbContext dbContext) : IBookReposito
 
     public void Add(Book book) => dbContext.Books.Add(book);
 
-    public async Task<IReadOnlyList<Book>> ListAsync(bool includeInactive, CancellationToken ct = default) =>
-        await dbContext.Books
-            .AsNoTracking()
-            .Where(b => includeInactive || b.IsActive)
-            .OrderBy(b => b.Title)
-            .ToListAsync(ct);
-
     public Task<bool> IsbnExistsAsync(string isbn, int? excludeBookId, CancellationToken ct = default) =>
         dbContext.Books.AnyAsync(b => b.Isbn == isbn && (excludeBookId == null || b.Id != excludeBookId), ct);
     public async Task RestockAsync(int bookId, int quantity, CancellationToken ct = default) =>
@@ -57,4 +48,20 @@ public sealed class BookRepository(BookStoreDbContext dbContext) : IBookReposito
             .Where(b => b.Id == bookId)
             .ExecuteUpdateAsync(setters => setters
                 .SetProperty(b => b.StockQuantity, b => b.StockQuantity + quantity), ct);
+    public Task<Book?> GetByIdAsync(int id, CancellationToken ct = default) =>
+    dbContext.Books.Include(b => b.Images).FirstOrDefaultAsync(b => b.Id == id, ct);
+
+    public Task<Book?> GetBySlugAsync(string slug, CancellationToken ct = default) =>
+        dbContext.Books.Include(b => b.Images).FirstOrDefaultAsync(b => b.Slug == Slug.Create(slug), ct);
+
+    public Task<bool> SlugExistsAsync(string slug, CancellationToken ct = default) =>
+        dbContext.Books.AnyAsync(b => b.Slug == Slug.Create(slug), ct);
+
+    public async Task<IReadOnlyList<Book>> ListAsync(bool includeInactive, CancellationToken ct = default) =>
+        await dbContext.Books
+            .AsNoTracking()
+            .Include(b => b.Images)
+            .Where(b => includeInactive || b.IsActive)
+            .OrderBy(b => b.Title)
+            .ToListAsync(ct);
 }

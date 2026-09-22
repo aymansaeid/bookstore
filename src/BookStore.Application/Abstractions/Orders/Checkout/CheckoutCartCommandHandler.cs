@@ -99,13 +99,14 @@ public sealed class CheckoutCartCommandHandler(
 
         // 6. Build the Order aggregate in memory.
         var address = Address.Create(
-            command.ShippingAddress.RecipientName,
-            command.ShippingAddress.Line1,
-            command.ShippingAddress.Line2,
-            command.ShippingAddress.City,
-            command.ShippingAddress.StateOrProvince,
-            command.ShippingAddress.PostalCode,
-            command.ShippingAddress.CountryCode);
+           command.ShippingAddress.RecipientName,
+           command.ShippingAddress.Phone,
+           command.ShippingAddress.Line1,
+           command.ShippingAddress.Line2,
+           command.ShippingAddress.City,
+           command.ShippingAddress.StateOrProvince,
+           command.ShippingAddress.PostalCode,
+           command.ShippingAddress.CountryCode);
 
         var order = Order.Create(command.CustomerEmail, address, command.Currency);
 
