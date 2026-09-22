@@ -5,9 +5,8 @@ namespace BookStore.Domain.Orders;
 
 public sealed class Order : AggregateRoot<int>
 {
-    // Customer-facing identifier. Never expose the int Id — sequential PKs
-    // on a guest-checkout store let anyone walk /order/1, /order/2... and
-    // read other people's names and addresses.
+    // Customer-facing identifier. Never expose the int Id publicly —
+    // sequential PKs would let anyone walk other people's orders.
     public string OrderNumber { get; private set; } = string.Empty;
     public string CustomerEmail { get; private set; } = string.Empty;
 
@@ -27,6 +26,8 @@ public sealed class Order : AggregateRoot<int>
 
     public string? StripeCheckoutSessionId { get; private set; }
     public string? StripePaymentIntentId { get; private set; }
+
+    public string? ShippingCarrier { get; private set; }
     public string? TrackingNumber { get; private set; }
 
     public DateTimeOffset CreatedAtUtc { get; private set; }
@@ -35,10 +36,17 @@ public sealed class Order : AggregateRoot<int>
     public DateTimeOffset? DeliveredAtUtc { get; private set; }
     public DateTimeOffset? CancelledAtUtc { get; private set; }
 
-    // Guards admin-driven concurrent edits (e.g. two staff touching the same
-    // order at once). Not involved in the checkout reservation race — see
-    // the note on Book.RowVersion.
     public byte[] RowVersion { get; private set; } = [];
+
+    // The state machine, readable in one place. Every transition method
+    // below guards on these, and the Application layer uses the same
+    // properties to decide which admin buttons to show.
+    public bool CanBeShipped => Status == OrderStatus.Paid;
+    public bool CanBeDelivered => Status == OrderStatus.Shipped;
+    public bool CanCorrectTracking => Status == OrderStatus.Shipped;
+    public bool CanBeCancelled => Status is OrderStatus.PendingPayment or OrderStatus.Paid;
+    public bool CanBeExpired => Status == OrderStatus.PendingPayment;
+    public bool CanBeRefunded => Status is OrderStatus.Paid or OrderStatus.Shipped or OrderStatus.Delivered;
 
     private Order() { } // EF Core
 
@@ -61,11 +69,12 @@ public sealed class Order : AggregateRoot<int>
         };
     }
 
-    /// <summary>
-    /// Links the order to its Stripe Checkout Session once Stripe has returned
-    /// one. Separate from Create() because the order's total needs to exist
-    /// in memory before we can ask Stripe for a session in the first place.
-    /// </summary>
+    private static string GenerateOrderNumber()
+    {
+        var random = Guid.NewGuid().ToString("N")[..10].ToUpperInvariant();
+        return $"BK-{random}";
+    }
+
     public void AttachStripeCheckoutSession(string stripeCheckoutSessionId)
     {
         if (Status != OrderStatus.PendingPayment)
@@ -74,12 +83,6 @@ public sealed class Order : AggregateRoot<int>
             throw new ArgumentException("Stripe checkout session id is required.", nameof(stripeCheckoutSessionId));
 
         StripeCheckoutSessionId = stripeCheckoutSessionId;
-    }
-
-    private static string GenerateOrderNumber()
-    {
-        var random = Guid.NewGuid().ToString("N")[..10].ToUpperInvariant();
-        return $"BK-{random}";
     }
 
     public void AddLine(int bookId, string bookTitleSnapshot, int quantity, Money unitPrice)
@@ -93,13 +96,6 @@ public sealed class Order : AggregateRoot<int>
 
         _lines.Add(OrderLine.Create(bookId, bookTitleSnapshot, quantity, unitPrice));
         RecalculateSubtotal();
-    }
-
-    private void RecalculateSubtotal()
-    {
-        var currency = Subtotal.Currency;
-        Subtotal = _lines.Aggregate(Money.Zero(currency), (sum, line) => sum.Add(line.LineTotal));
-        RecalculateTotal();
     }
 
     public void SetShippingCost(Money shippingCost)
@@ -121,11 +117,6 @@ public sealed class Order : AggregateRoot<int>
         RecalculateTotal();
     }
 
-    private void RecalculateTotal()
-    {
-        Total = Subtotal.Subtract(DiscountAmount).Add(ShippingCost);
-    }
-
     public void MarkAsPaid(string stripePaymentIntentId)
     {
         if (Status != OrderStatus.PendingPayment)
@@ -141,11 +132,9 @@ public sealed class Order : AggregateRoot<int>
             DateTimeOffset.UtcNow));
     }
 
-    /// Stripe Checkout Session expired unpaid — release the stock reservation
-    /// taken at order creation so another customer can buy it.
     public void Expire()
     {
-        if (Status != OrderStatus.PendingPayment)
+        if (!CanBeExpired)
             throw new InvalidOrderStateTransitionException(Id, Status, "expire");
 
         Status = OrderStatus.Expired;
@@ -157,12 +146,14 @@ public sealed class Order : AggregateRoot<int>
 
     public void Cancel(string reason)
     {
-        if (Status is not (OrderStatus.PendingPayment or OrderStatus.Paid))
+        if (!CanBeCancelled)
             throw new InvalidOrderStateTransitionException(Id, Status, "cancel");
+        if (string.IsNullOrWhiteSpace(reason))
+            throw new ArgumentException("A cancellation reason is required.", nameof(reason));
 
         var wasPaid = Status == OrderStatus.Paid;
         Status = OrderStatus.Cancelled;
-        CancellationReason = reason;
+        CancellationReason = reason.Trim();
         CancelledAtUtc = DateTimeOffset.UtcNow;
 
         Raise(new OrderCancelledDomainEvent(
@@ -171,23 +162,43 @@ public sealed class Order : AggregateRoot<int>
             DateTimeOffset.UtcNow));
     }
 
-    public void Ship(string trackingNumber)
+    public void Ship(string carrier, string trackingNumber)
     {
-        if (Status != OrderStatus.Paid)
+        if (!CanBeShipped)
             throw new InvalidOrderStateTransitionException(Id, Status, "ship");
+        if (string.IsNullOrWhiteSpace(carrier))
+            throw new ArgumentException("Carrier is required.", nameof(carrier));
         if (string.IsNullOrWhiteSpace(trackingNumber))
             throw new ArgumentException("Tracking number is required.", nameof(trackingNumber));
 
         Status = OrderStatus.Shipped;
-        TrackingNumber = trackingNumber;
+        ShippingCarrier = carrier.Trim();
+        TrackingNumber = trackingNumber.Trim();
         ShippedAtUtc = DateTimeOffset.UtcNow;
 
-        Raise(new OrderShippedDomainEvent(Id, OrderNumber, CustomerEmail, trackingNumber, DateTimeOffset.UtcNow));
+        Raise(new OrderShippedDomainEvent(
+            Id, OrderNumber, CustomerEmail, ShippingCarrier, TrackingNumber, DateTimeOffset.UtcNow));
+    }
+
+    /// Fixes a typo in the carrier/tracking number after shipping. Doesn't
+    /// change status and doesn't re-raise the shipped event (no duplicate
+    /// "your order shipped" email for a typo fix).
+    public void CorrectTrackingInfo(string carrier, string trackingNumber)
+    {
+        if (!CanCorrectTracking)
+            throw new InvalidOrderStateTransitionException(Id, Status, "correct tracking info on");
+        if (string.IsNullOrWhiteSpace(carrier))
+            throw new ArgumentException("Carrier is required.", nameof(carrier));
+        if (string.IsNullOrWhiteSpace(trackingNumber))
+            throw new ArgumentException("Tracking number is required.", nameof(trackingNumber));
+
+        ShippingCarrier = carrier.Trim();
+        TrackingNumber = trackingNumber.Trim();
     }
 
     public void Deliver()
     {
-        if (Status != OrderStatus.Shipped)
+        if (!CanBeDelivered)
             throw new InvalidOrderStateTransitionException(Id, Status, "mark as delivered");
 
         Status = OrderStatus.Delivered;
@@ -196,9 +207,21 @@ public sealed class Order : AggregateRoot<int>
 
     public void Refund()
     {
-        if (Status is not (OrderStatus.Paid or OrderStatus.Shipped or OrderStatus.Delivered))
+        if (!CanBeRefunded)
             throw new InvalidOrderStateTransitionException(Id, Status, "refund");
 
         Status = OrderStatus.Refunded;
+    }
+
+    private void RecalculateSubtotal()
+    {
+        var currency = Subtotal.Currency;
+        Subtotal = _lines.Aggregate(Money.Zero(currency), (sum, line) => sum.Add(line.LineTotal));
+        RecalculateTotal();
+    }
+
+    private void RecalculateTotal()
+    {
+        Total = Subtotal.Subtract(DiscountAmount).Add(ShippingCost);
     }
 }

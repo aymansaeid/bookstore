@@ -22,4 +22,7 @@ public interface IBookRepository
     void Add(Book book);
     Task<IReadOnlyList<Book>> ListAsync(bool includeInactive, CancellationToken ct = default);
     Task<bool> IsbnExistsAsync(string isbn, int? excludeBookId, CancellationToken ct = default);
+
+    /// Returns sold-but-never-shipped units to stock (cancelling a paid order).
+    Task RestockAsync(int bookId, int quantity, CancellationToken ct = default);
 }

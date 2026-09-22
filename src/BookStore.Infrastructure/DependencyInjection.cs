@@ -1,9 +1,11 @@
 ﻿using BookStore.Application.Abstractions;
 using BookStore.Application.Abstractions.Payments;
+using BookStore.Application.Abstractions.Queries;
 using BookStore.Application.Abstractions.Repositories;
 using BookStore.Infrastructure.Payments;
 using BookStore.Infrastructure.Persistence;
 using BookStore.Infrastructure.Persistence.Interceptors;
+using BookStore.Infrastructure.Persistence.Queries;
 using BookStore.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -33,6 +35,9 @@ public static class DependencyInjection
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         services.AddScoped<IPaymentGateway, StripePaymentGateway>();
+
+        services.AddScoped<IOrderQueries, OrderQueries>();
+
 
         return services;
     }

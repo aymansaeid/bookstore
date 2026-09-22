@@ -15,5 +15,8 @@ public interface ICouponRepository
     /// Atomic conditional UPDATE: increments TimesRedeemed only if the
     /// coupon is active, unexpired, and under its usage cap.
     /// </summary>
+
+    /// Gives one use back to a coupon (its order was cancelled).
+    Task ReleaseRedemptionAsync(string code, CancellationToken ct = default);
     Task<bool> TryRedeemAsync(string code, CancellationToken ct = default);
 }

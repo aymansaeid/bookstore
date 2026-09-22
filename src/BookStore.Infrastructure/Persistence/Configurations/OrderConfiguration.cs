@@ -77,6 +77,12 @@ public sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
             .SetPropertyAccessMode(PropertyAccessMode.Field);
 
         builder.Ignore(o => o.DomainEvents);
+        builder.Property(o => o.ShippingCarrier).HasMaxLength(100);
+
+        // The admin list filters by status and sorts newest-first; this index
+        // covers exactly that. Email index is for "find this customer's orders".
+        builder.HasIndex(o => new { o.Status, o.CreatedAtUtc });
+        builder.HasIndex(o => o.CustomerEmail);
     }
 
     private static void ConfigureMoney(OwnedNavigationBuilder<Order, Money> owned, string columnPrefix)

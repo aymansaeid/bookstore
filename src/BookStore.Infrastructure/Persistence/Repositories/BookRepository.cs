@@ -52,4 +52,9 @@ public sealed class BookRepository(BookStoreDbContext dbContext) : IBookReposito
 
     public Task<bool> IsbnExistsAsync(string isbn, int? excludeBookId, CancellationToken ct = default) =>
         dbContext.Books.AnyAsync(b => b.Isbn == isbn && (excludeBookId == null || b.Id != excludeBookId), ct);
+    public async Task RestockAsync(int bookId, int quantity, CancellationToken ct = default) =>
+        await dbContext.Books
+            .Where(b => b.Id == bookId)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(b => b.StockQuantity, b => b.StockQuantity + quantity), ct);
 }

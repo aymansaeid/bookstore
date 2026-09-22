@@ -46,4 +46,14 @@ public sealed class CouponRepository(BookStoreDbContext dbContext) : ICouponRepo
 
         return rowsAffected == 1;
     }
+    public async Task ReleaseRedemptionAsync(string code, CancellationToken ct = default)
+    {
+        var normalized = code.Trim().ToUpperInvariant();
+
+        // "> 0" guard: never let a double-release push the counter negative.
+        await dbContext.Coupons
+            .Where(c => c.Code == normalized && c.TimesRedeemed > 0)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(c => c.TimesRedeemed, c => c.TimesRedeemed - 1), ct);
+    }
 }

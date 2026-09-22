@@ -26,5 +26,6 @@ public sealed record OrderShippedDomainEvent(
     int OrderId,
     string OrderNumber,
     string CustomerEmail,
+    string Carrier,
     string TrackingNumber,
     DateTimeOffset OccurredOnUtc) : IDomainEvent;
