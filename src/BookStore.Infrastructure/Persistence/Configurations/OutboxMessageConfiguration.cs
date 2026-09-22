@@ -13,9 +13,12 @@ public sealed class OutboxMessageConfiguration : IEntityTypeConfiguration<Outbox
         builder.Property(m => m.Type).HasMaxLength(200).IsRequired();
         builder.Property(m => m.PayloadJson).IsRequired();
         builder.Property(m => m.Error).HasMaxLength(2000);
+        builder.Property(m => m.RetryCount).IsRequired();
+        builder.Property(m => m.NextAttemptAtUtc).IsRequired();
+        builder.Property(m => m.IsDeadLettered).IsRequired();
 
-        // The background worker polls unprocessed rows constantly — this
-        // index is what keeps that query cheap as the table grows.
-        builder.HasIndex(m => m.ProcessedOnUtc);
+        // Exactly matches the worker's polling predicate, so the query stays
+        // an index seek as the table grows.
+        builder.HasIndex(m => new { m.ProcessedOnUtc, m.IsDeadLettered, m.NextAttemptAtUtc });
     }
 }

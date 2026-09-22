@@ -128,7 +128,7 @@ public sealed class Order : AggregateRoot<int>
 
         Raise(new OrderPaidDomainEvent(
             Id, OrderNumber, CustomerEmail,
-            _lines.Select(l => (l.BookId, l.Quantity)).ToList(),
+            _lines.Select(l => new OrderLineSnapshot(l.BookId, l.Quantity)).ToList(),
             DateTimeOffset.UtcNow));
     }
 
@@ -140,7 +140,7 @@ public sealed class Order : AggregateRoot<int>
         Status = OrderStatus.Expired;
 
         Raise(new OrderExpiredDomainEvent(
-            Id, _lines.Select(l => (l.BookId, l.Quantity)).ToList(),
+            Id, _lines.Select(l => new OrderLineSnapshot(l.BookId, l.Quantity)).ToList(),
             DateTimeOffset.UtcNow));
     }
 
@@ -158,7 +158,7 @@ public sealed class Order : AggregateRoot<int>
 
         Raise(new OrderCancelledDomainEvent(
             Id, OrderNumber, CustomerEmail, wasPaid,
-            _lines.Select(l => (l.BookId, l.Quantity)).ToList(),
+            _lines.Select(l => new OrderLineSnapshot(l.BookId, l.Quantity)).ToList(),
             DateTimeOffset.UtcNow));
     }
 

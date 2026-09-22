@@ -4,7 +4,11 @@ public sealed class StoreOptions
 {
     public const string SectionName = "Store";
 
-    // ISO 4217 code. Every price in the store (books, shipping) is in this
-    // currency. Changing it later means repricing everything, so pick once.
     public string Currency { get; init; } = "USD";
+    public string Name { get; init; } = "BookStore";
+    public string SupportEmail { get; init; } = "support@example.com";
+
+    /// Public URL of the React storefront, used to build links in emails.
+    /// No trailing slash.
+    public string StorefrontBaseUrl { get; init; } = "http://localhost:3000";
 }

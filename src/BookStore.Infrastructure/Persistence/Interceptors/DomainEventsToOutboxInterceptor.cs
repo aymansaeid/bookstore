@@ -1,8 +1,9 @@
-﻿using System.Text.Json;
+﻿using BookStore.Application.Abstractions.Outbox;
 using BookStore.Domain.Common;
 using BookStore.Infrastructure.Persistence.Outbox;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using System.Text.Json;
 
 namespace BookStore.Infrastructure.Persistence.Interceptors;
 
@@ -39,7 +40,7 @@ public sealed class DomainEventsToOutboxInterceptor : SaveChangesInterceptor
             .SelectMany(a => a.DomainEvents)
             .Select(domainEvent => OutboxMessage.Create(
                 domainEvent.GetType().Name,
-                JsonSerializer.Serialize(domainEvent, domainEvent.GetType()),
+                JsonSerializer.Serialize(domainEvent, domainEvent.GetType(), OutboxSerialization.Options),
                 domainEvent.OccurredOnUtc))
             .ToList();
 

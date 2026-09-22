@@ -1,10 +1,13 @@
 ﻿using BookStore.Application.Abstractions;
 using BookStore.Application.Abstractions.Auth;
+using BookStore.Application.Abstractions.Emails;
 using BookStore.Application.Abstractions.Payments;
 using BookStore.Application.Abstractions.Queries;
 using BookStore.Application.Abstractions.Repositories;
 using BookStore.Application.Abstractions.Storage;
 using BookStore.Infrastructure.Auth;
+using BookStore.Infrastructure.Emails;
+using BookStore.Infrastructure.Outbox;
 using BookStore.Infrastructure.Payments;
 using BookStore.Infrastructure.Persistence;
 using BookStore.Infrastructure.Persistence.Interceptors;
@@ -59,6 +62,21 @@ public static class DependencyInjection
 
         services.AddSingleton<IPasswordHasher, IdentityPasswordHasher>();
         services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
+
+        services.Configure<EmailOptions>(configuration.GetSection(EmailOptions.SectionName));
+        services.Configure<OutboxOptions>(configuration.GetSection(OutboxOptions.SectionName));
+
+        var emailProvider = configuration.GetSection(EmailOptions.SectionName)
+            .GetValue<EmailProvider>(nameof(EmailOptions.Provider));
+
+        if (emailProvider == EmailProvider.Smtp)
+            services.AddScoped<IEmailSender, SmtpEmailSender>();
+        else
+            services.AddScoped<IEmailSender, LoggingEmailSender>();
+
+        services.AddHostedService<OutboxProcessor>();
+
+
         return services;
     }
 }

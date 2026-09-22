@@ -2,16 +2,20 @@
 
 namespace BookStore.Domain.Orders.Events;
 
+/// A real record, not a ValueTuple: tuples serialize to {} because their
+/// members are fields, and the outbox stores events as JSON.
+public sealed record OrderLineSnapshot(int BookId, int Quantity);
+
 public sealed record OrderPaidDomainEvent(
     int OrderId,
     string OrderNumber,
     string CustomerEmail,
-    IReadOnlyCollection<(int BookId, int Quantity)> Lines,
+    IReadOnlyCollection<OrderLineSnapshot> Lines,
     DateTimeOffset OccurredOnUtc) : IDomainEvent;
 
 public sealed record OrderExpiredDomainEvent(
     int OrderId,
-    IReadOnlyCollection<(int BookId, int Quantity)> Lines,
+    IReadOnlyCollection<OrderLineSnapshot> Lines,
     DateTimeOffset OccurredOnUtc) : IDomainEvent;
 
 public sealed record OrderCancelledDomainEvent(
@@ -19,7 +23,7 @@ public sealed record OrderCancelledDomainEvent(
     string OrderNumber,
     string CustomerEmail,
     bool WasPaid,
-    IReadOnlyCollection<(int BookId, int Quantity)> Lines,
+    IReadOnlyCollection<OrderLineSnapshot> Lines,
     DateTimeOffset OccurredOnUtc) : IDomainEvent;
 
 public sealed record OrderShippedDomainEvent(
