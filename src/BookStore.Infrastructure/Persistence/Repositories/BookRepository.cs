@@ -64,4 +64,11 @@ public sealed class BookRepository(BookStoreDbContext dbContext) : IBookReposito
             .Where(b => includeInactive || b.IsActive)
             .OrderBy(b => b.Title)
             .ToListAsync(ct);
+    public async Task<IReadOnlyList<Book>> ListByIdsAsync(
+    IReadOnlyCollection<int> ids, CancellationToken ct = default) =>
+    await dbContext.Books
+        .AsNoTracking()
+        .Include(b => b.Images)
+        .Where(b => ids.Contains(b.Id))
+        .ToListAsync(ct);
 }

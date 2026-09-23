@@ -1,4 +1,5 @@
-﻿using BookStore.Domain.Common;
+﻿using BookStore.Domain.Books.Events;
+using BookStore.Domain.Common;
 
 namespace BookStore.Domain.Books;
 
@@ -155,24 +156,6 @@ public sealed class Book : AggregateRoot<int>
         StockQuantity -= quantity;
     }
 
-    public void Restock(int quantity)
-    {
-        if (quantity <= 0)
-            throw new ArgumentOutOfRangeException(nameof(quantity));
-
-        StockQuantity += quantity;
-    }
-
-    public void SetStockQuantity(int newQuantity)
-    {
-        if (newQuantity < 0)
-            throw new ArgumentOutOfRangeException(nameof(newQuantity), "Stock cannot be negative.");
-        if (newQuantity < ReservedQuantity)
-            throw new InvalidOperationException(
-                $"Cannot set stock to {newQuantity}; {ReservedQuantity} unit(s) are reserved by pending orders.");
-
-        StockQuantity = newQuantity;
-    }
 
     public void UpdatePrice(Money newPrice)
     {
@@ -182,7 +165,14 @@ public sealed class Book : AggregateRoot<int>
         Price = newPrice;
     }
 
-    public void Activate() => IsActive = true;
+    public void Activate()
+    {
+        var wasUnavailable = !IsActive || AvailableToSell <= 0;
+        IsActive = true;
+
+        if (wasUnavailable && AvailableToSell > 0)
+            Raise(new BookBackInStockDomainEvent(Id, Title, DateTimeOffset.UtcNow));
+    }
     public void Deactivate() => IsActive = false;
 
     /// The first image added automatically becomes the cover, so a book is
@@ -243,5 +233,37 @@ public sealed class Book : AggregateRoot<int>
 
         for (var i = 0; i < imageIdsInOrder.Count; i++)
             _images.First(img => img.Id == imageIdsInOrder[i]).SetDisplayOrder(i);
+    }
+    public void Restock(int quantity)
+    {
+        if (quantity <= 0)
+            throw new ArgumentOutOfRangeException(nameof(quantity));
+
+        var wasOutOfStock = AvailableToSell <= 0;
+        StockQuantity += quantity;
+
+        RaiseIfBackInStock(wasOutOfStock);
+    }
+
+    public void SetStockQuantity(int newQuantity)
+    {
+        if (newQuantity < 0)
+            throw new ArgumentOutOfRangeException(nameof(newQuantity), "Stock cannot be negative.");
+        if (newQuantity < ReservedQuantity)
+            throw new InvalidOperationException(
+                $"Cannot set stock to {newQuantity}; {ReservedQuantity} unit(s) are reserved by pending orders.");
+
+        var wasOutOfStock = AvailableToSell <= 0;
+        StockQuantity = newQuantity;
+
+        RaiseIfBackInStock(wasOutOfStock);
+    }
+
+    /// Fires only on the 0 -> positive transition, so routine restocks of an
+    /// already-available book don't re-notify the waiting list.
+    private void RaiseIfBackInStock(bool wasOutOfStock)
+    {
+        if (wasOutOfStock && AvailableToSell > 0 && IsActive)
+            Raise(new BookBackInStockDomainEvent(Id, Title, DateTimeOffset.UtcNow));
     }
 }

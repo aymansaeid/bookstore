@@ -91,6 +91,9 @@ public static class DependencyInjection
         services.AddSingleton<ITokenHasher, TokenHasher>();
         services.AddSingleton<ICustomerTokenGenerator, CustomerTokenGenerator>();
 
+        services.AddScoped<IStockNotificationRepository, StockNotificationRepository>();
+        services.AddScoped<IWishlistRepository, WishlistRepository>();
+
         return services;
     }
 }

@@ -1,14 +1,15 @@
-﻿using System.Security.Claims;
-using BookStore.Api.Common;
+﻿using BookStore.Api.Common;
 using BookStore.Application.Customers;
 using BookStore.Application.Customers.Commands;
 using BookStore.Application.Customers.Queries;
 using BookStore.Application.Orders;
+using BookStore.Application.Wishlists;
 using BookStore.Infrastructure.Auth;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.JsonWebTokens;
+using System.Security.Claims;
 
 namespace BookStore.Api.Controllers;
 
@@ -84,6 +85,21 @@ public sealed class CustomerAccountController(ISender sender) : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> SetDefaultAddress(int addressId, CancellationToken ct) =>
         (await sender.Send(new SetDefaultCustomerAddressCommand(CustomerId(), addressId), ct)).ToActionResult();
-
     private int CustomerId() => int.Parse(User.FindFirstValue(JwtRegisteredClaimNames.Sub)!);
+
+    [HttpGet("wishlist")]
+    [ProducesResponseType(typeof(IReadOnlyList<WishlistItemDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetWishlist(CancellationToken ct) =>
+    (await sender.Send(new GetWishlistQuery(CustomerId()), ct)).ToActionResult();
+
+    [HttpPut("wishlist/{bookId:int}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> AddToWishlist(int bookId, CancellationToken ct) =>
+        (await sender.Send(new AddToWishlistCommand(CustomerId(), bookId), ct)).ToActionResult();
+
+    [HttpDelete("wishlist/{bookId:int}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> RemoveFromWishlist(int bookId, CancellationToken ct) =>
+        (await sender.Send(new RemoveFromWishlistCommand(CustomerId(), bookId), ct)).ToActionResult();
 }

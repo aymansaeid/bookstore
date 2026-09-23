@@ -16,4 +16,8 @@ public static class CheckoutErrors
         Error.Validation("Checkout.CouponInvalid", $"Coupon '{code}' is not valid.");
     public static Error PaymentGatewayFailure =>
         Error.Failure("Checkout.PaymentGatewayFailure", "Could not start payment. Please try again.");
+    public static Error CustomerNotFound =>
+    Error.Unauthorized("Checkout.CustomerNotFound", "Your session is no longer valid. Please sign in again.");
+    public static Error SavedAddressNotFound =>
+        Error.NotFound("Checkout.SavedAddressNotFound", "That saved address was not found.");
 }

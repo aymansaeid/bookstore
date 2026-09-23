@@ -27,4 +27,5 @@ public interface IBookRepository
     Task RestockAsync(int bookId, int quantity, CancellationToken ct = default);
     Task<Book?> GetBySlugAsync(string slug, CancellationToken ct = default);
     Task<bool> SlugExistsAsync(string slug, CancellationToken ct = default);
+    Task<IReadOnlyList<Book>> ListByIdsAsync(IReadOnlyCollection<int> ids, CancellationToken ct = default);
 }

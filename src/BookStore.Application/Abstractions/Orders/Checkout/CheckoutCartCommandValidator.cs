@@ -22,7 +22,19 @@ public sealed class CheckoutCartCommandValidator : AbstractValidator<CheckoutCar
             line.RuleFor(l => l.Quantity).InclusiveBetween(1, 10);
         });
 
-        RuleFor(x => x.ShippingAddress).NotNull().SetValidator(new ShippingAddressDtoValidator());
+        // Exactly one of the two: a new address typed in, or one already saved.
+        RuleFor(x => x)
+            .Must(x => (x.ShippingAddress is not null) ^ (x.SavedAddressId is not null))
+            .WithMessage("Provide either a shipping address or a saved address id, not both.");
+
+        RuleFor(x => x.ShippingAddress!)
+            .SetValidator(new ShippingAddressDtoValidator())
+            .When(x => x.ShippingAddress is not null);
+
+        RuleFor(x => x.SavedAddressId)
+            .GreaterThan(0)
+            .When(x => x.SavedAddressId is not null);
+
         RuleFor(x => x.CouponCode).MaximumLength(50);
         RuleFor(x => x.Currency).NotEmpty().Length(3);
     }

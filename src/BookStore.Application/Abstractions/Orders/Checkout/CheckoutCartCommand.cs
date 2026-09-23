@@ -17,7 +17,9 @@ public sealed record ShippingAddressDto(
 public sealed record CheckoutCartCommand(
     string CustomerEmail,
     IReadOnlyCollection<CartLineDto> Lines,
-    ShippingAddressDto ShippingAddress,
+    ShippingAddressDto? ShippingAddress,
+    int? SavedAddressId,
+    int? CustomerId,
     string? CouponCode,
     string Currency,
     string SuccessUrl,
