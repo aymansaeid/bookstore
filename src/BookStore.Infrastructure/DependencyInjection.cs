@@ -76,6 +76,20 @@ public static class DependencyInjection
 
         services.AddHostedService<OutboxProcessor>();
 
+        services.AddOptions<CustomerJwtOptions>()
+    .Bind(configuration.GetSection(CustomerJwtOptions.SectionName))
+    .Validate(o => !string.IsNullOrWhiteSpace(o.Issuer) && !string.IsNullOrWhiteSpace(o.Audience),
+        "CustomerJwt:Issuer and CustomerJwt:Audience are required.")
+    .Validate(o => Encoding.UTF8.GetByteCount(o.SigningKey ?? string.Empty) >= 32,
+        "CustomerJwt:SigningKey must be at least 32 bytes.")
+    .ValidateOnStart();
+
+        services.AddScoped<ICustomerRepository, CustomerRepository>();
+        services.AddScoped<ISecurityTokenRepository, SecurityTokenRepository>();
+        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+
+        services.AddSingleton<ITokenHasher, TokenHasher>();
+        services.AddSingleton<ICustomerTokenGenerator, CustomerTokenGenerator>();
 
         return services;
     }

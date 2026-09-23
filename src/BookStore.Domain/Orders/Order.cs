@@ -10,6 +10,10 @@ public sealed class Order : AggregateRoot<int>
     public string OrderNumber { get; private set; } = string.Empty;
     public string CustomerEmail { get; private set; } = string.Empty;
 
+    /// Null for guest orders. Set when a verified customer checks out, or
+    /// retroactively when someone verifies an email used for guest orders.
+    public int? CustomerId { get; private set; }
+
     public Address ShippingAddress { get; private set; } = null!;
 
     private readonly List<OrderLine> _lines = [];
@@ -223,5 +227,22 @@ public sealed class Order : AggregateRoot<int>
     private void RecalculateTotal()
     {
         Total = Subtotal.Subtract(DiscountAmount).Add(ShippingCost);
+    }
+
+    public void AssignToCustomer(int customerId)
+    {
+        if (CustomerId is not null)
+            throw new InvalidOperationException("This order already belongs to a customer.");
+
+        CustomerId = customerId;
+    }
+
+    /// KVKK: scrub personal data while keeping the order for invoicing.
+    public void AnonymizeCustomerData()
+    {
+        CustomerEmail = $"deleted-{Guid.NewGuid():N}@anonymized.invalid";
+        ShippingAddress = Address.Create(
+            "Deleted User", "0000000000", "Redacted", null,
+            ShippingAddress.City, null, "00000", ShippingAddress.CountryCode);
     }
 }

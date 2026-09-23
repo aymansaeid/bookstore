@@ -8,4 +8,6 @@ public interface IOrderRepository
     Task<Order?> GetByOrderNumberAsync(string orderNumber, CancellationToken ct = default);
     Task<Order?> GetByStripeCheckoutSessionIdAsync(string sessionId, CancellationToken ct = default);
     void Add(Order order);
+    Task<IReadOnlyList<Order>> ListByCustomerIdAsync(int customerId, CancellationToken ct = default);
+    Task<IReadOnlyList<Order>> ListUnclaimedByEmailAsync(string email, CancellationToken ct = default);
 }

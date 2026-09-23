@@ -44,6 +44,7 @@ builder.Services.AddRateLimiter(options =>
     options.AddPolicy("coupon-check", ctx => PerIp(ctx, 10));
     options.AddPolicy("order-lookup", ctx => PerIp(ctx, 10));
     options.AddPolicy("login", ctx => PerIp(ctx, 5));
+    options.AddPolicy("customer-auth", ctx => PerIp(ctx, 5));
 });
 
 var app = builder.Build();

@@ -47,6 +47,8 @@ public sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
         builder.Property(o => o.StripeCheckoutSessionId).HasMaxLength(200);
         builder.Property(o => o.StripePaymentIntentId).HasMaxLength(200);
         builder.Property(o => o.TrackingNumber).HasMaxLength(100);
+        builder.Property(o => o.CustomerId);
+        builder.HasIndex(o => o.CustomerId);
 
         builder.HasIndex(o => o.StripeCheckoutSessionId).IsUnique()
             .HasFilter("[StripeCheckoutSessionId] IS NOT NULL");

@@ -1,4 +1,5 @@
-﻿using BookStore.Domain.Books;
+﻿using BookStore.Domain.Auth;
+using BookStore.Domain.Books;
 using BookStore.Domain.Coupons;
 using BookStore.Domain.Orders;
 using BookStore.Domain.Shipping;
@@ -6,6 +7,7 @@ using BookStore.Domain.Users;
 using BookStore.Infrastructure.Persistence.Outbox;
 using BookStore.Infrastructure.Persistence.Webhooks;
 using Microsoft.EntityFrameworkCore;
+using BookStore.Domain.Customers;
 
 namespace BookStore.Infrastructure.Persistence;
 
@@ -18,7 +20,9 @@ public sealed class BookStoreDbContext(DbContextOptions<BookStoreDbContext> opti
     public DbSet<AdminUser> AdminUsers => Set<AdminUser>();
     public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
     public DbSet<ProcessedWebhook> ProcessedWebhooks => Set<ProcessedWebhook>();
-
+    public DbSet<Customer> Customers => Set<Customer>();
+    public DbSet<SecurityToken> SecurityTokens => Set<SecurityToken>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(BookStoreDbContext).Assembly);
