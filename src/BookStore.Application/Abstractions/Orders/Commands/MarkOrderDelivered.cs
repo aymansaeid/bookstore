@@ -1,11 +1,16 @@
 ﻿using BookStore.Application.Abstractions;
+using BookStore.Application.Abstractions.Auditing;
 using BookStore.Application.Abstractions.Messaging;
 using BookStore.Application.Abstractions.Repositories;
 using BookStore.Application.Common;
 
 namespace BookStore.Application.Orders.Commands;
 
-public sealed record MarkOrderDeliveredCommand(int OrderId) : ICommand<AdminOrderDetailsDto>;
+public sealed record MarkOrderDeliveredCommand(int OrderId) : ICommand<AdminOrderDetailsDto>, IAuditableCommand
+{
+    public string AuditEntityType => "Order";
+    public string? AuditEntityId => OrderId.ToString();
+}
 
 public sealed class MarkOrderDeliveredCommandHandler(IOrderRepository orderRepository, IUnitOfWork unitOfWork)
     : ICommandHandler<MarkOrderDeliveredCommand, AdminOrderDetailsDto>

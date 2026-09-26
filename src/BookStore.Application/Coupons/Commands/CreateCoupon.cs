@@ -1,4 +1,5 @@
 ﻿using BookStore.Application.Abstractions;
+using BookStore.Application.Abstractions.Auditing;
 using BookStore.Application.Abstractions.Messaging;
 using BookStore.Application.Abstractions.Repositories;
 using BookStore.Application.Common;
@@ -11,7 +12,11 @@ public sealed record CreateCouponCommand(
     string Code,
     int DiscountPercentage,
     DateTimeOffset ExpiresAtUtc,
-    int? MaxRedemptions) : ICommand<AdminCouponDto>;
+    int? MaxRedemptions) : ICommand<AdminCouponDto>, IAuditableCommand
+{
+    public string AuditEntityType => "Coupon";
+    public string? AuditEntityId => Code;
+}
 
 public sealed class CreateCouponCommandValidator : AbstractValidator<CreateCouponCommand>
 {

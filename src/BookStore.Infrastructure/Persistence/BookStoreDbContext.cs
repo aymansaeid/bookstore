@@ -10,7 +10,7 @@ using BookStore.Domain.Wishlists;
 using BookStore.Infrastructure.Persistence.Outbox;
 using BookStore.Infrastructure.Persistence.Webhooks;
 using Microsoft.EntityFrameworkCore;
-
+using BookStore.Domain.Reviews;
 namespace BookStore.Infrastructure.Persistence;
 
 public sealed class BookStoreDbContext(DbContextOptions<BookStoreDbContext> options) : DbContext(options)
@@ -27,6 +27,7 @@ public sealed class BookStoreDbContext(DbContextOptions<BookStoreDbContext> opti
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<StockNotification> StockNotifications => Set<StockNotification>();
     public DbSet<WishlistItem> WishlistItems => Set<WishlistItem>();
+    public DbSet<Review> Reviews => Set<Review>();
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(BookStoreDbContext).Assembly);

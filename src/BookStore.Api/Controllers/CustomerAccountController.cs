@@ -3,11 +3,15 @@ using BookStore.Application.Customers;
 using BookStore.Application.Customers.Commands;
 using BookStore.Application.Customers.Queries;
 using BookStore.Application.Orders;
+using BookStore.Application.Reviews;
+using BookStore.Application.Reviews.Commands;
+using BookStore.Application.Reviews.Queries;
 using BookStore.Application.Wishlists;
 using BookStore.Infrastructure.Auth;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.JsonWebTokens;
 using System.Security.Claims;
 
@@ -18,6 +22,8 @@ public sealed record ChangeCustomerPasswordRequest(string CurrentPassword, strin
 public sealed record DeleteAccountRequest(string Password);
 public sealed record AddAddressRequest(SaveAddressData Address, bool IsDefault);
 public sealed record UpdateAddressRequest(SaveAddressData Address);
+public sealed record SubmitReviewRequest(int BookId, int Rating, string? Title, string Body);
+public sealed record UpdateReviewRequest(int Rating, string? Title, string Body);
 
 [ApiController]
 [Route("api/customers/me")]
@@ -102,4 +108,38 @@ public sealed class CustomerAccountController(ISender sender) : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> RemoveFromWishlist(int bookId, CancellationToken ct) =>
         (await sender.Send(new RemoveFromWishlistCommand(CustomerId(), bookId), ct)).ToActionResult();
+
+    [HttpGet("reviews")]
+    [ProducesResponseType(typeof(IReadOnlyList<MyReviewDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetMyReviews(CancellationToken ct) =>
+    (await sender.Send(new GetMyReviewsQuery(CustomerId()), ct)).ToActionResult();
+
+    /// Drives the "Write a review" / "Edit your review" button on a book page.
+    [HttpGet("reviews/eligibility/{bookId:int}")]
+    [ProducesResponseType(typeof(ReviewEligibilityDto), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetReviewEligibility(int bookId, CancellationToken ct) =>
+        (await sender.Send(new GetReviewEligibilityQuery(CustomerId(), bookId), ct)).ToActionResult();
+
+    [HttpPost("reviews")]
+    [EnableRateLimiting("review-submit")]
+    [ProducesResponseType(typeof(MyReviewDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> SubmitReview(SubmitReviewRequest r, CancellationToken ct) =>
+        (await sender.Send(new SubmitReviewCommand(CustomerId(), r.BookId, r.Rating, r.Title, r.Body), ct))
+        .ToActionResult();
+
+    [HttpPut("reviews/{reviewId:int}")]
+    [EnableRateLimiting("review-submit")]
+    [ProducesResponseType(typeof(MyReviewDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateReview(int reviewId, UpdateReviewRequest r, CancellationToken ct) =>
+        (await sender.Send(new UpdateMyReviewCommand(CustomerId(), reviewId, r.Rating, r.Title, r.Body), ct))
+        .ToActionResult();
+
+    [HttpDelete("reviews/{reviewId:int}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeleteReview(int reviewId, CancellationToken ct) =>
+        (await sender.Send(new DeleteMyReviewCommand(CustomerId(), reviewId), ct)).ToActionResult();
 }

@@ -34,4 +34,12 @@ public sealed class OrderRepository(BookStoreDbContext dbContext) : IOrderReposi
             .Where(o => o.CustomerId == null && o.CustomerEmail == normalized)
             .ToListAsync(ct);
     }
+    public Task<bool> HasReviewablePurchaseAsync(
+    int customerId, int bookId, DateTimeOffset shippedOnOrBeforeUtc, CancellationToken ct = default) =>
+    dbContext.Orders.AnyAsync(o =>
+        o.CustomerId == customerId
+        && o.Lines.Any(l => l.BookId == bookId)
+        && (o.Status == OrderStatus.Delivered
+            || (o.Status == OrderStatus.Shipped && o.ShippedAtUtc <= shippedOnOrBeforeUtc)),
+        ct);
 }

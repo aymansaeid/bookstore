@@ -1,6 +1,8 @@
 ﻿using BookStore.Api.Common;
 using BookStore.Application.Books;
 using BookStore.Application.Books.Queries;
+using BookStore.Application.Reviews;
+using BookStore.Application.Reviews.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -28,4 +30,15 @@ public sealed class BooksController(ISender sender) : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetBySlug(string slug, CancellationToken ct) =>
         (await sender.Send(new GetPublicBookBySlugQuery(slug), ct)).ToActionResult();
+
+    [HttpGet("{id:int}/reviews")]
+    [ProducesResponseType(typeof(BookReviewsDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetReviews(
+    int id,
+    CancellationToken ct,
+    [FromQuery] ReviewSort sort = ReviewSort.Newest,
+    [FromQuery] int page = 1,
+    [FromQuery] int pageSize = 10) =>
+    (await sender.Send(new GetBookReviewsQuery(id, sort, page, pageSize), ct)).ToActionResult();
 }

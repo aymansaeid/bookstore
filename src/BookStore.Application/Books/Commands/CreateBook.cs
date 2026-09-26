@@ -1,10 +1,12 @@
 ﻿using BookStore.Application.Abstractions;
+using BookStore.Application.Abstractions.Auditing;
 using BookStore.Application.Abstractions.Messaging;
 using BookStore.Application.Abstractions.Repositories;
 using BookStore.Application.Abstractions.Storage;
 using BookStore.Application.Common;
 using BookStore.Domain.Books;
 using BookStore.Domain.Common;
+using BookStore.Domain.Inventory;
 using FluentValidation;
 using Microsoft.Extensions.Options;
 
@@ -27,7 +29,11 @@ public sealed record CreateBookCommand(
     int WidthMm,
     int DepthMm,
     decimal Price,
-    int InitialStock) : ICommand<AdminBookDto>;
+    int InitialStock) : ICommand<AdminBookDto>, IAuditableCommand
+{
+    public string AuditEntityType => "Book";
+    public string? AuditEntityId => Slug ?? Title;
+}
 
 public sealed class CreateBookCommandValidator : AbstractValidator<CreateBookCommand>
 {
@@ -54,6 +60,8 @@ public sealed class CreateBookCommandValidator : AbstractValidator<CreateBookCom
 
 public sealed class CreateBookCommandHandler(
     IBookRepository bookRepository,
+    IStockMovementRepository stockMovementRepository,
+    ICurrentActor currentActor,
     IUnitOfWork unitOfWork,
     IFileStorage fileStorage,
     IOptions<StoreOptions> storeOptions)
@@ -91,9 +99,21 @@ public sealed class CreateBookCommandHandler(
             Money.From(command.Price, storeOptions.Value.Currency),
             command.InitialStock);
 
+        // Two saves (the ledger needs the book's generated id), so wrap them in a
+        // transaction: a book never exists without its opening ledger entry.
+        await using var transaction = await unitOfWork.BeginTransactionAsync(ct);
         bookRepository.Add(book);
         await unitOfWork.SaveChangesAsync(ct);
 
+        if (book.StockQuantity > 0)
+        {
+            stockMovementRepository.Add(StockMovement.Create(
+                book.Id, book.StockQuantity, StockMovementReason.InitialStock, "Book created",
+                adminUserId: currentActor.AdminUserId));
+            await unitOfWork.SaveChangesAsync(ct);
+        }
+
+        await transaction.CommitAsync(ct);
         return Result.Success(book.ToAdminDto(fileStorage));
     }
 }

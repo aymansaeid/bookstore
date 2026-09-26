@@ -1,4 +1,5 @@
 ﻿using BookStore.Application.Abstractions;
+using BookStore.Application.Abstractions.Auditing;
 using BookStore.Application.Abstractions.Messaging;
 using BookStore.Application.Abstractions.Repositories;
 using BookStore.Application.Common;
@@ -7,7 +8,11 @@ using FluentValidation;
 namespace BookStore.Application.Orders.Commands;
 
 public sealed record CorrectTrackingInfoCommand(int OrderId, string Carrier, string TrackingNumber)
-    : ICommand<AdminOrderDetailsDto>;
+    : ICommand<AdminOrderDetailsDto>, IAuditableCommand
+{
+    public string AuditEntityType => "Order";
+    public string? AuditEntityId => OrderId.ToString();
+}
 
 public sealed class CorrectTrackingInfoCommandValidator : AbstractValidator<CorrectTrackingInfoCommand>
 {

@@ -23,7 +23,8 @@ public sealed class UpdateCustomerProfileCommandValidator : AbstractValidator<Up
 }
 
 public sealed class UpdateCustomerProfileCommandHandler(
-    ICustomerRepository customerRepository, IUnitOfWork unitOfWork)
+    ICustomerRepository customerRepository,
+    IUnitOfWork unitOfWork)
     : ICommandHandler<UpdateCustomerProfileCommand, CustomerProfileDto>
 {
     public async Task<Result<CustomerProfileDto>> Handle(UpdateCustomerProfileCommand command, CancellationToken ct)
@@ -82,6 +83,7 @@ public sealed record DeleteCustomerAccountCommand(int CustomerId, string Passwor
 public sealed class DeleteCustomerAccountCommandHandler(
     ICustomerRepository customerRepository,
     IOrderRepository orderRepository,
+    IReviewRepository reviewRepository,
     IRefreshTokenRepository refreshTokenRepository,
     IPasswordHasher passwordHasher,
     IUnitOfWork unitOfWork)
@@ -102,6 +104,10 @@ public sealed class DeleteCustomerAccountCommandHandler(
         var orders = await orderRepository.ListByCustomerIdAsync(customer.Id, ct);
         foreach (var order in orders)
             order.AnonymizeCustomerData();
+
+        // Reviews are personal expression with no retention obligation (unlike
+        // invoices), so under KVKK they're deleted rather than anonymized.
+        await reviewRepository.DeleteByCustomerAsync(customer.Id, ct);
 
         customer.Anonymize();
         await refreshTokenRepository.RevokeAllForCustomerAsync(customer.Id, "Account deleted", ct);

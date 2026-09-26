@@ -17,7 +17,7 @@ public sealed record UpdateBookRequest(
     BookFormat Format, int PageCount, string Language, string? Publisher, DateOnly? PublicationDate,
     int WeightGrams, int HeightMm, int WidthMm, int DepthMm, decimal Price);
 
-public sealed record AdjustStockRequest(int NewStockQuantity);
+public sealed record AdjustStockRequest(int NewStockQuantity, string Note);
 public sealed record ReorderImagesRequest(IReadOnlyList<int> ImageIdsInOrder);
 
 [ApiController]
@@ -62,7 +62,7 @@ public sealed class AdminBooksController(ISender sender) : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> AdjustStock(int id, AdjustStockRequest request, CancellationToken ct) =>
-        (await sender.Send(new AdjustBookStockCommand(id, request.NewStockQuantity), ct)).ToActionResult();
+    (await sender.Send(new AdjustBookStockCommand(id, request.NewStockQuantity, request.Note), ct)).ToActionResult();
 
     [HttpPut("{id:int}/active")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]

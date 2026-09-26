@@ -1,5 +1,6 @@
 ﻿using BookStore.Application.Abstractions;
 using BookStore.Application.Common;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -18,8 +19,14 @@ public sealed class UnitOfWork(BookStoreDbContext dbContext) : IUnitOfWork
             throw new ConcurrencyConflictException(
                 "This record was changed by another operation. Reload it and try again.", ex);
         }
+        // 2601 = duplicate key in a unique index, 2627 = unique constraint.
+        // Turns every "two requests raced past the exists-check" case — coupon
+        // codes, ISBNs, slugs, reviews — into a clean 409 instead of a 500.
+        catch (DbUpdateException ex) when (ex.InnerException is SqlException { Number: 2601 or 2627 })
+        {
+            throw new DuplicateEntryException("This item already exists.", ex);
+        }
     }
-
     // ExecuteUpdateAsync calls (our atomic stock/coupon updates) run on the
     // same connection and automatically join this transaction, so they
     // commit or roll back together with SaveChanges.

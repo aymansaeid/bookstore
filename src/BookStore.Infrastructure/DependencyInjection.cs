@@ -1,15 +1,19 @@
 ﻿using BookStore.Application.Abstractions;
+using BookStore.Application.Abstractions.Auditing;
 using BookStore.Application.Abstractions.Auth;
 using BookStore.Application.Abstractions.Emails;
 using BookStore.Application.Abstractions.Payments;
 using BookStore.Application.Abstractions.Queries;
 using BookStore.Application.Abstractions.Repositories;
+using BookStore.Application.Abstractions.Reviews.Queries;
 using BookStore.Application.Abstractions.Storage;
 using BookStore.Infrastructure.Auth;
 using BookStore.Infrastructure.Emails;
+using BookStore.Infrastructure.Inventory;
 using BookStore.Infrastructure.Outbox;
 using BookStore.Infrastructure.Payments;
 using BookStore.Infrastructure.Persistence;
+using BookStore.Infrastructure.Persistence.Auditing;
 using BookStore.Infrastructure.Persistence.Interceptors;
 using BookStore.Infrastructure.Persistence.Queries;
 using BookStore.Infrastructure.Persistence.Repositories;
@@ -93,6 +97,21 @@ public static class DependencyInjection
 
         services.AddScoped<IStockNotificationRepository, StockNotificationRepository>();
         services.AddScoped<IWishlistRepository, WishlistRepository>();
+
+        services.AddScoped<IReviewRepository, ReviewRepository>();
+        services.AddScoped<IReviewQueries, ReviewQueries>();
+
+        services.AddScoped<IStockMovementRepository, StockMovementRepository>();
+        services.AddScoped<IReportingQueries, ReportingQueries>();
+
+        // One instance serves both interfaces within a request, so the pending
+        // entry recorded by the behavior is the same one DiscardPending sees.
+        services.AddScoped<EfAuditLog>();
+        services.AddScoped<IAuditLog>(sp => sp.GetRequiredService<EfAuditLog>());
+        services.AddScoped<IAuditLogQueries>(sp => sp.GetRequiredService<EfAuditLog>());
+
+        services.Configure<LowStockMonitorOptions>(configuration.GetSection(LowStockMonitorOptions.SectionName));
+        services.AddHostedService<LowStockMonitor>();
 
         return services;
     }

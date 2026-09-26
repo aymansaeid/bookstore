@@ -1,4 +1,5 @@
 ﻿using BookStore.Application.Abstractions;
+using BookStore.Application.Abstractions.Auditing;
 using BookStore.Application.Abstractions.Messaging;
 using BookStore.Application.Abstractions.Repositories;
 using BookStore.Application.Common;
@@ -7,7 +8,11 @@ using FluentValidation;
 namespace BookStore.Application.Orders.Commands;
 
 public sealed record ShipOrderCommand(int OrderId, string Carrier, string TrackingNumber)
-    : ICommand<AdminOrderDetailsDto>;
+    : ICommand<AdminOrderDetailsDto>, IAuditableCommand
+{
+    public string AuditEntityType => "Order";
+    public string? AuditEntityId => OrderId.ToString();
+}
 
 public sealed class ShipOrderCommandValidator : AbstractValidator<ShipOrderCommand>
 {
@@ -31,9 +36,6 @@ public sealed class ShipOrderCommandHandler(IOrderRepository orderRepository, IU
         if (!order.CanBeShipped)
             return Result.Failure<AdminOrderDetailsDto>(OrderErrors.InvalidStatus(order.Status, "ship"));
 
-        // Raises OrderShippedDomainEvent -> the interceptor writes it to the
-        // outbox in this same SaveChanges. The "your order shipped" email
-        // gets sent from there once we build the outbox worker.
         order.Ship(command.Carrier, command.TrackingNumber);
 
         await unitOfWork.SaveChangesAsync(ct);

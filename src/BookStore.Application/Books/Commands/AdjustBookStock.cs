@@ -1,13 +1,20 @@
 ﻿using BookStore.Application.Abstractions;
+using BookStore.Application.Abstractions.Auditing;
 using BookStore.Application.Abstractions.Messaging;
 using BookStore.Application.Abstractions.Repositories;
 using BookStore.Application.Abstractions.Storage;
 using BookStore.Application.Common;
+using BookStore.Domain.Inventory;
 using FluentValidation;
 
 namespace BookStore.Application.Books.Commands;
 
-public sealed record AdjustBookStockCommand(int BookId, int NewStockQuantity) : ICommand<AdminBookDto>;
+public sealed record AdjustBookStockCommand(int BookId, int NewStockQuantity, string Note)
+    : ICommand<AdminBookDto>, IAuditableCommand
+{
+    public string AuditEntityType => "Book";
+    public string? AuditEntityId => BookId.ToString();
+}
 
 public sealed class AdjustBookStockCommandValidator : AbstractValidator<AdjustBookStockCommand>
 {
@@ -15,11 +22,16 @@ public sealed class AdjustBookStockCommandValidator : AbstractValidator<AdjustBo
     {
         RuleFor(x => x.BookId).GreaterThan(0);
         RuleFor(x => x.NewStockQuantity).GreaterThanOrEqualTo(0);
+        RuleFor(x => x.Note)
+            .NotEmpty().WithMessage("Say why stock is changing (e.g. 'Warehouse count', '2 damaged in transit').")
+            .MaximumLength(500);
     }
 }
 
 public sealed class AdjustBookStockCommandHandler(
     IBookRepository bookRepository,
+    IStockMovementRepository stockMovementRepository,
+    ICurrentActor currentActor,
     IUnitOfWork unitOfWork,
     IFileStorage fileStorage)
     : ICommandHandler<AdjustBookStockCommand, AdminBookDto>
@@ -33,13 +45,21 @@ public sealed class AdjustBookStockCommandHandler(
         if (command.NewStockQuantity < book.ReservedQuantity)
             return Result.Failure<AdminBookDto>(BookErrors.StockBelowReserved(book.ReservedQuantity));
 
+        var delta = command.NewStockQuantity - book.StockQuantity;
+
+        // Setting stock to what it already is: nothing to change, nothing
+        // to record in the ledger.
+        if (delta == 0)
+            return Result.Success(book.ToAdminDto(fileStorage));
+
         book.SetStockQuantity(command.NewStockQuantity);
 
-        // If a guest reserved a copy between our load above and this save,
-        // RowVersion no longer matches, so EF refuses to overwrite and the
-        // admin gets a 409 "reload and try again" instead of silently
-        // clobbering a live reservation. This is exactly what RowVersion
-        // was kept on Book for.
+        // Same SaveChanges as the stock change: the ledger row can never
+        // exist without the change, or the change without its ledger row.
+        stockMovementRepository.Add(StockMovement.Create(
+            book.Id, delta, StockMovementReason.ManualAdjustment, command.Note,
+            adminUserId: currentActor.AdminUserId));
+
         await unitOfWork.SaveChangesAsync(ct);
 
         return Result.Success(book.ToAdminDto(fileStorage));

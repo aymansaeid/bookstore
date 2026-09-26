@@ -1,4 +1,5 @@
 ﻿using BookStore.Application.Abstractions;
+using BookStore.Application.Abstractions.Auditing;
 using BookStore.Application.Abstractions.Messaging;
 using BookStore.Application.Abstractions.Repositories;
 using BookStore.Application.Abstractions.Storage;
@@ -7,7 +8,11 @@ using FluentValidation;
 
 namespace BookStore.Application.Books.Commands;
 
-public sealed record SetBookActivityCommand(int BookId, bool IsActive) : ICommand<AdminBookDto>;
+public sealed record SetBookActivityCommand(int BookId, bool IsActive) : ICommand<AdminBookDto>, IAuditableCommand
+{
+    public string AuditEntityType => "Book";
+    public string? AuditEntityId => BookId.ToString();
+}
 
 public sealed class SetBookActivityCommandValidator : AbstractValidator<SetBookActivityCommand>
 {
@@ -26,7 +31,7 @@ public sealed class SetBookActivityCommandHandler(
     public async Task<Result<AdminBookDto>> Handle(SetBookActivityCommand command, CancellationToken ct)
     {
         var book = await bookRepository.GetByIdAsync(command.BookId, ct);
-        
+
         if (book is null)
             return Result.Failure<AdminBookDto>(BookErrors.NotFound(command.BookId));
 

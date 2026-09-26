@@ -173,4 +173,8 @@ public sealed class Customer : AggregateRoot<int>
     private CustomerAddress FindAddress(int addressId) =>
         _addresses.FirstOrDefault(a => a.Id == addressId)
         ?? throw new InvalidOperationException($"Address {addressId} does not belong to this customer.");
+
+    /// What appears publicly on reviews: first name and surname initial.
+    public string PublicDisplayName =>
+        string.IsNullOrEmpty(LastName) ? FirstName : $"{FirstName} {LastName[0]}.";
 }

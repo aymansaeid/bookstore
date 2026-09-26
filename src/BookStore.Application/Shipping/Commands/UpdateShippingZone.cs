@@ -1,4 +1,5 @@
 ﻿using BookStore.Application.Abstractions;
+using BookStore.Application.Abstractions.Auditing;
 using BookStore.Application.Abstractions.Messaging;
 using BookStore.Application.Abstractions.Repositories;
 using BookStore.Application.Common;
@@ -12,7 +13,11 @@ public sealed record UpdateShippingZoneCommand(
     int ZoneId,
     string Name,
     decimal FlatRate,
-    IReadOnlyList<string> CountryCodes) : ICommand<AdminShippingZoneDto>;
+    IReadOnlyList<string> CountryCodes) : ICommand<AdminShippingZoneDto>, IAuditableCommand
+{
+    public string AuditEntityType => "ShippingZone";
+    public string? AuditEntityId => ZoneId.ToString();
+}
 
 public sealed class UpdateShippingZoneCommandValidator : AbstractValidator<UpdateShippingZoneCommand>
 {
@@ -50,8 +55,6 @@ public sealed class UpdateShippingZoneCommandHandler(
         zone.UpdateRate(Money.From(command.FlatRate, storeOptions.Value.Currency));
         zone.ReplaceCountries(command.CountryCodes);
 
-        // Rate changes only affect FUTURE checkouts. Every existing order
-        // already snapshotted its own ShippingCost, so nothing historical moves.
         await unitOfWork.SaveChangesAsync(ct);
 
         return Result.Success(zone.ToAdminDto());

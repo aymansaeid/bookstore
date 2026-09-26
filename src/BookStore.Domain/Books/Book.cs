@@ -13,7 +13,13 @@ public sealed class Book : AggregateRoot<int>
     public Slug Slug { get; private set; } = null!;
     public string Isbn { get; private set; } = string.Empty;
     public string Description { get; private set; } = string.Empty;
-
+    public const int DefaultLowStockThreshold = 5;
+    public int LowStockThreshold { get; private set; }
+    /// Set when an alert has gone out for the current low-stock episode;
+    /// cleared when stock recovers above the threshold. Written only by the
+    /// low-stock scan, through the repository.
+    public DateTimeOffset? LowStockAlertedAtUtc { get; private set; }
+    public bool IsLowStock => IsActive && AvailableToSell <= LowStockThreshold;
     public BookFormat Format { get; private set; }
     public int PageCount { get; private set; }
     public string Language { get; private set; } = string.Empty; // ISO 639-1, e.g. "tr", "en"
@@ -79,7 +85,8 @@ public sealed class Book : AggregateRoot<int>
             Price = price,
             StockQuantity = initialStock,
             ReservedQuantity = 0,
-            IsActive = true
+            IsActive = true,
+            LowStockThreshold = DefaultLowStockThreshold
         };
     }
 
@@ -265,5 +272,12 @@ public sealed class Book : AggregateRoot<int>
     {
         if (wasOutOfStock && AvailableToSell > 0 && IsActive)
             Raise(new BookBackInStockDomainEvent(Id, Title, DateTimeOffset.UtcNow));
+    }
+    public void SetLowStockThreshold(int threshold)
+    {
+        if (threshold is < 0 or > 10_000)
+            throw new ArgumentOutOfRangeException(nameof(threshold), "Threshold must be between 0 and 10,000.");
+
+        LowStockThreshold = threshold;
     }
 }

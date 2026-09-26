@@ -38,6 +38,18 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
                     return true;
                 }
 
+            case DuplicateEntryException duplicate:
+                {
+                    httpContext.Response.StatusCode = StatusCodes.Status409Conflict;
+                    await httpContext.Response.WriteAsJsonAsync(new ProblemDetails
+                    {
+                        Status = StatusCodes.Status409Conflict,
+                        Title = "Duplicate",
+                        Detail = duplicate.Message
+                    }, ct);
+                    return true;
+                }
+
             default:
                 {
                     logger.LogError(exception, "Unhandled exception on {Path}", httpContext.Request.Path);

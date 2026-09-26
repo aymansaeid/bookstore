@@ -71,4 +71,12 @@ public sealed class BookRepository(BookStoreDbContext dbContext) : IBookReposito
         .Include(b => b.Images)
         .Where(b => ids.Contains(b.Id))
         .ToListAsync(ct);
+
+    // BookRepository
+    // ExecuteUpdate, not a tracked save: the scan must never collide with a
+    // customer reservation over the RowVersion, and it only touches this one column.
+    public async Task SetLowStockAlertedAsync(int bookId, DateTimeOffset? alertedAtUtc, CancellationToken ct = default) =>
+        await dbContext.Books
+            .Where(b => b.Id == bookId)
+            .ExecuteUpdateAsync(setters => setters.SetProperty(b => b.LowStockAlertedAtUtc, alertedAtUtc), ct);
 }

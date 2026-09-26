@@ -8,4 +8,5 @@ public interface IAdminUserRepository
     Task<bool> EmailExistsAsync(string email, CancellationToken ct = default);
     void Add(AdminUser adminUser);
     Task<AdminUser?> GetByIdAsync(int id, CancellationToken ct = default);
+    Task<IReadOnlyList<string>> ListActiveEmailsAsync(CancellationToken ct = default);
 }

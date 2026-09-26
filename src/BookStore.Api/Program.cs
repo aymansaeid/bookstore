@@ -1,13 +1,15 @@
-using System.Text.Json.Serialization;
-using System.Threading.RateLimiting;
 using BookStore.Api.Common;
 using BookStore.Api.Extensions;
 using BookStore.Api.OpenApi;
 using BookStore.Application;
+using BookStore.Application.Abstractions;
 using BookStore.Application.Common;
+using BookStore.Application.Reviews;
 using BookStore.Infrastructure;
 using BookStore.Infrastructure.Persistence.Seeding;
 using Microsoft.AspNetCore.RateLimiting;
+using System.Text.Json.Serialization;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +28,16 @@ builder.Services.AddOpenApi(o => o.AddDocumentTransformer<BearerSecuritySchemeTr
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddStorefrontCors(builder.Configuration);
+builder.Services.Configure<ReviewOptions>(builder.Configuration.GetSection(ReviewOptions.SectionName));
+
+builder.Services.AddOptions<StoreOptions>()
+    .Bind(builder.Configuration.GetSection(StoreOptions.SectionName))
+    .Validate(o => TimeZoneInfo.TryFindSystemTimeZoneById(o.TimeZoneId, out _),
+        "Store:TimeZoneId is not a recognized time zone.")
+    .ValidateOnStart();
+
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICurrentActor, HttpCurrentActor>();
 
 builder.Services.AddRateLimiter(options =>
 {
@@ -45,6 +57,7 @@ builder.Services.AddRateLimiter(options =>
     options.AddPolicy("order-lookup", ctx => PerIp(ctx, 10));
     options.AddPolicy("login", ctx => PerIp(ctx, 5));
     options.AddPolicy("customer-auth", ctx => PerIp(ctx, 5));
+    options.AddPolicy("review-submit", ctx => PerIp(ctx, 5));
 });
 
 var app = builder.Build();

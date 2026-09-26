@@ -1,4 +1,5 @@
 ﻿using BookStore.Application.Abstractions;
+using BookStore.Application.Abstractions.Auditing;
 using BookStore.Application.Abstractions.Auth;
 using BookStore.Application.Abstractions.Messaging;
 using BookStore.Application.Abstractions.Repositories;
@@ -7,8 +8,13 @@ using FluentValidation;
 
 namespace BookStore.Application.Auth.Commands;
 
-public sealed record ChangePasswordCommand(int AdminUserId, string CurrentPassword, string NewPassword) : ICommand;
-
+public sealed record ChangePasswordCommand(int AdminUserId, string CurrentPassword, string NewPassword)
+    : ICommand, IAuditableCommand
+{
+    public string AuditEntityType => "AdminUser";
+    public string? AuditEntityId => AdminUserId.ToString();
+    object IAuditableCommand.AuditDetails => new { AdminUserId };
+}
 public sealed class ChangePasswordCommandValidator : AbstractValidator<ChangePasswordCommand>
 {
     public ChangePasswordCommandValidator()

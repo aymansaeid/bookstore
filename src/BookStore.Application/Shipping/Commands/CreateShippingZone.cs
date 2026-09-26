@@ -1,4 +1,5 @@
 ﻿using BookStore.Application.Abstractions;
+using BookStore.Application.Abstractions.Auditing;
 using BookStore.Application.Abstractions.Messaging;
 using BookStore.Application.Abstractions.Repositories;
 using BookStore.Application.Common;
@@ -12,7 +13,11 @@ namespace BookStore.Application.Shipping.Commands;
 public sealed record CreateShippingZoneCommand(
     string Name,
     decimal FlatRate,
-    IReadOnlyList<string> CountryCodes) : ICommand<AdminShippingZoneDto>;
+    IReadOnlyList<string> CountryCodes) : ICommand<AdminShippingZoneDto>, IAuditableCommand
+{
+    public string AuditEntityType => "ShippingZone";
+    public string? AuditEntityId => Name;
+}
 
 public sealed class CreateShippingZoneCommandValidator : AbstractValidator<CreateShippingZoneCommand>
 {

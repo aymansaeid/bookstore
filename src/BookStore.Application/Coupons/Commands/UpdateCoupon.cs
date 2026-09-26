@@ -1,4 +1,5 @@
 ﻿using BookStore.Application.Abstractions;
+using BookStore.Application.Abstractions.Auditing;
 using BookStore.Application.Abstractions.Messaging;
 using BookStore.Application.Abstractions.Repositories;
 using BookStore.Application.Common;
@@ -10,7 +11,11 @@ public sealed record UpdateCouponCommand(
     int CouponId,
     int DiscountPercentage,
     DateTimeOffset ExpiresAtUtc,
-    int? MaxRedemptions) : ICommand<AdminCouponDto>;
+    int? MaxRedemptions) : ICommand<AdminCouponDto>, IAuditableCommand
+{
+    public string AuditEntityType => "Coupon";
+    public string? AuditEntityId => CouponId.ToString();
+}
 
 public sealed class UpdateCouponCommandValidator : AbstractValidator<UpdateCouponCommand>
 {
@@ -39,8 +44,6 @@ public sealed class UpdateCouponCommandHandler(ICouponRepository repository, IUn
         if (command.MaxRedemptions.HasValue && command.MaxRedemptions.Value < coupon.TimesRedeemed)
             return Result.Failure<AdminCouponDto>(CouponErrors.MaxBelowRedeemed(coupon.TimesRedeemed));
 
-        // Changing the discount only affects FUTURE checkouts. Past orders
-        // snapshotted their own DiscountAmount.
         coupon.UpdateTerms(command.DiscountPercentage, command.ExpiresAtUtc, command.MaxRedemptions);
 
         await unitOfWork.SaveChangesAsync(ct);

@@ -1,13 +1,19 @@
 ﻿using BookStore.Application.Abstractions;
+using BookStore.Application.Abstractions.Auditing;
 using BookStore.Application.Abstractions.Messaging;
 using BookStore.Application.Abstractions.Repositories;
 using BookStore.Application.Common;
+using BookStore.Domain.Inventory;
 using BookStore.Domain.Orders;
 using FluentValidation;
 
 namespace BookStore.Application.Orders.Commands;
 
-public sealed record CancelOrderCommand(int OrderId, string Reason) : ICommand<AdminOrderDetailsDto>;
+public sealed record CancelOrderCommand(int OrderId, string Reason) : ICommand<AdminOrderDetailsDto>, IAuditableCommand
+{
+    public string AuditEntityType => "Order";
+    public string? AuditEntityId => OrderId.ToString();
+}
 
 public sealed class CancelOrderCommandValidator : AbstractValidator<CancelOrderCommand>
 {
@@ -22,6 +28,8 @@ public sealed class CancelOrderCommandHandler(
     IOrderRepository orderRepository,
     IBookRepository bookRepository,
     ICouponRepository couponRepository,
+    IStockMovementRepository stockMovementRepository,
+    ICurrentActor currentActor,
     IUnitOfWork unitOfWork)
     : ICommandHandler<CancelOrderCommand, AdminOrderDetailsDto>
 {
@@ -36,9 +44,6 @@ public sealed class CancelOrderCommandHandler(
 
         var wasPaid = order.Status == OrderStatus.Paid;
 
-        // Status change + stock + coupon: all or nothing. If anything below
-        // throws (including a RowVersion conflict on SaveChanges), the
-        // transaction is disposed uncommitted and every write rolls back.
         await using var transaction = await unitOfWork.BeginTransactionAsync(ct);
 
         order.Cancel(command.Reason);
@@ -46,18 +51,23 @@ public sealed class CancelOrderCommandHandler(
         foreach (var line in order.Lines)
         {
             if (wasPaid)
-                // Sold but never shipped: the book is still on the shelf.
+            {
                 await bookRepository.RestockAsync(line.BookId, line.Quantity, ct);
+                stockMovementRepository.Add(StockMovement.Create(
+                    line.BookId, line.Quantity, StockMovementReason.CancellationRestock,
+                    $"Order {order.OrderNumber} cancelled before shipping",
+                    orderId: order.Id, adminUserId: currentActor.AdminUserId));
+            }
             else
-                // Only reserved: just free the hold.
+            {
+                // Only a reservation was released; physical stock never moved,
+                // so there's nothing to record in the ledger.
                 await bookRepository.ReleaseReservationAsync(line.BookId, line.Quantity, ct);
+            }
         }
 
         if (order.AppliedCouponCode is not null)
             await couponRepository.ReleaseRedemptionAsync(order.AppliedCouponCode, ct);
-
-        // TODO (payments step): if wasPaid, issue the Stripe refund here.
-        // Until payments are integrated, no real paid orders can exist.
 
         await unitOfWork.SaveChangesAsync(ct);
         await transaction.CommitAsync(ct);

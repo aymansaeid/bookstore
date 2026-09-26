@@ -1,11 +1,16 @@
 ﻿using BookStore.Application.Abstractions;
+using BookStore.Application.Abstractions.Auditing;
 using BookStore.Application.Abstractions.Messaging;
 using BookStore.Application.Abstractions.Repositories;
 using BookStore.Application.Common;
 
 namespace BookStore.Application.Coupons.Commands;
 
-public sealed record SetCouponActiveCommand(int CouponId, bool IsActive) : ICommand;
+public sealed record SetCouponActiveCommand(int CouponId, bool IsActive) : ICommand, IAuditableCommand
+{
+    public string AuditEntityType => "Coupon";
+    public string? AuditEntityId => CouponId.ToString();
+}
 
 public sealed class SetCouponActiveCommandHandler(ICouponRepository repository, IUnitOfWork unitOfWork)
     : ICommandHandler<SetCouponActiveCommand>
@@ -24,7 +29,11 @@ public sealed class SetCouponActiveCommandHandler(ICouponRepository repository, 
     }
 }
 
-public sealed record DeleteCouponCommand(int CouponId) : ICommand;
+public sealed record DeleteCouponCommand(int CouponId) : ICommand, IAuditableCommand
+{
+    public string AuditEntityType => "Coupon";
+    public string? AuditEntityId => CouponId.ToString();
+}
 
 public sealed class DeleteCouponCommandHandler(ICouponRepository repository, IUnitOfWork unitOfWork)
     : ICommandHandler<DeleteCouponCommand>

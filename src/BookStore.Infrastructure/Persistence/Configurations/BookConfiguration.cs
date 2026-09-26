@@ -57,6 +57,10 @@ public sealed class BookConfiguration : IEntityTypeConfiguration<Book>
         builder.Property(b => b.IsActive).IsRequired();
         builder.Property(b => b.RowVersion).IsRowVersion();
 
+        builder.Property(b => b.LowStockThreshold).IsRequired();
+        builder.Property(b => b.LowStockAlertedAtUtc);
+
+
         builder.HasIndex(b => b.Isbn).IsUnique().HasFilter("[Isbn] IS NOT NULL AND [Isbn] <> ''");
 
         builder.OwnsMany(b => b.Images, image =>

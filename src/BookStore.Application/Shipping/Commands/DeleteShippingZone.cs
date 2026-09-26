@@ -1,11 +1,16 @@
 ﻿using BookStore.Application.Abstractions;
+using BookStore.Application.Abstractions.Auditing;
 using BookStore.Application.Abstractions.Messaging;
 using BookStore.Application.Abstractions.Repositories;
 using BookStore.Application.Common;
 
 namespace BookStore.Application.Shipping.Commands;
 
-public sealed record DeleteShippingZoneCommand(int ZoneId) : ICommand;
+public sealed record DeleteShippingZoneCommand(int ZoneId) : ICommand, IAuditableCommand
+{
+    public string AuditEntityType => "ShippingZone";
+    public string? AuditEntityId => ZoneId.ToString();
+}
 
 public sealed class DeleteShippingZoneCommandHandler(IShippingZoneRepository repository, IUnitOfWork unitOfWork)
     : ICommandHandler<DeleteShippingZoneCommand>

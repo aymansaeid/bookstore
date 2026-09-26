@@ -48,5 +48,7 @@ public sealed class CustomerConfiguration : IEntityTypeConfiguration<Customer>
 
         builder.Ignore(c => c.FullName);
         builder.Ignore(c => c.DomainEvents);
+        builder.Ignore(c => c.PublicDisplayName);
+
     }
 }

@@ -1,11 +1,16 @@
 ﻿using BookStore.Application.Abstractions;
+using BookStore.Application.Abstractions.Auditing;
 using BookStore.Application.Abstractions.Messaging;
 using BookStore.Application.Abstractions.Repositories;
 using BookStore.Application.Common;
 
 namespace BookStore.Application.Shipping.Commands;
 
-public sealed record SetShippingZoneActiveCommand(int ZoneId, bool IsActive) : ICommand;
+public sealed record SetShippingZoneActiveCommand(int ZoneId, bool IsActive) : ICommand, IAuditableCommand
+{
+    public string AuditEntityType => "ShippingZone";
+    public string? AuditEntityId => ZoneId.ToString();
+}
 
 public sealed class SetShippingZoneActiveCommandHandler(IShippingZoneRepository repository, IUnitOfWork unitOfWork)
     : ICommandHandler<SetShippingZoneActiveCommand>

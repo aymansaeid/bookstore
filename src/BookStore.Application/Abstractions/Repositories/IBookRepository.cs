@@ -28,4 +28,5 @@ public interface IBookRepository
     Task<Book?> GetBySlugAsync(string slug, CancellationToken ct = default);
     Task<bool> SlugExistsAsync(string slug, CancellationToken ct = default);
     Task<IReadOnlyList<Book>> ListByIdsAsync(IReadOnlyCollection<int> ids, CancellationToken ct = default);
+    Task SetLowStockAlertedAsync(int bookId, DateTimeOffset? alertedAtUtc, CancellationToken ct = default);
 }

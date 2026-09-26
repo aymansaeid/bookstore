@@ -10,4 +10,9 @@ public interface IOrderRepository
     void Add(Order order);
     Task<IReadOnlyList<Order>> ListByCustomerIdAsync(int customerId, CancellationToken ct = default);
     Task<IReadOnlyList<Order>> ListUnclaimedByEmailAsync(string email, CancellationToken ct = default);
+
+    /// Does this customer have an order containing the book that's Delivered,
+    /// or Shipped on or before the cutoff?
+    Task<bool> HasReviewablePurchaseAsync(
+        int customerId, int bookId, DateTimeOffset shippedOnOrBeforeUtc, CancellationToken ct = default);
 }

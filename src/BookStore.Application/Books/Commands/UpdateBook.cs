@@ -1,4 +1,5 @@
 ﻿using BookStore.Application.Abstractions;
+using BookStore.Application.Abstractions.Auditing;
 using BookStore.Application.Abstractions.Messaging;
 using BookStore.Application.Abstractions.Repositories;
 using BookStore.Application.Abstractions.Storage;
@@ -24,7 +25,11 @@ public sealed record UpdateBookCommand(
     int HeightMm,
     int WidthMm,
     int DepthMm,
-    decimal Price) : ICommand<AdminBookDto>;
+    decimal Price) : ICommand<AdminBookDto> , IAuditableCommand
+{
+    public string AuditEntityType => "Book";
+    public string? AuditEntityId => BookId.ToString();
+}
 
 public sealed class UpdateBookCommandValidator : AbstractValidator<UpdateBookCommand>
 {

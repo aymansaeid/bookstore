@@ -1,4 +1,5 @@
 ﻿using BookStore.Application.Abstractions;
+using BookStore.Application.Abstractions.Auditing;
 using BookStore.Application.Abstractions.Messaging;
 using BookStore.Application.Abstractions.Repositories;
 using BookStore.Application.Abstractions.Storage;
@@ -8,11 +9,13 @@ using Microsoft.Extensions.Logging;
 
 namespace BookStore.Application.Books.Commands;
 
-public sealed record UploadBookImageCommand(
-    int BookId,
-    Stream Content,
-    string ContentType,
-    string AltText) : ICommand<BookImageDto>;
+public sealed record UploadBookImageCommand(int BookId, Stream Content, string ContentType, string AltText)
+    : ICommand<BookImageDto>, IAuditableCommand
+{
+    public string AuditEntityType => "Book";
+    public string? AuditEntityId => BookId.ToString();
+    object IAuditableCommand.AuditDetails => new { BookId, ContentType, AltText };
+}
 
 public sealed class UploadBookImageCommandValidator : AbstractValidator<UploadBookImageCommand>
 {
@@ -73,7 +76,11 @@ public sealed class UploadBookImageCommandHandler(
     }
 }
 
-public sealed record DeleteBookImageCommand(int BookId, int ImageId) : ICommand;
+public sealed record DeleteBookImageCommand(int BookId, int ImageId) : ICommand, IAuditableCommand
+{
+    public string AuditEntityType => "Book";
+    public string? AuditEntityId => BookId.ToString();
+}
 
 public sealed class DeleteBookImageCommandHandler(
     IBookRepository bookRepository,
@@ -109,7 +116,11 @@ public sealed class DeleteBookImageCommandHandler(
     }
 }
 
-public sealed record SetBookCoverImageCommand(int BookId, int ImageId) : ICommand;
+public sealed record SetBookCoverImageCommand(int BookId, int ImageId) : ICommand, IAuditableCommand
+{
+    public string AuditEntityType => "Book";
+    public string? AuditEntityId => BookId.ToString();
+}
 
 public sealed class SetBookCoverImageCommandHandler(IBookRepository bookRepository, IUnitOfWork unitOfWork)
     : ICommandHandler<SetBookCoverImageCommand>
@@ -130,7 +141,11 @@ public sealed class SetBookCoverImageCommandHandler(IBookRepository bookReposito
     }
 }
 
-public sealed record ReorderBookImagesCommand(int BookId, IReadOnlyList<int> ImageIdsInOrder) : ICommand;
+public sealed record ReorderBookImagesCommand(int BookId, IReadOnlyList<int> ImageIdsInOrder) : ICommand, IAuditableCommand
+{
+    public string AuditEntityType => "Book";
+    public string? AuditEntityId => BookId.ToString();
+}
 
 public sealed class ReorderBookImagesCommandHandler(IBookRepository bookRepository, IUnitOfWork unitOfWork)
     : ICommandHandler<ReorderBookImagesCommand>

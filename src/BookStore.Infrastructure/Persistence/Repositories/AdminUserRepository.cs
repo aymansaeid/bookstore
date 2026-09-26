@@ -15,4 +15,8 @@ public sealed class AdminUserRepository(BookStoreDbContext dbContext) : IAdminUs
     public void Add(AdminUser adminUser) => dbContext.AdminUsers.Add(adminUser);
     public Task<AdminUser?> GetByIdAsync(int id, CancellationToken ct = default) =>
     dbContext.AdminUsers.FirstOrDefaultAsync(u => u.Id == id, ct);
+
+    // AdminUserRepository
+    public async Task<IReadOnlyList<string>> ListActiveEmailsAsync(CancellationToken ct = default) =>
+        await dbContext.AdminUsers.Where(u => u.IsActive).Select(u => u.Email).ToListAsync(ct);
 }
