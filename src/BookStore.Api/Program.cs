@@ -4,10 +4,12 @@ using BookStore.Api.OpenApi;
 using BookStore.Application;
 using BookStore.Application.Abstractions;
 using BookStore.Application.Common;
+using BookStore.Application.Payments;
 using BookStore.Application.Reviews;
 using BookStore.Infrastructure;
 using BookStore.Infrastructure.Persistence.Seeding;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Options;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 
@@ -58,9 +60,23 @@ builder.Services.AddRateLimiter(options =>
     options.AddPolicy("login", ctx => PerIp(ctx, 5));
     options.AddPolicy("customer-auth", ctx => PerIp(ctx, 5));
     options.AddPolicy("review-submit", ctx => PerIp(ctx, 5));
+    options.AddPolicy("checkout", ctx => PerIp(ctx, 10));
 });
 
 var app = builder.Build();
+
+var paymentOptions = app.Services.GetRequiredService<IOptions<PaymentOptions>>().Value;
+
+if (paymentOptions.Provider == PaymentProvider.Mock)
+{
+    // The mock plus its dev endpoints amount to "mark any order paid for
+    // free". Refuse to start rather than risk shipping that.
+    if (!app.Environment.IsDevelopment())
+        throw new InvalidOperationException(
+            "Payments:Provider is 'Mock' outside Development. Refusing to start.");
+
+    app.MapDevPaymentEndpoints();
+}
 
 await app.Services.SeedInitialAdminAsync();
 

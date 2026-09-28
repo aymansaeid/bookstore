@@ -1,6 +1,7 @@
 ﻿using BookStore.Application.Abstractions;
 using BookStore.Application.Abstractions.Auditing;
 using BookStore.Application.Abstractions.Messaging;
+using BookStore.Application.Abstractions.Payments;
 using BookStore.Application.Abstractions.Repositories;
 using BookStore.Application.Common;
 using BookStore.Domain.Inventory;
@@ -9,7 +10,8 @@ using FluentValidation;
 
 namespace BookStore.Application.Orders.Commands;
 
-public sealed record CancelOrderCommand(int OrderId, string Reason) : ICommand<AdminOrderDetailsDto>, IAuditableCommand
+public sealed record CancelOrderCommand(int OrderId, string Reason)
+    : ICommand<AdminOrderDetailsDto>, IAuditableCommand
 {
     public string AuditEntityType => "Order";
     public string? AuditEntityId => OrderId.ToString();
@@ -29,6 +31,7 @@ public sealed class CancelOrderCommandHandler(
     IBookRepository bookRepository,
     ICouponRepository couponRepository,
     IStockMovementRepository stockMovementRepository,
+    IPaymentGateway paymentGateway,
     ICurrentActor currentActor,
     IUnitOfWork unitOfWork)
     : ICommandHandler<CancelOrderCommand, AdminOrderDetailsDto>
@@ -44,15 +47,45 @@ public sealed class CancelOrderCommandHandler(
 
         var wasPaid = order.Status == OrderStatus.Paid;
 
+        // Pending order: close the payment session FIRST, so the customer
+        // can't pay after we've released their stock. If the gateway says
+        // they already paid, stop; the payment confirmation is on its way.
+        if (!wasPaid && order.CheckoutSessionId is { } sessionId)
+        {
+            var outcome = await paymentGateway.ExpireSessionAsync(sessionId, ct);
+            if (outcome == ExpireSessionOutcome.AlreadyCompleted)
+                return Result.Failure<AdminOrderDetailsDto>(OrderErrors.PaymentJustCompleted);
+        }
+
+        // Paid order: refund BEFORE touching the database. The idempotency
+        // key is tied to the order, so if the DB step below fails and the
+        // admin clicks cancel again, the gateway returns the SAME refund
+        // rather than paying out twice. The reverse order (DB first, then
+        // refund) risks a cancelled order whose money was never returned.
+        RefundResult? refund = null;
+        if (wasPaid)
+        {
+            if (order.PaymentReference is null)
+                return Result.Failure<AdminOrderDetailsDto>(OrderErrors.NoPaymentReference);
+
+            refund = await paymentGateway.RefundAsync(new RefundRequest(
+                order.PaymentReference, order.Total.Amount, order.Total.Currency,
+                command.Reason, IdempotencyKey: $"cancel-refund-{order.Id}"), ct);
+        }
+
         await using var transaction = await unitOfWork.BeginTransactionAsync(ct);
 
         order.Cancel(command.Reason);
+
+        if (refund is not null)
+            order.RecordRefund(refund.RefundReference);
 
         foreach (var line in order.Lines)
         {
             if (wasPaid)
             {
                 await bookRepository.RestockAsync(line.BookId, line.Quantity, ct);
+
                 stockMovementRepository.Add(StockMovement.Create(
                     line.BookId, line.Quantity, StockMovementReason.CancellationRestock,
                     $"Order {order.OrderNumber} cancelled before shipping",
@@ -60,8 +93,6 @@ public sealed class CancelOrderCommandHandler(
             }
             else
             {
-                // Only a reservation was released; physical stock never moved,
-                // so there's nothing to record in the ledger.
                 await bookRepository.ReleaseReservationAsync(line.BookId, line.Quantity, ct);
             }
         }

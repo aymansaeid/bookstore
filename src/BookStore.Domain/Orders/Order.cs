@@ -5,14 +5,11 @@ namespace BookStore.Domain.Orders;
 
 public sealed class Order : AggregateRoot<int>
 {
-    // Customer-facing identifier. Never expose the int Id publicly —
-    // sequential PKs would let anyone walk other people's orders.
+    // Customer-facing identifier. Never expose the int Id publicly.
     public string OrderNumber { get; private set; } = string.Empty;
-    public string CustomerEmail { get; private set; } = string.Empty;
 
-    /// Null for guest orders. Set when a verified customer checks out, or
-    /// retroactively when someone verifies an email used for guest orders.
     public int? CustomerId { get; private set; }
+    public string CustomerEmail { get; private set; } = string.Empty;
 
     public Address ShippingAddress { get; private set; } = null!;
 
@@ -28,8 +25,22 @@ public sealed class Order : AggregateRoot<int>
     public OrderStatus Status { get; private set; }
     public string? CancellationReason { get; private set; }
 
-    public string? StripeCheckoutSessionId { get; private set; }
-    public string? StripePaymentIntentId { get; private set; }
+    /// Client-generated key for this checkout attempt. A retried request with
+    /// the same key gets the original order back instead of a second one.
+    public string CheckoutIdempotencyKey { get; private set; } = string.Empty;
+
+    // Gateway-neutral: whichever provider you choose, these hold its ids.
+    public string? CheckoutSessionId { get; private set; }
+    public string? CheckoutUrl { get; private set; }
+    public DateTimeOffset? CheckoutExpiresAtUtc { get; private set; }
+    public string? PaymentReference { get; private set; }
+    public string? RefundReference { get; private set; }
+    public DateTimeOffset? RefundedAtUtc { get; private set; }
+
+    // Distance sales contract acceptance: which text, when, and from where.
+    public string TermsVersion { get; private set; } = string.Empty;
+    public DateTimeOffset TermsAcceptedAtUtc { get; private set; }
+    public string? TermsAcceptedFromIp { get; private set; }
 
     public string? ShippingCarrier { get; private set; }
     public string? TrackingNumber { get; private set; }
@@ -42,9 +53,7 @@ public sealed class Order : AggregateRoot<int>
 
     public byte[] RowVersion { get; private set; } = [];
 
-    // The state machine, readable in one place. Every transition method
-    // below guards on these, and the Application layer uses the same
-    // properties to decide which admin buttons to show.
+    public bool CanBeMarkedPaid => Status == OrderStatus.PendingPayment;
     public bool CanBeShipped => Status == OrderStatus.Paid;
     public bool CanBeDelivered => Status == OrderStatus.Shipped;
     public bool CanCorrectTracking => Status == OrderStatus.Shipped;
@@ -54,10 +63,22 @@ public sealed class Order : AggregateRoot<int>
 
     private Order() { } // EF Core
 
-    public static Order Create(string customerEmail, Address shippingAddress, string currency)
+    public static Order Create(
+        string customerEmail,
+        Address shippingAddress,
+        string currency,
+        string checkoutIdempotencyKey,
+        string termsVersion,
+        string? termsAcceptedFromIp)
     {
         if (string.IsNullOrWhiteSpace(customerEmail))
             throw new ArgumentException("Customer email is required.", nameof(customerEmail));
+        if (string.IsNullOrWhiteSpace(checkoutIdempotencyKey))
+            throw new ArgumentException("An idempotency key is required.", nameof(checkoutIdempotencyKey));
+        if (string.IsNullOrWhiteSpace(termsVersion))
+            throw new ArgumentException("The accepted terms version is required.", nameof(termsVersion));
+
+        var now = DateTimeOffset.UtcNow;
 
         return new Order
         {
@@ -69,7 +90,11 @@ public sealed class Order : AggregateRoot<int>
             DiscountAmount = Money.Zero(currency),
             Total = Money.Zero(currency),
             Status = OrderStatus.PendingPayment,
-            CreatedAtUtc = DateTimeOffset.UtcNow
+            CheckoutIdempotencyKey = checkoutIdempotencyKey.Trim(),
+            TermsVersion = termsVersion.Trim(),
+            TermsAcceptedAtUtc = now,
+            TermsAcceptedFromIp = termsAcceptedFromIp,
+            CreatedAtUtc = now
         };
     }
 
@@ -79,14 +104,26 @@ public sealed class Order : AggregateRoot<int>
         return $"BK-{random}";
     }
 
-    public void AttachStripeCheckoutSession(string stripeCheckoutSessionId)
+    public void AssignToCustomer(int customerId)
+    {
+        if (CustomerId is not null)
+            throw new InvalidOperationException("This order already belongs to a customer.");
+
+        CustomerId = customerId;
+    }
+
+    public void AttachCheckoutSession(string sessionId, string checkoutUrl, DateTimeOffset expiresAtUtc)
     {
         if (Status != OrderStatus.PendingPayment)
             throw new InvalidOrderStateTransitionException(Id, Status, "attach a checkout session to");
-        if (string.IsNullOrWhiteSpace(stripeCheckoutSessionId))
-            throw new ArgumentException("Stripe checkout session id is required.", nameof(stripeCheckoutSessionId));
+        if (string.IsNullOrWhiteSpace(sessionId))
+            throw new ArgumentException("Checkout session id is required.", nameof(sessionId));
+        if (string.IsNullOrWhiteSpace(checkoutUrl))
+            throw new ArgumentException("Checkout URL is required.", nameof(checkoutUrl));
 
-        StripeCheckoutSessionId = stripeCheckoutSessionId;
+        CheckoutSessionId = sessionId;
+        CheckoutUrl = checkoutUrl;
+        CheckoutExpiresAtUtc = expiresAtUtc;
     }
 
     public void AddLine(int bookId, string bookTitleSnapshot, int quantity, Money unitPrice)
@@ -121,13 +158,15 @@ public sealed class Order : AggregateRoot<int>
         RecalculateTotal();
     }
 
-    public void MarkAsPaid(string stripePaymentIntentId)
+    public void MarkAsPaid(string paymentReference)
     {
-        if (Status != OrderStatus.PendingPayment)
+        if (!CanBeMarkedPaid)
             throw new InvalidOrderStateTransitionException(Id, Status, "mark as paid");
+        if (string.IsNullOrWhiteSpace(paymentReference))
+            throw new ArgumentException("Payment reference is required.", nameof(paymentReference));
 
         Status = OrderStatus.Paid;
-        StripePaymentIntentId = stripePaymentIntentId;
+        PaymentReference = paymentReference;
         PaidAtUtc = DateTimeOffset.UtcNow;
 
         Raise(new OrderPaidDomainEvent(
@@ -166,6 +205,23 @@ public sealed class Order : AggregateRoot<int>
             DateTimeOffset.UtcNow));
     }
 
+    /// Records a refund the gateway has already executed. Once per order:
+    /// a second call means something upstream is trying to refund twice.
+    public void RecordRefund(string refundReference)
+    {
+        if (PaymentReference is null)
+            throw new InvalidOperationException("Cannot record a refund for an order that was never paid.");
+        if (RefundReference is not null)
+            throw new InvalidOperationException("This order has already been refunded.");
+        if (Status is not (OrderStatus.Cancelled or OrderStatus.Refunded))
+            throw new InvalidOrderStateTransitionException(Id, Status, "record a refund on");
+        if (string.IsNullOrWhiteSpace(refundReference))
+            throw new ArgumentException("Refund reference is required.", nameof(refundReference));
+
+        RefundReference = refundReference;
+        RefundedAtUtc = DateTimeOffset.UtcNow;
+    }
+
     public void Ship(string carrier, string trackingNumber)
     {
         if (!CanBeShipped)
@@ -184,9 +240,6 @@ public sealed class Order : AggregateRoot<int>
             Id, OrderNumber, CustomerEmail, ShippingCarrier, TrackingNumber, DateTimeOffset.UtcNow));
     }
 
-    /// Fixes a typo in the carrier/tracking number after shipping. Doesn't
-    /// change status and doesn't re-raise the shipped event (no duplicate
-    /// "your order shipped" email for a typo fix).
     public void CorrectTrackingInfo(string carrier, string trackingNumber)
     {
         if (!CanCorrectTracking)
@@ -217,6 +270,16 @@ public sealed class Order : AggregateRoot<int>
         Status = OrderStatus.Refunded;
     }
 
+    /// KVKK: scrub personal data while keeping the order for invoicing.
+    public void AnonymizeCustomerData()
+    {
+        CustomerEmail = $"deleted-{Guid.NewGuid():N}@anonymized.invalid";
+        ShippingAddress = Address.Create(
+            "Deleted User", "0000000000", "Redacted", null,
+            ShippingAddress.City, null, "00000", ShippingAddress.CountryCode);
+        TermsAcceptedFromIp = null;
+    }
+
     private void RecalculateSubtotal()
     {
         var currency = Subtotal.Currency;
@@ -227,22 +290,5 @@ public sealed class Order : AggregateRoot<int>
     private void RecalculateTotal()
     {
         Total = Subtotal.Subtract(DiscountAmount).Add(ShippingCost);
-    }
-
-    public void AssignToCustomer(int customerId)
-    {
-        if (CustomerId is not null)
-            throw new InvalidOperationException("This order already belongs to a customer.");
-
-        CustomerId = customerId;
-    }
-
-    /// KVKK: scrub personal data while keeping the order for invoicing.
-    public void AnonymizeCustomerData()
-    {
-        CustomerEmail = $"deleted-{Guid.NewGuid():N}@anonymized.invalid";
-        ShippingAddress = Address.Create(
-            "Deleted User", "0000000000", "Redacted", null,
-            ShippingAddress.City, null, "00000", ShippingAddress.CountryCode);
     }
 }

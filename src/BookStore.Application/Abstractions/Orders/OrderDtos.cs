@@ -38,8 +38,8 @@ public sealed record AdminOrderDetailsDto(
     string? ShippingCarrier,
     string? TrackingNumber,
     string? CancellationReason,
-    string? StripeCheckoutSessionId,
-    string? StripePaymentIntentId,
+    string? CheckoutSessionId,
+    string? PaymentReference,
     DateTimeOffset CreatedAtUtc,
     DateTimeOffset? PaidAtUtc,
     DateTimeOffset? ShippedAtUtc,
@@ -77,7 +77,7 @@ public static class OrderMappings
                 l.BookId, l.BookTitleSnapshot, l.Quantity, l.UnitPriceAtPurchase.Amount, l.LineTotal.Amount)).ToList(),
             o.Subtotal.Amount, o.ShippingCost.Amount, o.DiscountAmount.Amount, o.Total.Amount, o.Total.Currency,
             o.AppliedCouponCode, o.ShippingCarrier, o.TrackingNumber, o.CancellationReason,
-            o.StripeCheckoutSessionId, o.StripePaymentIntentId,
+            o.CheckoutSessionId, o.PaymentReference,
             o.CreatedAtUtc, o.PaidAtUtc, o.ShippedAtUtc, o.DeliveredAtUtc, o.CancelledAtUtc,
             GetAllowedActions(o));
 

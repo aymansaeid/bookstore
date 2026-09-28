@@ -45,6 +45,6 @@ public sealed class ReportingQueries(BookStoreDbContext dbContext) : IReportingQ
                 o.ShippingAddress.CountryCode, o.Lines.Sum(l => l.Quantity),
                 o.Subtotal.Amount, o.DiscountAmount.Amount, o.ShippingCost.Amount, o.Total.Amount,
                 o.Total.Currency, o.AppliedCouponCode, o.ShippingCarrier, o.TrackingNumber,
-                o.StripePaymentIntentId))
+                o.PaymentReference))
             .ToListAsync(ct);
 }

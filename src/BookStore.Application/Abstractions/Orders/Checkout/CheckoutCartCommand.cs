@@ -14,15 +14,17 @@ public sealed record ShippingAddressDto(
     string PostalCode,
     string CountryCode);
 
+/// CustomerId and ClientIp are set by the controller from the verified
+/// token and the connection. They are never read from the request body.
 public sealed record CheckoutCartCommand(
     string CustomerEmail,
     IReadOnlyCollection<CartLineDto> Lines,
     ShippingAddressDto? ShippingAddress,
     int? SavedAddressId,
-    int? CustomerId,
     string? CouponCode,
-    string Currency,
-    string SuccessUrl,
-    string CancelUrl) : ICommand<CheckoutCartResponse>;
+    string AcceptedTermsVersion,
+    string IdempotencyKey,
+    int? CustomerId,
+    string? ClientIp) : ICommand<CheckoutCartResponse>;
 
-public sealed record CheckoutCartResponse(string OrderNumber, string CheckoutUrl);
+public sealed record CheckoutCartResponse(string OrderNumber, string CheckoutUrl, DateTimeOffset ExpiresAtUtc);

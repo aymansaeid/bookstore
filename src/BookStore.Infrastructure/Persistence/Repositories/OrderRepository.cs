@@ -12,9 +12,11 @@ public sealed class OrderRepository(BookStoreDbContext dbContext) : IOrderReposi
     public Task<Order?> GetByOrderNumberAsync(string orderNumber, CancellationToken ct = default) =>
         dbContext.Orders.Include(o => o.Lines).FirstOrDefaultAsync(o => o.OrderNumber == orderNumber, ct);
 
-    public Task<Order?> GetByStripeCheckoutSessionIdAsync(string sessionId, CancellationToken ct = default) =>
-        dbContext.Orders.Include(o => o.Lines).FirstOrDefaultAsync(o => o.StripeCheckoutSessionId == sessionId, ct);
+    public Task<Order?> GetByCheckoutSessionIdAsync(string sessionId, CancellationToken ct = default) =>
+    dbContext.Orders.Include(o => o.Lines).FirstOrDefaultAsync(o => o.CheckoutSessionId == sessionId, ct);
 
+    public Task<Order?> GetByIdempotencyKeyAsync(string idempotencyKey, CancellationToken ct = default) =>
+        dbContext.Orders.Include(o => o.Lines).FirstOrDefaultAsync(o => o.CheckoutIdempotencyKey == idempotencyKey, ct);
     public void Add(Order order) => dbContext.Orders.Add(order);
     public async Task<IReadOnlyList<Order>> ListByCustomerIdAsync(int customerId, CancellationToken ct = default) =>
     await dbContext.Orders

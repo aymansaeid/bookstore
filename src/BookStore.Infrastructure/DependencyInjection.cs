@@ -7,14 +7,18 @@ using BookStore.Application.Abstractions.Queries;
 using BookStore.Application.Abstractions.Repositories;
 using BookStore.Application.Abstractions.Reviews.Queries;
 using BookStore.Application.Abstractions.Storage;
+using BookStore.Application.Payments;
 using BookStore.Infrastructure.Auth;
 using BookStore.Infrastructure.Emails;
 using BookStore.Infrastructure.Inventory;
 using BookStore.Infrastructure.Outbox;
 using BookStore.Infrastructure.Payments;
+
+// using BookStore.Infrastructure.Payments;
 using BookStore.Infrastructure.Persistence;
 using BookStore.Infrastructure.Persistence.Auditing;
 using BookStore.Infrastructure.Persistence.Interceptors;
+using BookStore.Infrastructure.Persistence.Payments;
 using BookStore.Infrastructure.Persistence.Queries;
 using BookStore.Infrastructure.Persistence.Repositories;
 using BookStore.Infrastructure.Storage;
@@ -29,7 +33,7 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        Stripe.StripeConfiguration.ApiKey = configuration["Stripe:SecretKey"];
+        //Stripe.StripeConfiguration.ApiKey = configuration["Stripe:SecretKey"];
 
         services.AddSingleton<DomainEventsToOutboxInterceptor>();
 
@@ -46,7 +50,7 @@ public static class DependencyInjection
         services.AddScoped<IAdminUserRepository, AdminUserRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-        services.AddScoped<IPaymentGateway, StripePaymentGateway>();
+        //services.AddScoped<IPaymentGateway, StripePaymentGateway>();
 
         services.AddScoped<IOrderQueries, OrderQueries>();
 
@@ -112,6 +116,32 @@ public static class DependencyInjection
 
         services.Configure<LowStockMonitorOptions>(configuration.GetSection(LowStockMonitorOptions.SectionName));
         services.AddHostedService<LowStockMonitor>();
+
+        services.AddOptions<PaymentOptions>()
+    .Bind(configuration.GetSection(PaymentOptions.SectionName))
+    .Validate(o => o.CheckoutSessionMinutes is >= 30 and <= 1440,
+        "Payments:CheckoutSessionMinutes must be between 30 and 1440 (gateway limits).")
+    .Validate(o => !string.IsNullOrWhiteSpace(o.CurrentTermsVersion),
+        "Payments:CurrentTermsVersion is required.")
+    .ValidateOnStart();
+
+        services.AddScoped<IProcessedPaymentEventStore, ProcessedPaymentEventStore>();
+
+        var paymentProvider = configuration.GetSection(PaymentOptions.SectionName)
+            .GetValue<PaymentProvider>(nameof(PaymentOptions.Provider));
+
+        switch (paymentProvider)
+        {
+            case PaymentProvider.Mock:
+                services.AddSingleton<MockPaymentState>();
+                services.AddScoped<IPaymentGateway, MockPaymentGateway>();
+                break;
+
+            case PaymentProvider.Stripe:
+                // Fail loudly rather than silently falling back to the mock.
+                throw new InvalidOperationException(
+                    "The Stripe payment provider isn't implemented yet. Use 'Mock' in Development.");
+        }
 
         return services;
     }

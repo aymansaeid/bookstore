@@ -44,14 +44,27 @@ public sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
         builder.Property(o => o.AppliedCouponCode).HasMaxLength(50);
         builder.Property(o => o.Status).HasConversion<string>().HasMaxLength(30).IsRequired();
         builder.Property(o => o.CancellationReason).HasMaxLength(500);
-        builder.Property(o => o.StripeCheckoutSessionId).HasMaxLength(200);
-        builder.Property(o => o.StripePaymentIntentId).HasMaxLength(200);
+
+        builder.Property(o => o.CheckoutIdempotencyKey).HasMaxLength(100).IsRequired();
+        // Two concurrent submits with the same key: the second hits this index,
+        // becomes a DuplicateEntryException, and checkout compensates.
+        builder.HasIndex(o => o.CheckoutIdempotencyKey).IsUnique();
+
+        builder.Property(o => o.CheckoutSessionId).HasMaxLength(200);
+        builder.HasIndex(o => o.CheckoutSessionId).IsUnique().HasFilter("[CheckoutSessionId] IS NOT NULL");
+
+        builder.Property(o => o.CheckoutUrl).HasMaxLength(2000);
+        builder.Property(o => o.PaymentReference).HasMaxLength(200);
+        builder.Property(o => o.RefundReference).HasMaxLength(200);
+        builder.Property(o => o.TermsVersion).HasMaxLength(50).IsRequired();
+        builder.Property(o => o.TermsAcceptedFromIp).HasMaxLength(45); // fits IPv6
+
+        // The 6b sweep's query: pending orders past their expiry.
+        builder.HasIndex(o => new { o.Status, o.CheckoutExpiresAtUtc });
+
         builder.Property(o => o.TrackingNumber).HasMaxLength(100);
         builder.Property(o => o.CustomerId);
         builder.HasIndex(o => o.CustomerId);
-
-        builder.HasIndex(o => o.StripeCheckoutSessionId).IsUnique()
-            .HasFilter("[StripeCheckoutSessionId] IS NOT NULL");
 
         builder.Property(o => o.RowVersion).IsRowVersion();
 
