@@ -175,16 +175,16 @@ public sealed class Order : AggregateRoot<int>
             DateTimeOffset.UtcNow));
     }
 
+    /// No domain event: expiry is fully handled inside the sweep's own
+    /// transaction, and nothing needs to react to it asynchronously. (An
+    /// abandoned-cart reminder email would be marketing under KVKK and needs
+    /// consent, so it's a deliberate future decision, not a side effect.)
     public void Expire()
     {
         if (!CanBeExpired)
             throw new InvalidOrderStateTransitionException(Id, Status, "expire");
 
         Status = OrderStatus.Expired;
-
-        Raise(new OrderExpiredDomainEvent(
-            Id, _lines.Select(l => new OrderLineSnapshot(l.BookId, l.Quantity)).ToList(),
-            DateTimeOffset.UtcNow));
     }
 
     public void Cancel(string reason)

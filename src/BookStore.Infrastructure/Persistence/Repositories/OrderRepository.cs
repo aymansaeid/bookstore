@@ -44,4 +44,15 @@ public sealed class OrderRepository(BookStoreDbContext dbContext) : IOrderReposi
         && (o.Status == OrderStatus.Delivered
             || (o.Status == OrderStatus.Shipped && o.ShippedAtUtc <= shippedOnOrBeforeUtc)),
         ct);
+    public async Task<IReadOnlyList<int>> ListDueForExpiryAsync(
+    DateTimeOffset expiredBeforeUtc, int batchSize, CancellationToken ct = default) =>
+    await dbContext.Orders
+        .AsNoTracking()
+        .Where(o => o.Status == OrderStatus.PendingPayment
+                    && o.CheckoutExpiresAtUtc != null
+                    && o.CheckoutExpiresAtUtc < expiredBeforeUtc)
+        .OrderBy(o => o.CheckoutExpiresAtUtc)
+        .Select(o => o.Id)
+        .Take(batchSize)
+        .ToListAsync(ct);
 }

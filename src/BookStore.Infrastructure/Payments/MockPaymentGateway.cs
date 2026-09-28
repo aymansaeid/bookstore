@@ -43,18 +43,33 @@ public sealed class MockPaymentGateway(
         return Task.FromResult(new CheckoutSessionResult(session.SessionId, checkoutUrl, session.ExpiresAtUtc));
     }
 
-    public Task<ExpireSessionOutcome> ExpireSessionAsync(string sessionId, CancellationToken ct = default)
+    public Task<ExpireSessionResult> ExpireSessionAsync(string sessionId, CancellationToken ct = default)
     {
         var session = state.GetSession(sessionId);
 
-        var outcome = session is null
-            ? ExpireSessionOutcome.NotFound
-            : session.TryExpire()
-                ? ExpireSessionOutcome.Expired
-                : ExpireSessionOutcome.AlreadyCompleted;
+        ExpireSessionResult result;
 
-        logger.LogInformation("MOCK expire session {SessionId}: {Outcome}", sessionId, outcome);
-        return Task.FromResult(outcome);
+        if (session is null)
+        {
+            // Mock state is in-memory, so after an app restart every old session
+            // is "unknown". A real gateway never forgets, but treating unknown as
+            // closed is the safe choice here: nobody can pay a session that
+            // doesn't exist.
+            result = new ExpireSessionResult(ExpireSessionOutcome.NotFound);
+        }
+        else if (session.TryExpire())
+        {
+            result = new ExpireSessionResult(ExpireSessionOutcome.Expired);
+        }
+        else
+        {
+            result = new ExpireSessionResult(
+                ExpireSessionOutcome.AlreadyCompleted,
+                new CompletedPayment(session.PaymentReference, session.Total, session.Currency));
+        }
+
+        logger.LogInformation("MOCK expire session {SessionId}: {Outcome}", sessionId, result.Outcome);
+        return Task.FromResult(result);
     }
 
     public Task<RefundResult> RefundAsync(RefundRequest request, CancellationToken ct = default)

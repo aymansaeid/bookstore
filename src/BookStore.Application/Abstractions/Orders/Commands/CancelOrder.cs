@@ -52,8 +52,8 @@ public sealed class CancelOrderCommandHandler(
         // they already paid, stop; the payment confirmation is on its way.
         if (!wasPaid && order.CheckoutSessionId is { } sessionId)
         {
-            var outcome = await paymentGateway.ExpireSessionAsync(sessionId, ct);
-            if (outcome == ExpireSessionOutcome.AlreadyCompleted)
+            var result = await paymentGateway.ExpireSessionAsync(sessionId, ct);
+            if (result.Outcome == ExpireSessionOutcome.AlreadyCompleted)
                 return Result.Failure<AdminOrderDetailsDto>(OrderErrors.PaymentJustCompleted);
         }
 

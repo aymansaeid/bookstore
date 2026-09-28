@@ -13,6 +13,10 @@ public sealed class BookConfiguration : IEntityTypeConfiguration<Book>
         {
             t.HasCheckConstraint("CK_Books_StockNonNegative", "[StockQuantity] >= 0");
             t.HasCheckConstraint("CK_Books_ReservedNotExceedStock", "[ReservedQuantity] <= [StockQuantity]");
+
+            // A double release (e.g. expiring the same order twice) would otherwise
+            // push this negative and silently inflate "available to sell".
+            t.HasCheckConstraint("CK_Books_ReservedNonNegative", "[ReservedQuantity] >= 0");
         });
 
         builder.HasKey(b => b.Id);

@@ -143,6 +143,10 @@ public static class DependencyInjection
                     "The Stripe payment provider isn't implemented yet. Use 'Mock' in Development.");
         }
 
+        services.Configure<CheckoutSweepOptions>(configuration.GetSection(CheckoutSweepOptions.SectionName));
+        services.AddSingleton<CheckoutSweepRunner>();
+        services.AddHostedService<CheckoutSweeper>();
+
         return services;
     }
 }

@@ -24,6 +24,11 @@ public enum ExpireSessionOutcome
     NotFound = 2
 }
 
+/// What the gateway knows about a completed payment. Returned with
+/// AlreadyCompleted so a lost webhook can be reconciled without it.
+public sealed record CompletedPayment(string PaymentReference, decimal Amount, string Currency);
+
+public sealed record ExpireSessionResult(ExpireSessionOutcome Outcome, CompletedPayment? Payment = null);
 public sealed record RefundRequest(
     string PaymentReference, decimal Amount, string Currency, string Reason, string IdempotencyKey);
 
@@ -37,12 +42,10 @@ public interface IPaymentGateway
     Task<CheckoutSessionResult> CreateCheckoutSessionAsync(
         CreateCheckoutSessionRequest request, CancellationToken ct = default);
 
-    /// Closes an open session so it can no longer be paid. Returns
-    /// AlreadyCompleted if the payment went through first. The caller must
-    /// then leave the order alone, because the payment confirmation is on
-    /// its way.
-    Task<ExpireSessionOutcome> ExpireSessionAsync(string sessionId, CancellationToken ct = default);
-
+    /// Closes an open session so it can no longer be paid. If the payment went
+    /// through first, returns AlreadyCompleted with the payment details, so the
+    /// caller can confirm it even if the webhook never arrives.
+    Task<ExpireSessionResult> ExpireSessionAsync(string sessionId, CancellationToken ct = default);
     /// The idempotency key makes retries safe: the gateway returns the
     /// original refund instead of paying out a second time.
     Task<RefundResult> RefundAsync(RefundRequest request, CancellationToken ct = default);
