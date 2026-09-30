@@ -8,7 +8,8 @@ public sealed record OrderExportRow(
     string OrderNumber, DateTimeOffset CreatedAtUtc, DateTimeOffset? PaidAtUtc, OrderStatus Status,
     string CustomerEmail, string RecipientName, string City, string CountryCode, int ItemCount,
     decimal Subtotal, decimal Discount, decimal Shipping, decimal Total, string Currency,
-    string? CouponCode, string? Carrier, string? TrackingNumber, string? PaymentReference);
+     string? CouponCode, string? Carrier, string? TrackingNumber, string? PaymentReference,
+    decimal ReturnRefunded);
 
 public interface IReportingQueries
 {

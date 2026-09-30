@@ -5,6 +5,7 @@ using BookStore.Application;
 using BookStore.Application.Abstractions;
 using BookStore.Application.Common;
 using BookStore.Application.Payments;
+using BookStore.Application.Returns;
 using BookStore.Application.Reviews;
 using BookStore.Infrastructure;
 using BookStore.Infrastructure.Persistence.Seeding;
@@ -31,6 +32,7 @@ builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddStorefrontCors(builder.Configuration);
 builder.Services.Configure<ReviewOptions>(builder.Configuration.GetSection(ReviewOptions.SectionName));
+builder.Services.Configure<ReturnOptions>(builder.Configuration.GetSection(ReturnOptions.SectionName));
 
 builder.Services.AddOptions<StoreOptions>()
     .Bind(builder.Configuration.GetSection(StoreOptions.SectionName))
@@ -40,6 +42,7 @@ builder.Services.AddOptions<StoreOptions>()
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentActor, HttpCurrentActor>();
+
 
 builder.Services.AddRateLimiter(options =>
 {

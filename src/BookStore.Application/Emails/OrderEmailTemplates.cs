@@ -123,7 +123,7 @@ public static class OrderEmailTemplates
 
     /// Currency-aware formatting. Falls back to "25.00 USD" for codes the
     /// runtime has no culture for, rather than throwing mid-email.
-    private static Func<decimal, string> MoneyFormatter(string currencyCode)
+    internal static Func<decimal, string> MoneyFormatter(string currencyCode)
     {
         var culture = CultureInfo.GetCultures(CultureTypes.SpecificCultures)
             .FirstOrDefault(c =>

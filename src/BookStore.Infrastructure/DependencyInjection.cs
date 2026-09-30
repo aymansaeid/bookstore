@@ -147,6 +147,9 @@ public static class DependencyInjection
         services.AddSingleton<CheckoutSweepRunner>();
         services.AddHostedService<CheckoutSweeper>();
 
+        services.AddScoped<IReturnRequestRepository, ReturnRequestRepository>();
+        services.AddScoped<IReturnQueries, ReturnQueries>();
+
         return services;
     }
 }

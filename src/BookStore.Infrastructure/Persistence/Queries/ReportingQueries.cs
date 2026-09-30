@@ -1,5 +1,6 @@
 ﻿using BookStore.Application.Abstractions.Queries;
 using BookStore.Domain.Orders;
+using BookStore.Domain.Returns;
 using Microsoft.EntityFrameworkCore;
 
 namespace BookStore.Infrastructure.Persistence.Queries;
@@ -16,10 +17,15 @@ public sealed class ReportingQueries(BookStoreDbContext dbContext) : IReportingQ
             .Where(o => o.PaidAtUtc >= fromUtc && o.PaidAtUtc < toUtcExclusive
                         && RevenueStatuses.Contains(o.Status))
             .Select(o => new RevenueOrderRow(
-                o.PaidAtUtc!.Value,
-                o.Total.Amount,
-                o.ShippingAddress.CountryCode,
-                o.Lines.Sum(l => l.Quantity)))
+    o.PaidAtUtc!.Value,
+    // Partial returns leave the order Delivered, so their refunds must be
+    // subtracted here. Full returns make the order Refunded, which the
+    // status filter above already excludes: no double counting.
+    o.Total.Amount - (dbContext.ReturnRequests
+        .Where(r => r.OrderId == o.Id && r.Status == ReturnStatus.Completed)
+        .Sum(r => (decimal?)r.RefundAmount.Amount) ?? 0m),
+    o.ShippingAddress.CountryCode,
+    o.Lines.Sum(l => l.Quantity)))
             .ToListAsync(ct);
 
     public async Task<IReadOnlyDictionary<OrderStatus, int>> CountOrdersByStatusAsync(CancellationToken ct = default)
@@ -45,6 +51,9 @@ public sealed class ReportingQueries(BookStoreDbContext dbContext) : IReportingQ
                 o.ShippingAddress.CountryCode, o.Lines.Sum(l => l.Quantity),
                 o.Subtotal.Amount, o.DiscountAmount.Amount, o.ShippingCost.Amount, o.Total.Amount,
                 o.Total.Currency, o.AppliedCouponCode, o.ShippingCarrier, o.TrackingNumber,
-                o.PaymentReference))
+                    o.PaymentReference,
+    dbContext.ReturnRequests
+        .Where(r => r.OrderId == o.Id && r.Status == ReturnStatus.Completed)
+        .Sum(r => (decimal?)r.RefundAmount.Amount) ?? 0m))
             .ToListAsync(ct);
 }

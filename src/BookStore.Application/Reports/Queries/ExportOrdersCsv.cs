@@ -40,7 +40,7 @@ public sealed class ExportOrdersCsvQueryHandler(
         csv.AddRow(
             "Order number", "Created (local)", "Paid (local)", "Status", "Customer email", "Recipient",
             "City", "Country", "Items", "Subtotal", "Discount", "Shipping", "Total", "Currency",
-            "Coupon", "Carrier", "Tracking number", "Payment reference");
+            "Coupon", "Carrier", "Tracking number", "Payment reference" , "Returned & refunded");
 
         foreach (var r in rows)
         {
@@ -62,7 +62,8 @@ public sealed class ExportOrdersCsvQueryHandler(
                 r.CouponCode,
                 r.Carrier,
                 r.TrackingNumber,
-                r.PaymentReference);
+                r.PaymentReference,
+                r.ReturnRefunded);
         }
 
         // Customer data is leaving the system, so this is audited. It's a
