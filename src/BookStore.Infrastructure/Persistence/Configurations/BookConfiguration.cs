@@ -145,5 +145,12 @@ public sealed class BookConfiguration : IEntityTypeConfiguration<Book>
         builder.Ignore(b => b.OrderedRelatedBookIds);
         builder.Ignore(b => b.SavingsAmount);
         builder.Ignore(b => b.SavingsPercent);
+
+        builder.Property(b => b.SearchTitle).HasMaxLength(1000).IsRequired();
+        builder.Property(b => b.SearchText).IsRequired(); // nvarchar(max): title + highlights can be long
+
+        // Every search starts from active books; price sorts and filters are common.
+        builder.HasIndex(b => new { b.IsActive, b.CategoryId });
+        builder.HasIndex(b => new { b.IsActive, b.Id });
     }
 }

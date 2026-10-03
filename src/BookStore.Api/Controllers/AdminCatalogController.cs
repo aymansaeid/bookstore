@@ -84,4 +84,10 @@ public sealed class AdminCatalogController(ISender sender) : ControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> DeleteMuhaqqiq(int id, CancellationToken ct) =>
         (await sender.Send(new DeleteMuhaqqiqCommand(id), ct)).ToActionResult();
+
+    /// Run once after deploying the search migration; returns the number of books reindexed.
+    [HttpPost("catalog/reindex")]
+    [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
+    public async Task<IActionResult> ReindexSearch(CancellationToken ct) =>
+        (await sender.Send(new RebuildSearchIndexCommand(), ct)).ToActionResult();
 }

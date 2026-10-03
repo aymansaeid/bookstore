@@ -15,6 +15,8 @@ public sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
         builder.Property(o => o.OrderNumber).HasMaxLength(50).IsRequired();
         builder.HasIndex(o => o.OrderNumber).IsUnique();
 
+        builder.HasIndex(o => new { o.Status, o.PaidAtUtc });
+
         builder.Property(o => o.CustomerEmail).HasMaxLength(320).IsRequired();
 
         // Flattened, immutable snapshot — this is what makes historical
@@ -73,7 +75,7 @@ public sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
             line.ToTable("OrderLines");
             line.WithOwner().HasForeignKey("OrderId");
             line.HasKey(l => l.Id);
-
+            line.HasIndex(l => l.BookId);
             line.Property(l => l.BookId).IsRequired();
             line.Property(l => l.BookTitleSnapshot).HasMaxLength(500).IsRequired();
             line.Property(l => l.Quantity).IsRequired();

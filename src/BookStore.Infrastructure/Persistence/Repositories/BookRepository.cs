@@ -94,4 +94,10 @@ public sealed class BookRepository(BookStoreDbContext dbContext) : IBookReposito
 
         return await query.ToListAsync(ct);
     }
+    public async Task SetSearchFieldsAsync(int bookId, string searchTitle, string searchText, CancellationToken ct = default) =>
+    await dbContext.Books
+        .Where(b => b.Id == bookId)
+        .ExecuteUpdateAsync(setters => setters
+            .SetProperty(b => b.SearchTitle, searchTitle)
+            .SetProperty(b => b.SearchText, searchText), ct);
 }

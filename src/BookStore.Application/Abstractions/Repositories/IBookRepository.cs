@@ -34,4 +34,8 @@ public interface IBookRepository
     Task<IReadOnlyList<Book>> ListForUpdateAsync(IReadOnlyCollection<int> ids, CancellationToken ct = default);
 
     Task<IReadOnlyList<Book>> ListEditionGroupAsync(int groupId, bool forUpdate, CancellationToken ct = default);
+
+    /// Writes only the two search columns. No tracking and no RowVersion check,
+    /// so a reindex never collides with customers reserving stock.
+    Task SetSearchFieldsAsync(int bookId, string searchTitle, string searchText, CancellationToken ct = default);
 }

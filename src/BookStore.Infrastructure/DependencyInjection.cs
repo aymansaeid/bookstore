@@ -164,6 +164,7 @@ public static class DependencyInjection
         services.AddScoped<ICategoryRepository, CategoryRepository>();
         services.AddScoped<IMuhaqqiqRepository, MuhaqqiqRepository>();
         services.AddScoped<ICatalogQueries, CatalogQueries>();
+        services.AddScoped<ICatalogSearch, CatalogSearch>();
 
         return services;
     }

@@ -1,6 +1,9 @@
 ﻿using BookStore.Api.Common;
+using BookStore.Application.Abstractions.Queries;
 using BookStore.Application.Catalog;
 using BookStore.Application.Catalog.Queries;
+using BookStore.Application.Catalog.Search;
+using BookStore.Domain.Books;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -33,4 +36,32 @@ public sealed class CatalogController(ISender sender) : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetMuhaqqiq(string slug, CancellationToken ct) =>
         (await sender.Send(new GetMuhaqqiqBySlugQuery(slug), ct)).ToActionResult();
+
+    /// Search, category pages and muhaqqiq pages all use this. Repeat
+    /// `muhaqqiq` and `level` for several values. Ask for facets=true only when
+    /// filters change, not on every page turn.
+    [HttpGet("catalog/search")]
+    [ProducesResponseType(typeof(CatalogSearchResultDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Search(
+        [FromQuery] string? q,
+        [FromQuery] string? category,
+        [FromQuery(Name = "muhaqqiq")] string[]? muhaqqiqs,
+        [FromQuery(Name = "level")] ReaderLevel[]? levels,
+        [FromQuery] decimal? minPrice,
+        [FromQuery] decimal? maxPrice,
+        [FromQuery] int? minVolumes,
+        [FromQuery] int? maxVolumes,
+        [FromQuery] BookBadges? badge,
+        [FromQuery] CatalogSort? sort,
+        CancellationToken ct,
+        [FromQuery] bool inStock = false,
+        [FromQuery] bool installments = false,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 24,
+        [FromQuery] bool facets = false) =>
+        (await sender.Send(new SearchCatalogQuery(
+            q, category, muhaqqiqs, levels, minPrice, maxPrice, minVolumes, maxVolumes,
+            inStock, installments, badge, sort, page, pageSize, facets), ct)).ToActionResult();
 }

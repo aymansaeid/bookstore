@@ -114,7 +114,7 @@ public sealed class Book : AggregateRoot<int>
         if (pageCount <= 0)
             throw new ArgumentOutOfRangeException(nameof(pageCount), "Page count must be positive.");
 
-        return new Book
+        var book = new Book
         {
             Title = title.Trim(),
             Subtitle = string.IsNullOrWhiteSpace(subtitle) ? null : subtitle.Trim(),
@@ -134,11 +134,19 @@ public sealed class Book : AggregateRoot<int>
             IsActive = true,
             LowStockThreshold = DefaultLowStockThreshold
         };
+
+        book.RebuildSearchIndex();
+        return book;
     }
 
     public int AvailableToSell => StockQuantity - ReservedQuantity;
 
     public BookImage? CoverImage => _images.FirstOrDefault(i => i.IsCover);
+
+    /// Normalised copies used only by catalog search (see SearchNormalizer).
+    /// Rebuilt automatically whenever a searchable field changes.
+    public string SearchTitle { get; private set; } = string.Empty;
+    public string SearchText { get; private set; } = string.Empty;
 
     public IReadOnlyList<BookImage> OrderedImages =>
         _images.OrderByDescending(i => i.IsCover).ThenBy(i => i.DisplayOrder).ToList();
@@ -174,6 +182,8 @@ public sealed class Book : AggregateRoot<int>
         Publisher = string.IsNullOrWhiteSpace(publisher) ? null : publisher.Trim();
         PublicationDate = publicationDate;
         Dimensions = dimensions;
+
+        RebuildSearchIndex();
     }
 
     public void Reserve(int quantity)
@@ -397,6 +407,8 @@ public sealed class Book : AggregateRoot<int>
 
         _highlights.Clear();
         _highlights.AddRange(cleanedHighlights);
+
+        RebuildSearchIndex();
     }
 
     /// Group membership rules that involve OTHER books (a book can't already be
@@ -430,5 +442,17 @@ public sealed class Book : AggregateRoot<int>
         }
     }
 
+    /// Category and muhaqqiq names are deliberately NOT copied in: they're
+    /// matched at query time, so renaming one never leaves stale search text.
+    public void RebuildSearchIndex()
+    {
+        SearchTitle = SearchNormalizer.Normalize($"{Title} {Subtitle}");
+
+        var parts = new[] { Title, Subtitle, Author, Publisher, Isbn, EditionLabel }
+            .Concat(_highlights)
+            .Where(part => !string.IsNullOrWhiteSpace(part));
+
+        SearchText = SearchNormalizer.Normalize(string.Join(' ', parts));
+    }
 
 }
