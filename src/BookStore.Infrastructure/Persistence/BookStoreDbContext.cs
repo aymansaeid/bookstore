@@ -1,5 +1,6 @@
 ﻿using BookStore.Domain.Auth;
 using BookStore.Domain.Books;
+using BookStore.Domain.Catalog;
 using BookStore.Domain.Coupons;
 using BookStore.Domain.Customers;
 using BookStore.Domain.Notifications;
@@ -31,6 +32,8 @@ public sealed class BookStoreDbContext(DbContextOptions<BookStoreDbContext> opti
     public DbSet<WishlistItem> WishlistItems => Set<WishlistItem>();
     public DbSet<Review> Reviews => Set<Review>();
     public DbSet<ReturnRequest> ReturnRequests => Set<ReturnRequest>();
+    public DbSet<Category> Categories => Set<Category>();
+    public DbSet<Muhaqqiq> Muhaqqiqs => Set<Muhaqqiq>();
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(BookStoreDbContext).Assembly);

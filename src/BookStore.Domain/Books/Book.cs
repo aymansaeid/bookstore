@@ -6,6 +6,8 @@ namespace BookStore.Domain.Books;
 public sealed class Book : AggregateRoot<int>
 {
     public const int MaxImages = 8;
+    public const int MaxMuhaqqiqs = 6;
+    public int? CategoryId { get; private set; }
 
     public string Title { get; private set; } = string.Empty;
     public string? Subtitle { get; private set; }
@@ -31,7 +33,10 @@ public sealed class Book : AggregateRoot<int>
 
     public int StockQuantity { get; private set; }
     public int ReservedQuantity { get; private set; }
-
+    private readonly List<BookMuhaqqiq> _muhaqqiqs = [];
+    public IReadOnlyCollection<BookMuhaqqiq> Muhaqqiqs => _muhaqqiqs.AsReadOnly();
+    public IReadOnlyList<int> OrderedMuhaqqiqIds =>
+    _muhaqqiqs.OrderBy(m => m.DisplayOrder).Select(m => m.MuhaqqiqId).ToList();
     private readonly List<BookImage> _images = [];
     public IReadOnlyCollection<BookImage> Images => _images.AsReadOnly();
 
@@ -279,5 +284,31 @@ public sealed class Book : AggregateRoot<int>
             throw new ArgumentOutOfRangeException(nameof(threshold), "Threshold must be between 0 and 10,000.");
 
         LowStockThreshold = threshold;
+    }
+
+    /// Updates the existing link rows in place instead of clearing and re-adding
+    /// them. EF tracks owned rows by key; removing and re-adding the same
+    /// (BookId, MuhaqqiqId) in one save makes it throw "another instance with
+    /// the same key is already being tracked".
+    public void SetTaxonomy(int? categoryId, IReadOnlyList<int> muhaqqiqIds)
+    {
+        if (muhaqqiqIds.Count > MaxMuhaqqiqs)
+            throw new ArgumentException($"A book can credit at most {MaxMuhaqqiqs} muhaqqiqs.", nameof(muhaqqiqIds));
+        if (muhaqqiqIds.Distinct().Count() != muhaqqiqIds.Count)
+            throw new ArgumentException("Each muhaqqiq can be credited only once.", nameof(muhaqqiqIds));
+
+        CategoryId = categoryId;
+
+        _muhaqqiqs.RemoveAll(link => !muhaqqiqIds.Contains(link.MuhaqqiqId));
+
+        for (var i = 0; i < muhaqqiqIds.Count; i++)
+        {
+            var existing = _muhaqqiqs.FirstOrDefault(link => link.MuhaqqiqId == muhaqqiqIds[i]);
+
+            if (existing is not null)
+                existing.SetDisplayOrder(i);
+            else
+                _muhaqqiqs.Add(BookMuhaqqiq.Create(muhaqqiqIds[i], i));
+        }
     }
 }

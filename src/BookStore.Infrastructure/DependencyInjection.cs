@@ -161,6 +161,10 @@ public static class DependencyInjection
             .AddCheck<OutboxHealthCheck>("outbox", tags: ["ready"])
             .AddCheck<BackgroundJobsHealthCheck>("background-jobs", tags: ["ready"]);
 
+        services.AddScoped<ICategoryRepository, CategoryRepository>();
+        services.AddScoped<IMuhaqqiqRepository, MuhaqqiqRepository>();
+        services.AddScoped<ICatalogQueries, CatalogQueries>();
+
         return services;
     }
 }

@@ -1,7 +1,8 @@
-﻿using BookStore.Application.Behaviors;
+﻿using BookStore.Application.Abstractions.Outbox;
+using BookStore.Application.Behaviors;
+using BookStore.Application.Catalog;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
-using BookStore.Application.Abstractions.Outbox;
 
 namespace BookStore.Application;
 
@@ -26,6 +27,8 @@ public static class DependencyInjection
             .AddClasses(c => c.AssignableTo<IOutboxMessageHandler>())
             .AsImplementedInterfaces()
             .WithScopedLifetime());
+
+        services.AddScoped<TaxonomyLookupLoader>();
 
         return services;
     }

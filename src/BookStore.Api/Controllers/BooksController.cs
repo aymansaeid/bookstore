@@ -25,7 +25,7 @@ public sealed class BooksController(ISender sender) : ControllerBase
 
     // Route constraint keeps this from swallowing /api/books/123, which the
     // int route above handles.
-    [HttpGet("{slug:regex(^[[a-z0-9-]]+$)}")]
+    [HttpGet("{slug}")]
     [ProducesResponseType(typeof(PublicBookDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetBySlug(string slug, CancellationToken ct) =>

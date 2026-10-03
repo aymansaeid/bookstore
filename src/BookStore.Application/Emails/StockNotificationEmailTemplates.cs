@@ -34,7 +34,7 @@ public static class StockNotificationEmailTemplates
     public static EmailMessage BackInStock(
         string email, string bookTitle, string bookSlug, string unsubscribeToken, StoreOptions store)
     {
-        var bookUrl = $"{store.StorefrontBaseUrl}/books/{bookSlug}";
+        var bookUrl = $"{store.StorefrontBaseUrl}/books/{Uri.EscapeDataString(bookSlug)}";
         var unsubscribeUrl = $"{store.StorefrontBaseUrl}/notify-me/unsubscribe?token={Uri.EscapeDataString(unsubscribeToken)}";
 
         var content = $"""

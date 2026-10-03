@@ -7,6 +7,8 @@ namespace BookStore.Domain.Books;
 
 public sealed partial class Slug : ValueObject
 {
+    public const int MaxLength = 200;
+
     public string Value { get; }
 
     private Slug(string value) => Value = value;
@@ -21,10 +23,15 @@ public sealed partial class Slug : ValueObject
         return new Slug(normalized);
     }
 
-    /// Turkish characters matter here: "Şiir Kitabı" has to become
-    /// "siir-kitabi", not "iir-kitab". Decomposing to FormD splits accented
-    /// letters into base + mark so the marks can be dropped, but ı, ş and ğ
-    /// aren't decomposable, so they're mapped explicitly first.
+    /// Latin text is transliterated to ASCII ("Şiir Kitabı" -> "siir-kitabi").
+    /// Arabic letters are kept as Arabic, so Arabic titles get readable URLs
+    /// ("زَادُ المَعَاد" -> "زاد-المعاد").
+    ///
+    /// Decomposing to FormD and dropping non-spacing marks removes Latin
+    /// accents AND Arabic harakat in one pass. It also folds hamza forms
+    /// (أ إ آ -> ا, ؤ -> و, ئ -> ي), which is the usual normalisation for
+    /// Arabic search and URLs: the same title always yields the same slug,
+    /// however it was typed.
     private static string Normalize(string input)
     {
         if (string.IsNullOrWhiteSpace(input))
@@ -37,7 +44,8 @@ public sealed partial class Slug : ValueObject
             .Replace("ç", "c").Replace("Ç", "C")
             .Replace("ö", "o").Replace("Ö", "O")
             .Replace("ü", "u").Replace("Ü", "U")
-            .Replace("ß", "ss").Replace("æ", "ae").Replace("ø", "o");
+            .Replace("ß", "ss").Replace("æ", "ae").Replace("ø", "o")
+            .Replace("\u0640", string.Empty); // tatweel: purely decorative stretching
 
         var decomposed = mapped.Normalize(NormalizationForm.FormD);
         var builder = new StringBuilder(decomposed.Length);
@@ -48,15 +56,18 @@ public sealed partial class Slug : ValueObject
                 builder.Append(c);
         }
 
-        var ascii = builder.ToString().Normalize(NormalizationForm.FormC).ToLowerInvariant();
+        var slug = builder.ToString().Normalize(NormalizationForm.FormC).ToLowerInvariant();
 
-        ascii = NonSlugCharacters().Replace(ascii, "-");
-        ascii = MultipleDashes().Replace(ascii, "-").Trim('-');
+        slug = NonSlugCharacters().Replace(slug, "-");
+        slug = MultipleDashes().Replace(slug, "-").Trim('-');
 
-        return ascii.Length > 200 ? ascii[..200].TrimEnd('-') : ascii;
+        return slug.Length > MaxLength ? slug[..MaxLength].TrimEnd('-') : slug;
     }
 
-    [GeneratedRegex("[^a-z0-9]+")]
+    // Allowed: a-z, 0-9, Arabic letters (U+0621-U+064A), Arabic-Indic
+    // digits (U+0660-U+0669) and extended Arabic letters (U+0671-U+06D3).
+    // Arabic punctuation such as the comma "،" is deliberately excluded.
+    [GeneratedRegex("[^a-z0-9\u0621-\u064A\u0660-\u0669\u0671-\u06D3]+")]
     private static partial Regex NonSlugCharacters();
 
     [GeneratedRegex("-{2,}")]

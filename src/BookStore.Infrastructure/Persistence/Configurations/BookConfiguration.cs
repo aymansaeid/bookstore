@@ -1,4 +1,5 @@
 ﻿using BookStore.Domain.Books;
+using BookStore.Domain.Catalog;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -88,5 +89,31 @@ public sealed class BookConfiguration : IEntityTypeConfiguration<Book>
         // map it as another navigation to BookImage.
         builder.Ignore(b => b.OrderedImages);
         builder.Ignore(b => b.CoverImage);
+
+        builder.Property(b => b.CategoryId);
+        builder.HasIndex(b => b.CategoryId);
+
+        // Restrict: a category in use can't be deleted, even by direct SQL.
+        builder.HasOne<Category>().WithMany().HasForeignKey(b => b.CategoryId).OnDelete(DeleteBehavior.Restrict);
+
+        builder.OwnsMany(b => b.Muhaqqiqs, link =>
+        {
+            link.ToTable("BookMuhaqqiqs");
+            link.WithOwner().HasForeignKey("BookId");
+            link.HasKey("BookId", nameof(BookMuhaqqiq.MuhaqqiqId));
+
+            link.Property(l => l.DisplayOrder).IsRequired();
+
+            link.HasOne<Muhaqqiq>().WithMany().HasForeignKey(l => l.MuhaqqiqId).OnDelete(DeleteBehavior.Restrict);
+
+            // "Every book by this muhaqqiq" and works counts.
+            link.HasIndex(l => l.MuhaqqiqId);
+        });
+
+        builder.Metadata.FindNavigation(nameof(Book.Muhaqqiqs))!
+            .SetPropertyAccessMode(PropertyAccessMode.Field);
+
+        // Computed from Muhaqqiqs; EF must not try to map it as a column.
+        builder.Ignore(b => b.OrderedMuhaqqiqIds);
     }
 }

@@ -19,6 +19,7 @@ public sealed record UpdateBookRequest(
 
 public sealed record AdjustStockRequest(int NewStockQuantity, string Note);
 public sealed record ReorderImagesRequest(IReadOnlyList<int> ImageIdsInOrder);
+public sealed record SetTaxonomyRequest(int? CategoryId, IReadOnlyList<int> MuhaqqiqIds);
 
 [ApiController]
 [Route("api/admin/books")]
@@ -115,4 +116,13 @@ public sealed class AdminBooksController(ISender sender) : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> ReorderImages(int id, ReorderImagesRequest request, CancellationToken ct) =>
         (await sender.Send(new ReorderBookImagesCommand(id, request.ImageIdsInOrder), ct)).ToActionResult();
+
+    /// Category and muhaqqiqs for a book. MuhaqqiqIds in credit order; send
+    /// the full list each time (it replaces the previous one).
+    [HttpPut("{id:int}/taxonomy")]
+    [ProducesResponseType(typeof(AdminBookDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> SetTaxonomy(int id, SetTaxonomyRequest request, CancellationToken ct) =>
+        (await sender.Send(new SetBookTaxonomyCommand(id, request.CategoryId, request.MuhaqqiqIds), ct)).ToActionResult();
 }
