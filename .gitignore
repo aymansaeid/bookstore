@@ -483,3 +483,5 @@ $RECYCLE.BIN/
 
 
 src/BookStore.Api/wwwroot/uploads/
+
+logs/

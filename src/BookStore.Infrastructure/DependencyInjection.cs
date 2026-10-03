@@ -10,6 +10,7 @@ using BookStore.Application.Abstractions.Storage;
 using BookStore.Application.Payments;
 using BookStore.Infrastructure.Auth;
 using BookStore.Infrastructure.Emails;
+using BookStore.Infrastructure.Health;
 using BookStore.Infrastructure.Inventory;
 using BookStore.Infrastructure.Outbox;
 using BookStore.Infrastructure.Payments;
@@ -149,6 +150,16 @@ public static class DependencyInjection
 
         services.AddScoped<IReturnRequestRepository, ReturnRequestRepository>();
         services.AddScoped<IReturnQueries, ReturnQueries>();
+
+        services.AddSingleton(TimeProvider.System);
+        services.AddSingleton<BackgroundJobHeartbeat>();
+
+        services.AddHealthChecks()
+            // CanConnect against SQL Server: the only check whose failure means
+            // this instance genuinely can't serve customers.
+            .AddDbContextCheck<BookStoreDbContext>("database", tags: ["ready"])
+            .AddCheck<OutboxHealthCheck>("outbox", tags: ["ready"])
+            .AddCheck<BackgroundJobsHealthCheck>("background-jobs", tags: ["ready"]);
 
         return services;
     }

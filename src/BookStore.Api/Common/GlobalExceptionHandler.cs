@@ -1,4 +1,5 @@
-﻿using BookStore.Application.Common;
+﻿using BookStore.Api.Extensions;
+using BookStore.Application.Common;
 using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
@@ -52,13 +53,18 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
 
             default:
                 {
-                    logger.LogError(exception, "Unhandled exception on {Path}", httpContext.Request.Path);
+                    var requestId = RequestLoggingExtensions.CurrentRequestId(httpContext);
+
+                    logger.LogError(exception, "Unhandled exception on {Path} (request {RequestId})",
+                        httpContext.Request.Path, requestId);
 
                     httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
                     await httpContext.Response.WriteAsJsonAsync(new ProblemDetails
                     {
                         Status = StatusCodes.Status500InternalServerError,
-                        Title = "An unexpected error occurred."
+                        Title = "An unexpected error occurred.",
+                        // Safe to expose: it's a random trace id, not internal detail.
+                        Extensions = { ["requestId"] = requestId }
                     }, ct);
                     return true;
                 }

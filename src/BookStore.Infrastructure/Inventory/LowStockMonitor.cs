@@ -1,4 +1,5 @@
 ﻿using BookStore.Application.Inventory.Commands;
+using BookStore.Infrastructure.Health;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -16,10 +17,16 @@ public sealed class LowStockMonitorOptions
 public sealed class LowStockMonitor(
     IServiceScopeFactory scopeFactory,
     IOptions<LowStockMonitorOptions> options,
-    ILogger<LowStockMonitor> logger) : BackgroundService
+    ILogger<LowStockMonitor> logger,
+    BackgroundJobHeartbeat healthTracker) : BackgroundService // <-- Injected the health tracker
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        var interval = TimeSpan.FromMinutes(options.Value.IntervalMinutes);
+
+        // 1. Register at the start of ExecuteAsync
+        healthTracker.Register("low-stock", interval);
+
         // Let startup (seeding, first requests) settle before the first scan.
         try
         {
@@ -30,7 +37,7 @@ public sealed class LowStockMonitor(
             return;
         }
 
-        using var timer = new PeriodicTimer(TimeSpan.FromMinutes(options.Value.IntervalMinutes));
+        using var timer = new PeriodicTimer(interval);
 
         do
         {
@@ -39,6 +46,9 @@ public sealed class LowStockMonitor(
                 await using var scope = scopeFactory.CreateAsyncScope();
                 var sender = scope.ServiceProvider.GetRequiredService<ISender>();
                 await sender.Send(new CheckLowStockCommand(), stoppingToken);
+
+                // 2. Report true after the Send succeeds
+                healthTracker.ReportRun("low-stock", true);
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
             {
@@ -47,6 +57,9 @@ public sealed class LowStockMonitor(
             catch (Exception ex)
             {
                 logger.LogError(ex, "Low-stock scan failed; will retry on the next interval.");
+
+                // 3. Report false in the general catch
+                healthTracker.ReportRun("low-stock", false);
             }
         }
         while (await timer.WaitForNextTickAsync(stoppingToken));

@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+using System.Threading.RateLimiting;
 using BookStore.Api.Common;
 using BookStore.Api.Extensions;
 using BookStore.Api.OpenApi;
@@ -11,99 +13,121 @@ using BookStore.Infrastructure;
 using BookStore.Infrastructure.Persistence.Seeding;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
-using System.Text.Json.Serialization;
-using System.Threading.RateLimiting;
+using Serilog;
 
-var builder = WebApplication.CreateBuilder(args);
+// Bootstrap logger: captures failures that happen before configuration is
+// even loaded (bad appsettings, failed options validation).
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .CreateBootstrapLogger();
 
-builder.Services.AddApplication();
-builder.Services.AddInfrastructure(builder.Configuration);
-builder.Services.Configure<StoreOptions>(builder.Configuration.GetSection(StoreOptions.SectionName));
-
-builder.Services.AddJwtAuthentication();
-
-builder.Services.AddControllers()
-    .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
-builder.Services.ConfigureHttpJsonOptions(o =>
-    o.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
-
-builder.Services.AddOpenApi(o => o.AddDocumentTransformer<BearerSecuritySchemeTransformer>());
-builder.Services.AddProblemDetails();
-builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
-builder.Services.AddStorefrontCors(builder.Configuration);
-builder.Services.Configure<ReviewOptions>(builder.Configuration.GetSection(ReviewOptions.SectionName));
-builder.Services.Configure<ReturnOptions>(builder.Configuration.GetSection(ReturnOptions.SectionName));
-
-builder.Services.AddOptions<StoreOptions>()
-    .Bind(builder.Configuration.GetSection(StoreOptions.SectionName))
-    .Validate(o => TimeZoneInfo.TryFindSystemTimeZoneById(o.TimeZoneId, out _),
-        "Store:TimeZoneId is not a recognized time zone.")
-    .ValidateOnStart();
-
-builder.Services.AddHttpContextAccessor();
-builder.Services.AddScoped<ICurrentActor, HttpCurrentActor>();
-
-
-builder.Services.AddRateLimiter(options =>
+try
 {
-    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    var builder = WebApplication.CreateBuilder(args);
 
-    static RateLimitPartition<string> PerIp(HttpContext ctx, int permitLimit) =>
-        RateLimitPartition.GetFixedWindowLimiter(
-            partitionKey: ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown",
-            factory: _ => new FixedWindowRateLimiterOptions
-            {
-                PermitLimit = permitLimit,
-                Window = TimeSpan.FromMinutes(1),
-                QueueLimit = 0
-            });
+    builder.Services.AddSerilog((services, logger) => logger
+        .ReadFrom.Configuration(builder.Configuration)
+        .ReadFrom.Services(services)
+        .Enrich.FromLogContext());
 
-    options.AddPolicy("coupon-check", ctx => PerIp(ctx, 10));
-    options.AddPolicy("order-lookup", ctx => PerIp(ctx, 10));
-    options.AddPolicy("login", ctx => PerIp(ctx, 5));
-    options.AddPolicy("customer-auth", ctx => PerIp(ctx, 5));
-    options.AddPolicy("review-submit", ctx => PerIp(ctx, 5));
-    options.AddPolicy("checkout", ctx => PerIp(ctx, 10));
-});
+    builder.Services.AddApplication();
+    builder.Services.AddInfrastructure(builder.Configuration);
 
-var app = builder.Build();
+    builder.Services.AddOptions<StoreOptions>()
+        .Bind(builder.Configuration.GetSection(StoreOptions.SectionName))
+        .Validate(o => TimeZoneInfo.TryFindSystemTimeZoneById(o.TimeZoneId, out _),
+            "Store:TimeZoneId is not a recognized time zone.")
+        .ValidateOnStart();
 
-var paymentOptions = app.Services.GetRequiredService<IOptions<PaymentOptions>>().Value;
+    builder.Services.Configure<ReviewOptions>(builder.Configuration.GetSection(ReviewOptions.SectionName));
+    builder.Services.Configure<ReturnOptions>(builder.Configuration.GetSection(ReturnOptions.SectionName));
 
-if (paymentOptions.Provider == PaymentProvider.Mock)
-{
-    // The mock plus its dev endpoints amount to "mark any order paid for
-    // free". Refuse to start rather than risk shipping that.
-    if (!app.Environment.IsDevelopment())
-        throw new InvalidOperationException(
-            "Payments:Provider is 'Mock' outside Development. Refusing to start.");
+    builder.Services.AddHttpContextAccessor();
+    builder.Services.AddScoped<ICurrentActor, HttpCurrentActor>();
 
-    app.MapDevPaymentEndpoints();
-}
+    builder.Services.AddJwtAuthentication();
+    builder.Services.AddStorefrontCors(builder.Configuration);
 
-await app.Services.SeedInitialAdminAsync();
+    builder.Services.AddControllers()
+        .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+    builder.Services.ConfigureHttpJsonOptions(o =>
+        o.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-    app.UseSwaggerUI(options =>
+    builder.Services.AddOpenApi(o => o.AddDocumentTransformer<BearerSecuritySchemeTransformer>());
+    builder.Services.AddProblemDetails();
+    builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+
+    builder.Services.AddRateLimiter(options =>
     {
-        options.SwaggerEndpoint("/openapi/v1.json", "BookStore API v1");
-        // Keeps you logged in across page refreshes while testing.
-        options.EnablePersistAuthorization();
+        options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+        static RateLimitPartition<string> PerIp(HttpContext ctx, int permitLimit) =>
+            RateLimitPartition.GetFixedWindowLimiter(
+                partitionKey: ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                factory: _ => new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = permitLimit,
+                    Window = TimeSpan.FromMinutes(1),
+                    QueueLimit = 0
+                });
+
+        options.AddPolicy("coupon-check", ctx => PerIp(ctx, 10));
+        options.AddPolicy("order-lookup", ctx => PerIp(ctx, 10));
+        options.AddPolicy("login", ctx => PerIp(ctx, 5));
+        options.AddPolicy("customer-auth", ctx => PerIp(ctx, 5));
+        options.AddPolicy("review-submit", ctx => PerIp(ctx, 5));
+        options.AddPolicy("checkout", ctx => PerIp(ctx, 10));
     });
+
+    var app = builder.Build();
+
+    await app.Services.SeedInitialAdminAsync();
+
+    // Outermost: sees the FINAL status of every request, including 500s the
+    // exception handler produced, and logs each request exactly once.
+    app.UseBookStoreRequestLogging();
+
+    if (app.Environment.IsDevelopment())
+    {
+        app.MapOpenApi();
+        app.UseSwaggerUI(options =>
+        {
+            options.SwaggerEndpoint("/openapi/v1.json", "BookStore API v1");
+            options.EnablePersistAuthorization();
+        });
+    }
+
+    app.UseExceptionHandler();
+    app.UseHttpsRedirection();
+    app.UseStaticFiles();
+    app.UseCors(CorsExtensions.PolicyName);
+    app.UseRateLimiter();
+
+    app.UseAuthentication();
+    app.UseAuthorization();
+
+    app.MapControllers();
+    app.MapBookStoreHealthChecks();
+
+    var paymentOptions = app.Services.GetRequiredService<IOptions<PaymentOptions>>().Value;
+    if (paymentOptions.Provider == PaymentProvider.Mock)
+    {
+        if (!app.Environment.IsDevelopment())
+            throw new InvalidOperationException(
+                "Payments:Provider is 'Mock' outside Development. Refusing to start.");
+
+        app.MapDevPaymentEndpoints();
+    }
+
+    await app.RunAsync();
 }
-// Serves uploaded images from wwwroot.
-app.UseStaticFiles();
-app.UseCors(CorsExtensions.PolicyName);
-
-app.UseExceptionHandler();
-app.UseHttpsRedirection();
-app.UseRateLimiter();
-
-app.UseAuthentication();
-app.UseAuthorization();
-
-app.MapControllers();
-
-app.Run();
+// HostAbortedException is how `dotnet ef` stops the app after reading the
+// model. It's intentional, not a crash, and must not be logged as fatal.
+catch (Exception ex) when (ex is not HostAbortedException)
+{
+    Log.Fatal(ex, "BookStore API failed to start.");
+}
+finally
+{
+    await Log.CloseAndFlushAsync();
+}

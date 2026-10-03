@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-
+using BookStore.Infrastructure.Health;
 namespace BookStore.Infrastructure.Outbox;
 
 public sealed class OutboxOptions
@@ -32,21 +32,26 @@ public sealed class OutboxOptions
 public sealed class OutboxProcessor(
     IServiceScopeFactory scopeFactory,
     IOptions<OutboxOptions> options,
+    BackgroundJobHeartbeat heartbeat,
     ILogger<OutboxProcessor> logger) : BackgroundService
 {
     private readonly OutboxOptions _options = options.Value;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        var interval = TimeSpan.FromSeconds(_options.PollIntervalSeconds);
+        heartbeat.Register("outbox", interval);
+
         logger.LogInformation("Outbox processor started, polling every {Seconds}s.", _options.PollIntervalSeconds);
 
-        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(_options.PollIntervalSeconds));
+        using var timer = new PeriodicTimer(interval);
 
         while (await timer.WaitForNextTickAsync(stoppingToken))
         {
             try
             {
                 await ProcessBatchAsync(stoppingToken);
+                heartbeat.ReportRun("outbox", succeeded: true);
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
             {
@@ -54,8 +59,7 @@ public sealed class OutboxProcessor(
             }
             catch (Exception ex)
             {
-                // Never let the loop die: a DB blip shouldn't permanently
-                // stop email delivery until someone restarts the app.
+                heartbeat.ReportRun("outbox", succeeded: false);
                 logger.LogError(ex, "Outbox batch failed; will retry on the next tick.");
             }
         }
@@ -124,6 +128,7 @@ public sealed class OutboxProcessor(
         await dbContext.SaveChangesAsync(ct);
     }
 }
+
 
 internal static class OutboxMessageConstants
 {
