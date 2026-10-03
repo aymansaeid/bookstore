@@ -20,6 +20,16 @@ public sealed record UpdateBookRequest(
 public sealed record AdjustStockRequest(int NewStockQuantity, string Note);
 public sealed record ReorderImagesRequest(IReadOnlyList<int> ImageIdsInOrder);
 public sealed record SetTaxonomyRequest(int? CategoryId, IReadOnlyList<int> MuhaqqiqIds);
+public sealed record SetMerchandisingRequest(
+    ReaderLevel? Level,
+    int? Volumes,
+    decimal? CompareAtPrice,
+    bool InstallmentsAllowed,
+    IReadOnlyList<string>? Highlights,
+    IReadOnlyList<BookBadges>? Badges,
+    string? EditionLabel);
+
+public sealed record SetBookIdsRequest(IReadOnlyList<int> BookIds);
 
 [ApiController]
 [Route("api/admin/books")]
@@ -125,4 +135,29 @@ public sealed class AdminBooksController(ISender sender) : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> SetTaxonomy(int id, SetTaxonomyRequest request, CancellationToken ct) =>
         (await sender.Send(new SetBookTaxonomyCommand(id, request.CategoryId, request.MuhaqqiqIds), ct)).ToActionResult();
+
+    /// Full replacement: send every field each time. Null clears it.
+    [HttpPut("{id:int}/merchandising")]
+    [ProducesResponseType(typeof(AdminBookDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> SetMerchandising(int id, SetMerchandisingRequest r, CancellationToken ct) =>
+        (await sender.Send(new SetBookMerchandisingCommand(
+            id, r.Level, r.Volumes, r.CompareAtPrice, r.InstallmentsAllowed, r.Highlights, r.Badges, r.EditionLabel), ct))
+        .ToActionResult();
+
+    /// The OTHER editions of this book; an empty list removes it from its group.
+    [HttpPut("{id:int}/editions")]
+    [ProducesResponseType(typeof(AdminBookDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> SetEditions(int id, SetBookIdsRequest r, CancellationToken ct) =>
+        (await sender.Send(new SetBookEditionsCommand(id, r.BookIds), ct)).ToActionResult();
+
+    /// Curated "complements your library" list, in display order.
+    [HttpPut("{id:int}/related")]
+    [ProducesResponseType(typeof(AdminBookDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> SetRelated(int id, SetBookIdsRequest r, CancellationToken ct) =>
+        (await sender.Send(new SetRelatedBooksCommand(id, r.BookIds), ct)).ToActionResult();
 }

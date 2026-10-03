@@ -115,5 +115,35 @@ public sealed class BookConfiguration : IEntityTypeConfiguration<Book>
 
         // Computed from Muhaqqiqs; EF must not try to map it as a column.
         builder.Ignore(b => b.OrderedMuhaqqiqIds);
+
+        builder.Property(b => b.Level).HasConversion<string>().HasMaxLength(20);
+        builder.Property(b => b.Volumes);
+        builder.Property(b => b.CompareAtPrice).HasColumnType("decimal(18,2)");
+        builder.Property(b => b.InstallmentsAllowed).IsRequired();
+        builder.Property(b => b.Badges).IsRequired(); // [Flags] int: New | Deluxe | Bestseller
+        builder.Property(b => b.EditionLabel).HasMaxLength(Book.MaxEditionLabelLength);
+
+        builder.PrimitiveCollection(b => b.Highlights)
+            .HasField("_highlights")
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
+
+        builder.Property(b => b.EditionGroupId);
+        builder.HasIndex(b => b.EditionGroupId);
+
+        builder.OwnsMany(b => b.Related, relation =>
+        {
+            relation.ToTable("BookRelations");
+            relation.WithOwner().HasForeignKey("BookId");
+            relation.HasKey("BookId", nameof(BookRelation.RelatedBookId));
+            relation.Property(r => r.DisplayOrder).IsRequired();
+        });
+
+        builder.Metadata.FindNavigation(nameof(Book.Related))!
+            .SetPropertyAccessMode(PropertyAccessMode.Field);
+
+        // Computed on the domain object: EF must not map them.
+        builder.Ignore(b => b.OrderedRelatedBookIds);
+        builder.Ignore(b => b.SavingsAmount);
+        builder.Ignore(b => b.SavingsPercent);
     }
 }

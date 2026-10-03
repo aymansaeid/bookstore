@@ -44,17 +44,45 @@ public sealed class GetPublicBookByIdQueryHandler(
         if (book is null || !book.IsActive)
             return Result.Failure<PublicBookDto>(BookErrors.NotFound(query.BookId));
 
-        return Result.Success(await MapAsync(book, reviewQueries, taxonomyLoader, fileStorage, ct));
+        return Result.Success(await MapAsync(book, bookRepository, reviewQueries, taxonomyLoader, fileStorage, ct));
     }
 
     internal static async Task<PublicBookDto> MapAsync(
-        Book book, IReviewQueries reviewQueries, TaxonomyLookupLoader taxonomyLoader,
-        IFileStorage fileStorage, CancellationToken ct)
+     Book book,
+     IBookRepository bookRepository,
+     IReviewQueries reviewQueries,
+     TaxonomyLookupLoader taxonomyLoader,
+     IFileStorage fileStorage,
+     CancellationToken ct)
     {
-        var ratings = await reviewQueries.GetRatingSnapshotsAsync([book.Id], ct);
+        var editions = book.EditionGroupId is { } groupId
+            ? (await bookRepository.ListEditionGroupAsync(groupId, forUpdate: false, ct))
+                .Where(b => b.Id != book.Id && b.IsActive)
+                .OrderBy(b => b.Price.Amount)
+                .ToList()
+            : [];
+
+        var relatedIds = book.OrderedRelatedBookIds;
+        var relatedById = relatedIds.Count == 0
+            ? new Dictionary<int, Book>()
+            : (await bookRepository.ListByIdsAsync(relatedIds, ct)).ToDictionary(b => b.Id);
+
+        // Curated order, hidden books skipped.
+        var related = relatedIds
+            .Where(id => relatedById.TryGetValue(id, out var r) && r.IsActive)
+            .Select(id => relatedById[id])
+            .ToList();
+
+        // One ratings query for the book and every card around it.
+        var allIds = editions.Select(b => b.Id).Concat(related.Select(b => b.Id)).Append(book.Id).Distinct().ToList();
+        var ratings = await reviewQueries.GetRatingSnapshotsAsync(allIds, ct);
         var taxonomy = await taxonomyLoader.LoadAsync(ct);
 
-        return book.ToPublicDto(fileStorage, ratings.GetValueOrDefault(book.Id), taxonomy);
+        var extras = new BookPageExtras(
+            editions.Select(b => b.ToSummaryDto(fileStorage, ratings.GetValueOrDefault(b.Id))).ToList(),
+            related.Select(b => b.ToSummaryDto(fileStorage, ratings.GetValueOrDefault(b.Id))).ToList());
+
+        return book.ToPublicDto(fileStorage, ratings.GetValueOrDefault(book.Id), taxonomy, extras);
     }
 }
 
@@ -84,7 +112,7 @@ public sealed class GetPublicBookBySlugQueryHandler(
         if (book is null || !book.IsActive)
             return Result.Failure<PublicBookDto>(BookErrors.SlugNotFound(query.Slug));
 
-        return Result.Success(
-            await GetPublicBookByIdQueryHandler.MapAsync(book, reviewQueries, taxonomyLoader, fileStorage, ct));
+        return Result.Success(await GetPublicBookByIdQueryHandler.MapAsync(
+     book, bookRepository, reviewQueries, taxonomyLoader, fileStorage, ct));
     }
 }

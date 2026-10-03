@@ -30,4 +30,17 @@ public static class BookErrors
 
     public static Error InvalidReorderList =>
         Error.Validation("Book.InvalidReorderList", "The reorder list must contain every image of this book exactly once.");
+
+    public static Error OldPriceNotHigher =>
+    Error.Validation("Book.OldPriceNotHigher", "The old price must be higher than the current price.");
+
+    public static Error UnknownBooks(IEnumerable<int> ids) =>
+        Error.Validation("Book.UnknownBooks", $"Unknown book id(s): {string.Join(", ", ids)}.");
+
+    public static Error AlreadyInAnotherEditionGroup(int bookId) =>
+        Error.Conflict("Book.AlreadyInAnotherEditionGroup",
+            $"Book {bookId} is already an edition of another work. Remove it from that group first.");
+
+    public static Error CannotRelateToItself =>
+        Error.Validation("Book.CannotRelateToItself", "A book can't be related to, or an edition of, itself.");
 }

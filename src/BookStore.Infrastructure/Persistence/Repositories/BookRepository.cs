@@ -79,4 +79,19 @@ public sealed class BookRepository(BookStoreDbContext dbContext) : IBookReposito
         await dbContext.Books
             .Where(b => b.Id == bookId)
             .ExecuteUpdateAsync(setters => setters.SetProperty(b => b.LowStockAlertedAtUtc, alertedAtUtc), ct);
+
+    public async Task<IReadOnlyList<Book>> ListForUpdateAsync(IReadOnlyCollection<int> ids, CancellationToken ct = default) =>
+    ids.Count == 0
+        ? []
+        : await dbContext.Books.Include(b => b.Images).Where(b => ids.Contains(b.Id)).ToListAsync(ct);
+
+    public async Task<IReadOnlyList<Book>> ListEditionGroupAsync(int groupId, bool forUpdate, CancellationToken ct = default)
+    {
+        var query = dbContext.Books.Include(b => b.Images).Where(b => b.EditionGroupId == groupId);
+
+        if (!forUpdate)
+            query = query.AsNoTracking();
+
+        return await query.ToListAsync(ct);
+    }
 }

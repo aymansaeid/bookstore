@@ -1,6 +1,7 @@
 ﻿using BookStore.Application.Abstractions.Messaging;
 using BookStore.Application.Abstractions.Queries;
 using BookStore.Application.Abstractions.Repositories;
+using BookStore.Application.Abstractions.Storage;
 using BookStore.Application.Common;
 using BookStore.Domain.Orders;
 using FluentValidation;
@@ -58,7 +59,8 @@ public sealed class TrackOrderQueryValidator : AbstractValidator<TrackOrderQuery
     }
 }
 
-public sealed class TrackOrderQueryHandler(IOrderRepository orderRepository)
+public sealed class TrackOrderQueryHandler(
+    IOrderRepository orderRepository, IBookRepository bookRepository, IFileStorage fileStorage)
     : IQueryHandler<TrackOrderQuery, PublicOrderDto>
 {
     public async Task<Result<PublicOrderDto>> Handle(TrackOrderQuery query, CancellationToken ct)
@@ -68,8 +70,10 @@ public sealed class TrackOrderQueryHandler(IOrderRepository orderRepository)
         var emailMatches = order is not null
             && string.Equals(order.CustomerEmail, query.Email.Trim().ToLowerInvariant(), StringComparison.Ordinal);
 
-        return emailMatches
-            ? Result.Success(order!.ToPublicDto())
-            : Result.Failure<PublicOrderDto>(OrderErrors.TrackingNotFound);
+        if (!emailMatches)
+            return Result.Failure<PublicOrderDto>(OrderErrors.TrackingNotFound);
+
+        var books = await bookRepository.ListByIdsAsync(order!.Lines.Select(l => l.BookId).Distinct().ToList(), ct);
+        return Result.Success(order.ToPublicDto(books.ToDictionary(b => b.Id), fileStorage));
     }
 }

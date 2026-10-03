@@ -1,7 +1,9 @@
 ﻿using BookStore.Application.Abstractions.Messaging;
 using BookStore.Application.Abstractions.Repositories;
+using BookStore.Application.Abstractions.Storage;
 using BookStore.Application.Common;
 using BookStore.Application.Orders;
+using BookStore.Domain.Books;
 
 namespace BookStore.Application.Customers.Queries;
 
@@ -42,16 +44,21 @@ public sealed class GetCustomerAddressesQueryHandler(ICustomerRepository custome
 
 public sealed record GetCustomerOrdersQuery(int CustomerId) : IQuery<IReadOnlyList<PublicOrderDto>>;
 
-public sealed class GetCustomerOrdersQueryHandler(IOrderRepository orderRepository)
+public sealed class GetCustomerOrdersQueryHandler(
+    IOrderRepository orderRepository, IBookRepository bookRepository, IFileStorage fileStorage)
     : IQueryHandler<GetCustomerOrdersQuery, IReadOnlyList<PublicOrderDto>>
 {
-    public async Task<Result<IReadOnlyList<PublicOrderDto>>> Handle(
-        GetCustomerOrdersQuery query, CancellationToken ct)
+    public async Task<Result<IReadOnlyList<PublicOrderDto>>> Handle(GetCustomerOrdersQuery query, CancellationToken ct)
     {
-        // Reuses the same public DTO as guest tracking, so a logged-in
-        // customer sees exactly what a guest sees, just without typing an
-        // order number.
         var orders = await orderRepository.ListByCustomerIdAsync(query.CustomerId, ct);
-        return Result.Success<IReadOnlyList<PublicOrderDto>>(orders.Select(o => o.ToPublicDto()).ToList());
+
+        // One query for every book across every order, not one per line.
+        var bookIds = orders.SelectMany(o => o.Lines).Select(l => l.BookId).Distinct().ToList();
+        var books = bookIds.Count == 0
+            ? new Dictionary<int, Book>()
+            : (await bookRepository.ListByIdsAsync(bookIds, ct)).ToDictionary(b => b.Id);
+
+        return Result.Success<IReadOnlyList<PublicOrderDto>>(
+            orders.Select(o => o.ToPublicDto(books, fileStorage)).ToList());
     }
 }

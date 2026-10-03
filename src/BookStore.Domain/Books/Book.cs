@@ -7,6 +7,47 @@ public sealed class Book : AggregateRoot<int>
 {
     public const int MaxImages = 8;
     public const int MaxMuhaqqiqs = 6;
+    public const int MaxHighlights = 12;
+    public const int MaxHighlightLength = 200;
+    public const int MaxRelatedBooks = 12;
+    public const int MaxEditionLabelLength = 100;
+    public const int MaxVolumes = 500;
+
+    public ReaderLevel? Level { get; private set; }
+    public int? Volumes { get; private set; }
+
+    /// The crossed-out "was" price, in the same currency as Price. Null when
+    /// there's no discount. Always strictly higher than Price when set.
+    public decimal? CompareAtPrice { get; private set; }
+
+    public bool InstallmentsAllowed { get; private set; }
+
+    private readonly List<string> _highlights = [];
+    /// «أبرز موضوعات الكتاب», in display order.
+    public IReadOnlyCollection<string> Highlights => _highlights.AsReadOnly();
+
+    public BookBadges Badges { get; private set; }
+
+    /// Short label for the edition picker, e.g. «الكاملة ٦ مجلدات».
+    public string? EditionLabel { get; private set; }
+
+    /// Books sharing this id are editions of the same work. Null when the book
+    /// has no other editions.
+    public int? EditionGroupId { get; private set; }
+
+    private readonly List<BookRelation> _related = [];
+    public IReadOnlyCollection<BookRelation> Related => _related.AsReadOnly();
+
+    public IReadOnlyList<int> OrderedRelatedBookIds =>
+        _related.OrderBy(r => r.DisplayOrder).Select(r => r.RelatedBookId).ToList();
+
+    public decimal? SavingsAmount =>
+        CompareAtPrice is { } was && was > Price.Amount ? was - Price.Amount : null;
+
+    public int? SavingsPercent =>
+        SavingsAmount is { } saved && CompareAtPrice is { } was
+            ? (int)Math.Round(saved / was * 100, MidpointRounding.AwayFromZero)
+            : null;
     public int? CategoryId { get; private set; }
 
     public string Title { get; private set; } = string.Empty;
@@ -175,6 +216,12 @@ public sealed class Book : AggregateRoot<int>
             throw new ArgumentOutOfRangeException(nameof(newPrice), "Price must be positive.");
 
         Price = newPrice;
+
+        // A price raised to (or above) the old price means there's no discount
+        // any more. Keeping it would show a crossed-out price BELOW the real
+        // one, which misleads customers.
+        if (CompareAtPrice is { } was && was <= newPrice.Amount)
+            CompareAtPrice = null;
     }
 
     public void Activate()
@@ -311,4 +358,77 @@ public sealed class Book : AggregateRoot<int>
                 _muhaqqiqs.Add(BookMuhaqqiq.Create(muhaqqiqIds[i], i));
         }
     }
+
+    public void SetMerchandising(
+    ReaderLevel? level,
+    int? volumes,
+    decimal? compareAtPrice,
+    bool installmentsAllowed,
+    IEnumerable<string> highlights,
+    BookBadges badges,
+    string? editionLabel)
+    {
+        if (volumes is <= 0 or > MaxVolumes)
+            throw new ArgumentOutOfRangeException(nameof(volumes), $"Volumes must be between 1 and {MaxVolumes}.");
+        if (compareAtPrice is { } was && was <= Price.Amount)
+            throw new ArgumentException("The old price must be higher than the current price.", nameof(compareAtPrice));
+
+        var cleanedHighlights = highlights
+            .Where(h => !string.IsNullOrWhiteSpace(h))
+            .Select(h => h.Trim())
+            .Distinct(StringComparer.Ordinal)
+            .ToList();
+
+        if (cleanedHighlights.Count > MaxHighlights)
+            throw new ArgumentException($"At most {MaxHighlights} highlights.", nameof(highlights));
+        if (cleanedHighlights.Any(h => h.Length > MaxHighlightLength))
+            throw new ArgumentException($"Each highlight can be at most {MaxHighlightLength} characters.", nameof(highlights));
+
+        var trimmedLabel = string.IsNullOrWhiteSpace(editionLabel) ? null : editionLabel.Trim();
+        if (trimmedLabel is { Length: > MaxEditionLabelLength })
+            throw new ArgumentException($"Edition label can be at most {MaxEditionLabelLength} characters.", nameof(editionLabel));
+
+        Level = level;
+        Volumes = volumes;
+        CompareAtPrice = compareAtPrice;
+        InstallmentsAllowed = installmentsAllowed;
+        Badges = badges;
+        EditionLabel = trimmedLabel;
+
+        _highlights.Clear();
+        _highlights.AddRange(cleanedHighlights);
+    }
+
+    /// Group membership rules that involve OTHER books (a book can't already be
+    /// in a different group; a group of one dissolves) live in the handler,
+    /// which can see them.
+    public void JoinEditionGroup(int groupId) => EditionGroupId = groupId;
+
+    public void LeaveEditionGroup() => EditionGroupId = null;
+
+    /// Same in-place update as SetTaxonomy, for the same EF reason: removing and
+    /// re-adding an owned row with the same key in one save throws.
+    public void SetRelatedBooks(IReadOnlyList<int> relatedBookIds)
+    {
+        if (relatedBookIds.Count > MaxRelatedBooks)
+            throw new ArgumentException($"At most {MaxRelatedBooks} related books.", nameof(relatedBookIds));
+        if (relatedBookIds.Distinct().Count() != relatedBookIds.Count)
+            throw new ArgumentException("Each related book can appear only once.", nameof(relatedBookIds));
+        if (relatedBookIds.Contains(Id))
+            throw new ArgumentException("A book can't be related to itself.", nameof(relatedBookIds));
+
+        _related.RemoveAll(r => !relatedBookIds.Contains(r.RelatedBookId));
+
+        for (var i = 0; i < relatedBookIds.Count; i++)
+        {
+            var existing = _related.FirstOrDefault(r => r.RelatedBookId == relatedBookIds[i]);
+
+            if (existing is not null)
+                existing.SetDisplayOrder(i);
+            else
+                _related.Add(BookRelation.Create(relatedBookIds[i], i));
+        }
+    }
+
+
 }

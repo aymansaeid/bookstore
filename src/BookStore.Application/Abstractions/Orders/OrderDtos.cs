@@ -1,4 +1,7 @@
-﻿using BookStore.Domain.Orders;
+﻿using BookStore.Application.Abstractions.Storage;
+using BookStore.Application.Books;
+using BookStore.Domain.Books;
+using BookStore.Domain.Orders;
 
 namespace BookStore.Application.Orders;
 
@@ -47,8 +50,9 @@ public sealed record AdminOrderDetailsDto(
     DateTimeOffset? CancelledAtUtc,
     IReadOnlyList<string> AllowedActions);
 
-public sealed record PublicOrderLineDto(string Title, int Quantity, decimal UnitPrice, decimal LineTotal);
-
+public sealed record PublicOrderLineDto(
+    string Title, int Quantity, decimal UnitPrice, decimal LineTotal,
+    int BookId, string? BookSlug, string? CoverImageUrl);
 public sealed record PublicOrderDto(
     string OrderNumber,
     OrderStatus Status,
@@ -81,10 +85,23 @@ public static class OrderMappings
             o.CreatedAtUtc, o.PaidAtUtc, o.ShippedAtUtc, o.DeliveredAtUtc, o.CancelledAtUtc,
             GetAllowedActions(o));
 
-    public static PublicOrderDto ToPublicDto(this Order o) =>
+    /// books: the purchased books, for slugs and covers. Optional: a line whose
+    /// book can't be found still renders, just without a link or cover. The
+    /// title is always the one snapshotted at purchase.
+    public static PublicOrderDto ToPublicDto(
+        this Order o, IReadOnlyDictionary<int, Book>? books = null, IFileStorage? storage = null) =>
         new(o.OrderNumber, o.Status,
-            o.Lines.Select(l => new PublicOrderLineDto(
-                l.BookTitleSnapshot, l.Quantity, l.UnitPriceAtPurchase.Amount, l.LineTotal.Amount)).ToList(),
+            o.Lines.Select(l =>
+            {
+                Book? book = null;
+                books?.TryGetValue(l.BookId, out book);
+
+                return new PublicOrderLineDto(
+                    l.BookTitleSnapshot, l.Quantity, l.UnitPriceAtPurchase.Amount, l.LineTotal.Amount,
+                    l.BookId,
+                    book?.Slug.Value,
+                    book is not null && storage is not null ? BookMappings.CoverUrl(book, storage) : null);
+            }).ToList(),
             o.Subtotal.Amount, o.ShippingCost.Amount, o.DiscountAmount.Amount, o.Total.Amount, o.Total.Currency,
             o.ShippingAddress.City, o.ShippingAddress.CountryCode,
             o.ShippingCarrier, o.TrackingNumber,
