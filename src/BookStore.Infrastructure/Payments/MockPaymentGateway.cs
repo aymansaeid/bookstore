@@ -17,8 +17,9 @@ public sealed class MockPaymentGateway(
         // equal lines + shipping - discount. Catches the "discount never
         // reached the payment page" class of bug before real money does.
         var computed = request.LineItems.Sum(l => l.UnitPrice * l.Quantity)
-                       + request.ShippingAmount
-                       - request.DiscountAmount;
+               + request.ShippingAmount
+               + request.GiftWrapAmount
+               - request.DiscountAmount;
 
         if (computed != request.TotalAmount)
             throw new InvalidOperationException(

@@ -19,7 +19,18 @@ public sealed record CheckoutRequest(
     ShippingAddressDto? ShippingAddress,
     int? SavedAddressId,
     string? CouponCode,
-    string AcceptedTermsVersion);
+    string AcceptedTermsVersion,
+    string? ShippingMethod = null,
+    bool GiftWrap = false,
+    string? GiftMessage = null);
+
+public sealed record QuoteRequest(
+    IReadOnlyCollection<CartLineDto> Lines,
+    string? CountryCode,
+    int? SavedAddressId,
+    string? CouponCode,
+    string? ShippingMethod,
+    bool GiftWrap = false);
 
 [ApiController]
 [Route("api/orders")]
@@ -43,17 +54,18 @@ public sealed class OrdersController(ISender sender) : ControllerBase
             : null;
 
         var command = new CheckoutCartCommand(
-            request.CustomerEmail,
-            request.Lines,
-            request.ShippingAddress,
-            request.SavedAddressId,
-            request.CouponCode,
-            request.AcceptedTermsVersion,
-            idempotencyKey ?? string.Empty,
-            customerId,
-            // Behind a proxy this is the proxy's IP until forwarded headers are
-            // configured (step 7b).
-            HttpContext.Connection.RemoteIpAddress?.ToString());
+        request.CustomerEmail,
+        request.Lines,
+        request.ShippingAddress,
+        request.SavedAddressId,
+        request.CouponCode,
+        request.AcceptedTermsVersion,
+        idempotencyKey ?? string.Empty,
+        customerId,
+        HttpContext.Connection.RemoteIpAddress?.ToString(),
+        request.ShippingMethod,
+        request.GiftWrap,
+        request.GiftMessage);
 
         return (await sender.Send(command, ct)).ToActionResult();
     }
@@ -66,4 +78,23 @@ public sealed class OrdersController(ISender sender) : ControllerBase
     [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> Track(TrackOrderRequest request, CancellationToken ct) =>
         (await sender.Send(new TrackOrderQuery(request.OrderNumber, request.Email), ct)).ToActionResult();
+
+    /// Server-calculated cart totals: call on every cart change. Never fails
+    /// for stock/coupon/shipping problems; they come back in `problems`.
+    [HttpPost("quote")]
+    [EnableRateLimiting("quote")]
+    [ProducesResponseType(typeof(CheckoutQuoteDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Quote(QuoteRequest request, CancellationToken ct) =>
+        (await sender.Send(new QuoteCheckoutQuery(
+            request.Lines, request.CountryCode, request.SavedAddressId, request.CouponCode,
+            request.ShippingMethod, request.GiftWrap, await OptionalCustomerIdAsync()), ct)).ToActionResult();
+
+    private async Task<int?> OptionalCustomerIdAsync()
+    {
+        // Anonymous endpoints, but a valid customer token is honoured. The id
+        // always comes from the verified token, never from the request body.
+        var auth = await HttpContext.AuthenticateAsync(CustomerTokenGenerator.CustomerScheme);
+        return auth.Succeeded ? int.Parse(auth.Principal.FindFirstValue(JwtRegisteredClaimNames.Sub)!) : null;
+    }
 }

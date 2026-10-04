@@ -3,6 +3,7 @@ using BookStore.Api.Contracts;
 using BookStore.Application.Shipping;
 using BookStore.Application.Shipping.Commands;
 using BookStore.Application.Shipping.Queries;
+using BookStore.Domain.Shipping;
 using BookStore.Domain.Users;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -10,6 +11,13 @@ using Microsoft.AspNetCore.Mvc;
 namespace BookStore.Api.Controllers;
 
 public sealed record UpdateShippingZoneRequest(string Name, decimal FlatRate, IReadOnlyList<string> CountryCodes);
+
+public sealed record SetZoneDeliveryRequest(
+    string? StandardCarrier,
+    int? StandardMinDays,
+    int? StandardMaxDays,
+    decimal? FreeShippingThreshold,
+    IReadOnlyList<ShippingOptionInput>? Options);
 
 [Authorize(Roles = nameof(AdminRole.Admin))]
 [ApiController]
@@ -58,4 +66,14 @@ public sealed class AdminShippingZonesController(ISender sender) : ControllerBas
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(int id, CancellationToken ct) =>
         (await sender.Send(new DeleteShippingZoneCommand(id), ct)).ToActionResult();
+
+    /// Full replacement of delivery details; the flat rate is unchanged.
+    [HttpPut("{id:int}/delivery")]
+    [ProducesResponseType(typeof(AdminShippingZoneDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> SetDelivery(int id, SetZoneDeliveryRequest r, CancellationToken ct) =>
+        (await sender.Send(new SetShippingZoneDeliveryCommand(
+            id, r.StandardCarrier, r.StandardMinDays, r.StandardMaxDays, r.FreeShippingThreshold, r.Options), ct))
+        .ToActionResult();
 }

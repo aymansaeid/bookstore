@@ -25,6 +25,9 @@ public sealed record CheckoutCartCommand(
     string AcceptedTermsVersion,
     string IdempotencyKey,
     int? CustomerId,
-    string? ClientIp) : ICommand<CheckoutCartResponse>;
+    string? ClientIp,
+    string? ShippingMethod = null,
+    bool GiftWrap = false,
+    string? GiftMessage = null) : ICommand<CheckoutCartResponse>;
 
 public sealed record CheckoutCartResponse(string OrderNumber, string CheckoutUrl, DateTimeOffset ExpiresAtUtc);

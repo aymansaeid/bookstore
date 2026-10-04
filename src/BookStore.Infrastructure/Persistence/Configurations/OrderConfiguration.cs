@@ -101,6 +101,14 @@ public sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
         // covers exactly that. Email index is for "find this customer's orders".
         builder.HasIndex(o => new { o.Status, o.CreatedAtUtc });
         builder.HasIndex(o => o.CustomerEmail);
+
+        builder.Property(o => o.ShippingMethodCode).HasMaxLength(30).IsRequired();
+        builder.Property(o => o.ShippingMethodName).HasMaxLength(100);
+        builder.Property(o => o.GiftWrap).IsRequired();
+        builder.Property(o => o.GiftMessage).HasMaxLength(Order.MaxGiftMessageLength);
+
+        ConfigureMoney(builder.OwnsOne(o => o.GiftWrapFee), "GiftWrapFee");
+        builder.Navigation(o => o.GiftWrapFee).IsRequired();
     }
 
     private static void ConfigureMoney(OwnedNavigationBuilder<Order, Money> owned, string columnPrefix)

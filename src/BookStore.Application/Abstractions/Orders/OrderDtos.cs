@@ -48,7 +48,9 @@ public sealed record AdminOrderDetailsDto(
     DateTimeOffset? ShippedAtUtc,
     DateTimeOffset? DeliveredAtUtc,
     DateTimeOffset? CancelledAtUtc,
-    IReadOnlyList<string> AllowedActions);
+    IReadOnlyList<string> AllowedActions,
+    string ShippingMethodCode, string? ShippingMethodName,
+    bool GiftWrap, decimal GiftWrapFee, string? GiftMessage);
 
 public sealed record PublicOrderLineDto(
     string Title, int Quantity, decimal UnitPrice, decimal LineTotal,
@@ -68,7 +70,8 @@ public sealed record PublicOrderDto(
     string? TrackingNumber,
     DateTimeOffset CreatedAtUtc,
     DateTimeOffset? ShippedAtUtc,
-    DateTimeOffset? DeliveredAtUtc);
+    DateTimeOffset? DeliveredAtUtc,
+    string ShippingMethodCode, string? ShippingMethodName, bool GiftWrap, decimal GiftWrapFee);
 
 public static class OrderMappings
 {
@@ -83,7 +86,7 @@ public static class OrderMappings
             o.AppliedCouponCode, o.ShippingCarrier, o.TrackingNumber, o.CancellationReason,
             o.CheckoutSessionId, o.PaymentReference,
             o.CreatedAtUtc, o.PaidAtUtc, o.ShippedAtUtc, o.DeliveredAtUtc, o.CancelledAtUtc,
-            GetAllowedActions(o));
+            GetAllowedActions(o), o.ShippingMethodCode, o.ShippingMethodName, o.GiftWrap, o.GiftWrapFee.Amount, o.GiftMessage);
 
     /// books: the purchased books, for slugs and covers. Optional: a line whose
     /// book can't be found still renders, just without a link or cover. The
@@ -105,7 +108,8 @@ public static class OrderMappings
             o.Subtotal.Amount, o.ShippingCost.Amount, o.DiscountAmount.Amount, o.Total.Amount, o.Total.Currency,
             o.ShippingAddress.City, o.ShippingAddress.CountryCode,
             o.ShippingCarrier, o.TrackingNumber,
-            o.CreatedAtUtc, o.ShippedAtUtc, o.DeliveredAtUtc);
+            o.CreatedAtUtc, o.ShippedAtUtc, o.DeliveredAtUtc,
+            o.ShippingMethodCode, o.ShippingMethodName, o.GiftWrap, o.GiftWrapFee.Amount);
 
     // Tells the admin UI which buttons to render, straight from the
     // aggregate's own state machine. The frontend never has to duplicate

@@ -13,7 +13,8 @@ public sealed record CreateCheckoutSessionRequest(
     string SuccessUrl,
     string CancelUrl,
     DateTimeOffset ExpiresAtUtc,
-    string IdempotencyKey);
+    string IdempotencyKey,
+    decimal GiftWrapAmount = 0);
 
 public sealed record CheckoutSessionResult(string SessionId, string CheckoutUrl, DateTimeOffset ExpiresAtUtc);
 

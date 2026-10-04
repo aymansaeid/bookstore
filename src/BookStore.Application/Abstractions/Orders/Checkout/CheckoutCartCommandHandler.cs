@@ -5,6 +5,7 @@ using BookStore.Application.Abstractions.Repositories;
 using BookStore.Application.Common;
 using BookStore.Application.Payments;
 using BookStore.Domain.Books;
+using BookStore.Domain.Common;
 using BookStore.Domain.Coupons;
 using BookStore.Domain.Customers;
 using BookStore.Domain.Orders;
@@ -30,10 +31,9 @@ public sealed class CheckoutCartCommandHandler(
     {
         var store = storeOptions.Value;
         var payments = paymentOptions.Value;
+        var isPickup = CheckoutCartCommandValidator.IsPickup(command);
 
-        // 0a. Idempotent replay: a retried request (network blip, double
-        // click) gets the original checkout back instead of reserving stock
-        // a second time.
+        // 0a. Idempotent replay.
         var previous = await orderRepository.GetByIdempotencyKeyAsync(command.IdempotencyKey, ct);
         if (previous is not null)
         {
@@ -50,13 +50,17 @@ public sealed class CheckoutCartCommandHandler(
             return Result.Failure<CheckoutCartResponse>(CheckoutErrors.IdempotencyKeyReused);
         }
 
-        // 0b. The customer must have accepted the CURRENT terms text.
+        // 0b. Current terms only.
         if (!string.Equals(command.AcceptedTermsVersion, payments.CurrentTermsVersion, StringComparison.Ordinal))
             return Result.Failure<CheckoutCartResponse>(CheckoutErrors.TermsOutdated(payments.CurrentTermsVersion));
 
-        // 1. Resolve customer and address (read-only). Must come before the
-        // shipping zone: with a saved address, the country lives on the
-        // saved address, not in the request.
+        // 0c. Options that need no data: refuse early.
+        if (isPickup && !store.Pickup.Enabled)
+            return Result.Failure<CheckoutCartResponse>(CheckoutErrors.ShippingMethodUnavailable(CheckoutPricing.PickupCode));
+        if (command.GiftWrap && !store.GiftWrap.Enabled)
+            return Result.Failure<CheckoutCartResponse>(CheckoutErrors.GiftWrapUnavailable);
+
+        // 1. Customer and contact/address (read-only).
         Customer? customer = null;
         if (command.CustomerId is { } customerId)
         {
@@ -65,34 +69,43 @@ public sealed class CheckoutCartCommandHandler(
                 return Result.Failure<CheckoutCartResponse>(CheckoutErrors.CustomerNotFound);
         }
 
-        Address address;
+        string recipientName, phone, countryCode;
+        Address? deliveryAddress = null;
+
         if (command.SavedAddressId is { } savedAddressId)
         {
-            // Ownership check: another customer's saved address id must never resolve.
             var saved = customer?.Addresses.FirstOrDefault(a => a.Id == savedAddressId);
             if (saved is null)
                 return Result.Failure<CheckoutCartResponse>(CheckoutErrors.SavedAddressNotFound);
 
-            address = saved.ToOrderAddress();
+            recipientName = saved.RecipientName;
+            phone = saved.Phone;
+            countryCode = saved.CountryCode;
+            if (!isPickup)
+                deliveryAddress = saved.ToOrderAddress();
         }
         else
         {
             var dto = command.ShippingAddress!;
-            address = Address.Create(
-                dto.RecipientName, dto.Phone, dto.Line1, dto.Line2,
-                dto.City, dto.StateOrProvince, dto.PostalCode, dto.CountryCode);
+            recipientName = dto.RecipientName;
+            phone = dto.Phone;
+            countryCode = string.IsNullOrWhiteSpace(dto.CountryCode) ? store.Pickup.CountryCode : dto.CountryCode.ToUpperInvariant();
+
+            if (!isPickup)
+                deliveryAddress = Address.Create(
+                    dto.RecipientName, dto.Phone, dto.Line1, dto.Line2,
+                    dto.City, dto.StateOrProvince, dto.PostalCode, dto.CountryCode);
         }
 
-        // A signed-in customer's orders always use their verified account
-        // email, never whatever was typed into the form.
+        // Pickup: the "delivery" address is the shop, with the collector's
+        // name and phone, so packing lists and labels are always correct.
+        var address = deliveryAddress ?? Address.Create(
+            recipientName, phone, store.Pickup.AddressLine1, null,
+            store.Pickup.City, null, store.Pickup.PostalCode, store.Pickup.CountryCode);
+
         var customerEmail = customer?.Email ?? command.CustomerEmail;
 
-        // 2. Shipping zone.
-        var shippingZone = await shippingZoneRepository.GetByCountryCodeAsync(address.CountryCode, ct);
-        if (shippingZone is null)
-            return Result.Failure<CheckoutCartResponse>(CheckoutErrors.ShippingZoneNotFound(address.CountryCode));
-
-        // 3. Load and sanity-check every line (read-only).
+        // 2. Books (read-only).
         var lineData = new List<(Book Book, int Quantity)>();
         foreach (var line in command.Lines)
         {
@@ -106,7 +119,7 @@ public sealed class CheckoutCartCommandHandler(
             lineData.Add((book, line.Quantity));
         }
 
-        // 4. Coupon: validate in memory before committing to anything.
+        // 3. Coupon (in memory).
         Coupon? coupon = null;
         if (!string.IsNullOrWhiteSpace(command.CouponCode))
         {
@@ -125,7 +138,25 @@ public sealed class CheckoutCartCommandHandler(
             }
         }
 
-        // 5. First real mutation: reserve stock atomically, line by line.
+        // 4. Shipping method, priced by the SAME code the quote uses, from
+        // the books total after coupon.
+        var subtotal = lineData.Aggregate(
+            Money.Zero(store.Currency), (sum, l) => sum.Add(l.Book.Price.MultiplyBy(l.Quantity)));
+        var merchandiseTotal = subtotal.Subtract(CheckoutPricing.Discount(coupon, subtotal));
+
+        var zone = isPickup ? null : await shippingZoneRepository.GetByCountryCodeAsync(countryCode, ct);
+        if (!isPickup && zone is null)
+            return Result.Failure<CheckoutCartResponse>(CheckoutErrors.ShippingZoneNotFound(countryCode));
+
+        var requestedMethod = (command.ShippingMethod ?? CheckoutPricing.StandardCode).Trim().ToLowerInvariant();
+        var shippingChoice = CheckoutPricing
+            .ShippingOptions(zone, merchandiseTotal, store.Pickup, countryCode)
+            .FirstOrDefault(o => o.Code == requestedMethod);
+
+        if (shippingChoice is null)
+            return Result.Failure<CheckoutCartResponse>(CheckoutErrors.ShippingMethodUnavailable(requestedMethod));
+
+        // 5. First real mutation: reserve stock.
         var reserved = new List<(int BookId, int Quantity)>();
         foreach (var (book, quantity) in lineData)
         {
@@ -138,7 +169,7 @@ public sealed class CheckoutCartCommandHandler(
             reserved.Add((book.Id, quantity));
         }
 
-        // 6. Redeem the coupon, after stock is secured.
+        // 6. Redeem the coupon.
         string? redeemedCouponCode = null;
         if (coupon is not null)
         {
@@ -151,8 +182,7 @@ public sealed class CheckoutCartCommandHandler(
             redeemedCouponCode = coupon.Code;
         }
 
-        // 7. Build the order in memory. Currency comes from the store
-        // config, never from the client.
+        // 7. Build the order.
         var order = Order.Create(
             customerEmail, address, store.Currency,
             command.IdempotencyKey, payments.CurrentTermsVersion, command.ClientIp);
@@ -163,13 +193,15 @@ public sealed class CheckoutCartCommandHandler(
         foreach (var (book, quantity) in lineData)
             order.AddLine(book.Id, book.Title, quantity, book.Price);
 
-        order.SetShippingCost(shippingZone.FlatRate);
-
         if (coupon is not null)
             order.ApplyDiscount(coupon.Code, coupon.CalculateDiscount(order.Subtotal));
 
-        // 8. Open the payment session. Redirect URLs come from config, so a
-        // client can never make the payment page redirect to its own site.
+        order.SetShippingMethod(shippingChoice.Code, shippingChoice.DisplayName, shippingChoice.Price);
+
+        if (command.GiftWrap)
+            order.AddGiftWrap(Money.From(store.GiftWrap.Fee, store.Currency), command.GiftMessage);
+
+        // 8. Payment session.
         var orderQuery = $"?order={Uri.EscapeDataString(order.OrderNumber)}";
         var expiresAt = DateTimeOffset.UtcNow.AddMinutes(payments.CheckoutSessionMinutes);
 
@@ -188,7 +220,8 @@ public sealed class CheckoutCartCommandHandler(
                 $"{store.StorefrontBaseUrl}{payments.SuccessPath}{orderQuery}",
                 $"{store.StorefrontBaseUrl}{payments.CancelPath}{orderQuery}",
                 expiresAt,
-                command.IdempotencyKey), ct);
+                command.IdempotencyKey,
+                order.GiftWrapFee.Amount), ct);
         }
         catch (Exception ex)
         {
@@ -197,8 +230,7 @@ public sealed class CheckoutCartCommandHandler(
             return Result.Failure<CheckoutCartResponse>(CheckoutErrors.PaymentGatewayFailure);
         }
 
-        // 9. Persist. If this fails, the session must die with it: a live
-        // session with no order behind it could still be paid.
+        // 9. Persist; the session dies with a failed save.
         try
         {
             order.AttachCheckoutSession(session.SessionId, session.CheckoutUrl, session.ExpiresAtUtc);
@@ -214,48 +246,25 @@ public sealed class CheckoutCartCommandHandler(
         return Result.Success(new CheckoutCartResponse(order.OrderNumber, session.CheckoutUrl, session.ExpiresAtUtc));
     }
 
-    /// Best-effort undo of everything checkout did before failing. Each step
-    /// is independent; one failure doesn't stop the others. Anything left
-    /// behind (an orphaned reservation) is reclaimed by the sweep in 6b.
     private async Task CompensateAsync(
         List<(int BookId, int Quantity)> reserved, string? redeemedCouponCode, string? sessionId, CancellationToken ct)
     {
         if (sessionId is not null)
         {
-            try
-            {
-                await paymentGateway.ExpireSessionAsync(sessionId, ct);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Failed to expire orphaned checkout session {SessionId}", sessionId);
-            }
+            try { await paymentGateway.ExpireSessionAsync(sessionId, ct); }
+            catch (Exception ex) { logger.LogError(ex, "Failed to expire orphaned checkout session {SessionId}", sessionId); }
         }
 
         foreach (var (bookId, quantity) in reserved)
         {
-            try
-            {
-                await bookRepository.ReleaseReservationAsync(bookId, quantity, ct);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Failed to release reservation for book {BookId}", bookId);
-            }
+            try { await bookRepository.ReleaseReservationAsync(bookId, quantity, ct); }
+            catch (Exception ex) { logger.LogError(ex, "Failed to release reservation for book {BookId}", bookId); }
         }
 
         if (redeemedCouponCode is not null)
         {
-            // Closes the gap from the coupons step: a failed checkout no
-            // longer permanently burns a coupon use.
-            try
-            {
-                await couponRepository.ReleaseRedemptionAsync(redeemedCouponCode, ct);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Failed to release coupon redemption for {Code}", redeemedCouponCode);
-            }
+            try { await couponRepository.ReleaseRedemptionAsync(redeemedCouponCode, ct); }
+            catch (Exception ex) { logger.LogError(ex, "Failed to release coupon redemption for {Code}", redeemedCouponCode); }
         }
     }
 }

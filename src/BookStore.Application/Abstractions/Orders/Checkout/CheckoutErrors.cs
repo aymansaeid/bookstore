@@ -32,4 +32,9 @@ public static class CheckoutErrors
     public static Error IdempotencyKeyReused =>
         Error.Conflict("Checkout.IdempotencyKeyReused",
             "This checkout key was already used for a different request. Generate a new key and try again.");
+    public static Error ShippingMethodUnavailable(string code) =>
+    Error.Validation("Checkout.ShippingMethodUnavailable", $"Shipping method '{code}' isn't available for this address.");
+
+    public static Error GiftWrapUnavailable =>
+        Error.Validation("Checkout.GiftWrapUnavailable", "Gift wrapping isn't available right now.");
 }

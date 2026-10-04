@@ -17,9 +17,18 @@ public static class OrderEmailTemplates
 
         var totals = new StringBuilder("""<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:14px;margin-top:8px;">""");
         totals.Append(EmailLayout.TotalsRow("Subtotal", money(order.Subtotal.Amount)));
+
         if (order.DiscountAmount.Amount > 0)
             totals.Append(EmailLayout.TotalsRow($"Discount ({order.AppliedCouponCode})", $"-{money(order.DiscountAmount.Amount)}"));
-        totals.Append(EmailLayout.TotalsRow("Shipping", order.ShippingCost.Amount == 0 ? "Free" : money(order.ShippingCost.Amount)));
+
+        var shippingLabel = order.ShippingMethodCode == "pickup"
+            ? order.ShippingMethodName ?? "Pickup"
+            : $"Shipping ({order.ShippingMethodName ?? "Standard"})";
+        totals.Append(EmailLayout.TotalsRow(shippingLabel, order.ShippingCost.Amount == 0 ? "Free" : money(order.ShippingCost.Amount)));
+
+        if (order.GiftWrap)
+            totals.Append(EmailLayout.TotalsRow("Gift wrap", money(order.GiftWrapFee.Amount)));
+
         totals.Append(EmailLayout.TotalsRow("Total", money(order.Total.Amount), bold: true));
         totals.Append("</table>");
 

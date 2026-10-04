@@ -37,6 +37,9 @@ try
         .Bind(builder.Configuration.GetSection(StoreOptions.SectionName))
         .Validate(o => TimeZoneInfo.TryFindSystemTimeZoneById(o.TimeZoneId, out _),
             "Store:TimeZoneId is not a recognized time zone.")
+        .Validate(o => !o.Pickup.Enabled
+               || (!string.IsNullOrWhiteSpace(o.Pickup.AddressLine1) && !string.IsNullOrWhiteSpace(o.Pickup.PostalCode)),
+    "Store:Pickup is enabled but has no address.")
         .ValidateOnStart();
 
     builder.Services.Configure<ReviewOptions>(builder.Configuration.GetSection(ReviewOptions.SectionName));
@@ -77,6 +80,7 @@ try
         options.AddPolicy("customer-auth", ctx => PerIp(ctx, 5));
         options.AddPolicy("review-submit", ctx => PerIp(ctx, 5));
         options.AddPolicy("checkout", ctx => PerIp(ctx, 10));
+        options.AddPolicy("quote", ctx => PerIp(ctx, 30));
     });
 
     var app = builder.Build();

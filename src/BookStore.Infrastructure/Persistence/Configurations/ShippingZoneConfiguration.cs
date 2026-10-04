@@ -25,5 +25,28 @@ public sealed class ShippingZoneConfiguration : IEntityTypeConfiguration<Shippin
             .HasField("_countryCodes")
             .UsePropertyAccessMode(PropertyAccessMode.Field)
             .ElementType(e => e.HasMaxLength(2));
+
+        builder.Property(z => z.StandardCarrier).HasMaxLength(100);
+        builder.Property(z => z.StandardMinDays);
+        builder.Property(z => z.StandardMaxDays);
+        builder.Property(z => z.FreeShippingThreshold).HasColumnType("decimal(18,2)");
+
+        builder.OwnsMany(z => z.Options, option =>
+        {
+            option.ToTable("ShippingOptions");
+            option.WithOwner().HasForeignKey("ShippingZoneId");
+            option.HasKey(o => o.Id);
+
+            option.Property(o => o.Code).HasMaxLength(30).IsRequired();
+            option.Property(o => o.Name).HasMaxLength(100).IsRequired();
+            option.Property(o => o.Carrier).HasMaxLength(100);
+            option.Property(o => o.Price).HasColumnType("decimal(18,2)").IsRequired();
+            option.Property(o => o.DisplayOrder).IsRequired();
+
+            option.HasIndex("ShippingZoneId", nameof(ShippingOption.Code)).IsUnique();
+        });
+
+        builder.Metadata.FindNavigation(nameof(ShippingZone.Options))!
+            .SetPropertyAccessMode(PropertyAccessMode.Field);
     }
 }

@@ -45,6 +45,18 @@ public sealed class Order : AggregateRoot<int>
     public string? ShippingCarrier { get; private set; }
     public string? TrackingNumber { get; private set; }
 
+    public const int MaxGiftMessageLength = 300;
+
+    /// "standard", "pickup", or a zone extra's code, as chosen at checkout.
+    public string ShippingMethodCode { get; private set; } = "standard";
+
+    /// Snapshot of the method's display name (carrier or option name) at purchase.
+    public string? ShippingMethodName { get; private set; }
+
+    public bool GiftWrap { get; private set; }
+    public Money GiftWrapFee { get; private set; } = null!;
+    public string? GiftMessage { get; private set; }
+
     public DateTimeOffset CreatedAtUtc { get; private set; }
     public DateTimeOffset? PaidAtUtc { get; private set; }
     public DateTimeOffset? ShippedAtUtc { get; private set; }
@@ -94,6 +106,7 @@ public sealed class Order : AggregateRoot<int>
             TermsVersion = termsVersion.Trim(),
             TermsAcceptedAtUtc = now,
             TermsAcceptedFromIp = termsAcceptedFromIp,
+            GiftWrapFee = Money.Zero(currency),
             CreatedAtUtc = now
         };
     }
@@ -278,6 +291,7 @@ public sealed class Order : AggregateRoot<int>
             "Deleted User", "0000000000", "Redacted", null,
             ShippingAddress.City, null, "00000", ShippingAddress.CountryCode);
         TermsAcceptedFromIp = null;
+        GiftMessage = null;
     }
 
     private void RecalculateSubtotal()
@@ -289,6 +303,36 @@ public sealed class Order : AggregateRoot<int>
 
     private void RecalculateTotal()
     {
-        Total = Subtotal.Subtract(DiscountAmount).Add(ShippingCost);
+        // Same order as CheckoutPricing's quote: books, minus coupon, plus
+        // shipping, plus gift wrap. Keep these two in step.
+        Total = Subtotal.Subtract(DiscountAmount).Add(ShippingCost).Add(GiftWrapFee);
+    }
+
+    public void SetShippingMethod(string code, string? name, Money cost)
+    {
+        if (Status != OrderStatus.PendingPayment)
+            throw new InvalidOrderStateTransitionException(Id, Status, "change shipping on");
+        if (string.IsNullOrWhiteSpace(code))
+            throw new ArgumentException("Shipping method code is required.", nameof(code));
+
+        ShippingMethodCode = code.Trim().ToLowerInvariant();
+        ShippingMethodName = string.IsNullOrWhiteSpace(name) ? null : name.Trim();
+        ShippingCost = cost;
+        RecalculateTotal();
+    }
+
+    public void AddGiftWrap(Money fee, string? message)
+    {
+        if (Status != OrderStatus.PendingPayment)
+            throw new InvalidOrderStateTransitionException(Id, Status, "add gift wrap to");
+
+        var trimmed = string.IsNullOrWhiteSpace(message) ? null : message.Trim();
+        if (trimmed is { Length: > MaxGiftMessageLength })
+            throw new ArgumentException($"Gift message can be at most {MaxGiftMessageLength} characters.", nameof(message));
+
+        GiftWrap = true;
+        GiftWrapFee = fee;
+        GiftMessage = trimmed;
+        RecalculateTotal();
     }
 }

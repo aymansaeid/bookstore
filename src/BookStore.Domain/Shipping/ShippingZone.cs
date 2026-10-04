@@ -1,8 +1,9 @@
 ﻿using BookStore.Domain.Common;
+using System.Text.RegularExpressions;
 
 namespace BookStore.Domain.Shipping;
 
-public sealed class ShippingZone : AggregateRoot<int>
+public sealed partial class ShippingZone : AggregateRoot<int>
 {
     public string Name { get; private set; } = string.Empty; // e.g. "Turkey", "European Union"
     public Money FlatRate { get; private set; } = null!;
@@ -10,6 +11,23 @@ public sealed class ShippingZone : AggregateRoot<int>
 
     private readonly List<string> _countryCodes = [];
     public IReadOnlyCollection<string> CountryCodes => _countryCodes.AsReadOnly();
+
+    public const int MaxOptions = 5;
+    public const int MaxDeliveryDays = 60;
+
+    /// Codes the system itself uses; zone extras can't take them.
+    public static readonly IReadOnlySet<string> ReservedOptionCodes = new HashSet<string> { "standard", "pickup" };
+
+    public string? StandardCarrier { get; private set; }
+    public int? StandardMinDays { get; private set; }
+    public int? StandardMaxDays { get; private set; }
+
+    /// Standard delivery becomes free once the books total (after any coupon)
+    /// reaches this amount. In the zone's currency. Null = never free.
+    public decimal? FreeShippingThreshold { get; private set; }
+
+    private readonly List<ShippingOption> _options = [];
+    public IReadOnlyCollection<ShippingOption> Options => _options.AsReadOnly();
 
     private ShippingZone() { } // EF Core
 
@@ -84,4 +102,61 @@ public sealed class ShippingZone : AggregateRoot<int>
         _countryCodes.Clear();
         _countryCodes.AddRange(normalized);
     }
+
+    public void SetDeliveryDetails(
+    string? standardCarrier,
+    int? standardMinDays,
+    int? standardMaxDays,
+    decimal? freeShippingThreshold,
+    IReadOnlyList<ShippingOptionInput> options)
+    {
+        ValidateDays(standardMinDays, standardMaxDays, "standard delivery");
+
+        if (freeShippingThreshold is <= 0)
+            throw new ArgumentOutOfRangeException(nameof(freeShippingThreshold), "The free-shipping threshold must be positive.");
+        if (options.Count > MaxOptions)
+            throw new ArgumentException($"A zone can have at most {MaxOptions} extra options.", nameof(options));
+
+        var codes = options.Select(o => o.Code.Trim().ToLowerInvariant()).ToList();
+        if (codes.Distinct().Count() != codes.Count)
+            throw new ArgumentException("Each option code must be unique within the zone.", nameof(options));
+
+        foreach (var option in options)
+        {
+            var code = option.Code.Trim().ToLowerInvariant();
+
+            if (!OptionCodePattern().IsMatch(code))
+                throw new ArgumentException($"Option code '{option.Code}' must be 2-30 characters of a-z, 0-9 or '-'.", nameof(options));
+            if (ReservedOptionCodes.Contains(code))
+                throw new ArgumentException($"'{code}' is reserved and can't be used for an extra option.", nameof(options));
+            if (string.IsNullOrWhiteSpace(option.Name) || option.Name.Trim().Length > 100)
+                throw new ArgumentException("Each option needs a name of at most 100 characters.", nameof(options));
+            if (option.Price < 0)
+                throw new ArgumentException("An option's price can't be negative.", nameof(options));
+
+            ValidateDays(option.MinDays, option.MaxDays, $"option '{code}'");
+        }
+
+        StandardCarrier = string.IsNullOrWhiteSpace(standardCarrier) ? null : standardCarrier.Trim();
+        StandardMinDays = standardMinDays;
+        StandardMaxDays = standardMaxDays;
+        FreeShippingThreshold = freeShippingThreshold;
+
+        _options.Clear();
+        for (var i = 0; i < options.Count; i++)
+            _options.Add(ShippingOption.Create(options[i], i));
+    }
+
+    private static void ValidateDays(int? min, int? max, string what)
+    {
+        if (min is null && max is null)
+            return;
+        if (min is null || max is null)
+            throw new ArgumentException($"Give both minimum and maximum days for {what}, or neither.");
+        if (min < 0 || max > MaxDeliveryDays || min > max)
+            throw new ArgumentException($"Delivery days for {what} must satisfy 0 <= min <= max <= {MaxDeliveryDays}.");
+    }
+
+    [GeneratedRegex("^[a-z0-9-]{2,30}$")]
+    private static partial Regex OptionCodePattern();
 }
