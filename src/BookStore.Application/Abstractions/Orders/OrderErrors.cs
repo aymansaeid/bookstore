@@ -23,4 +23,7 @@ public static class OrderErrors
     public static Error NoPaymentReference =>
         Error.Conflict("Order.NoPaymentReference",
             "This order has no payment reference, so it can't be refunded automatically. Refund it manually in your payment provider.");
+    public static Error AlreadyShipped =>
+    Error.Conflict("Order.AlreadyShipped",
+        "This order has already shipped, so it can't be cancelled. Once it arrives, you can return it within 14 days.");
 }

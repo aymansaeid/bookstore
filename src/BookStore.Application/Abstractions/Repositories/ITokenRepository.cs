@@ -6,7 +6,14 @@ public interface ISecurityTokenRepository
 {
     Task<SecurityToken?> GetUsableAsync(string tokenHash, SecurityTokenPurpose purpose, CancellationToken ct = default);
     Task InvalidateAllAsync(int customerId, SecurityTokenPurpose purpose, CancellationToken ct = default);
+
+    /// When the newest token of this purpose was issued, for the resend cooldown.
+    Task<DateTimeOffset?> GetLatestIssuedAtAsync(int customerId, SecurityTokenPurpose purpose, CancellationToken ct = default);
+
     void Add(SecurityToken token);
+
+
+
 }
 
 public interface IRefreshTokenRepository

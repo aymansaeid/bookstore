@@ -26,6 +26,12 @@ public sealed class SecurityTokenRepository(BookStoreDbContext dbContext) : ISec
             .ExecuteUpdateAsync(setters => setters.SetProperty(t => t.UsedAtUtc, now), ct);
     }
 
+    public async Task<DateTimeOffset?> GetLatestIssuedAtAsync(
+        int customerId, SecurityTokenPurpose purpose, CancellationToken ct = default) =>
+        await dbContext.SecurityTokens
+            .Where(t => t.CustomerId == customerId && t.Purpose == purpose)
+            .MaxAsync(t => (DateTimeOffset?)t.CreatedAtUtc, ct);
+
     public void Add(SecurityToken token) => dbContext.SecurityTokens.Add(token);
 }
 

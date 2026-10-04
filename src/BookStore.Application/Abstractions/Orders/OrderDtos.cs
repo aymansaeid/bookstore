@@ -50,7 +50,8 @@ public sealed record AdminOrderDetailsDto(
     DateTimeOffset? CancelledAtUtc,
     IReadOnlyList<string> AllowedActions,
     string ShippingMethodCode, string? ShippingMethodName,
-    bool GiftWrap, decimal GiftWrapFee, string? GiftMessage);
+    bool GiftWrap, decimal GiftWrapFee, string? GiftMessage,
+    bool CancelledByCustomer);
 
 public sealed record PublicOrderLineDto(
     string Title, int Quantity, decimal UnitPrice, decimal LineTotal,
@@ -71,8 +72,8 @@ public sealed record PublicOrderDto(
     DateTimeOffset CreatedAtUtc,
     DateTimeOffset? ShippedAtUtc,
     DateTimeOffset? DeliveredAtUtc,
-    string ShippingMethodCode, string? ShippingMethodName, bool GiftWrap, decimal GiftWrapFee);
-
+     string ShippingMethodCode, string? ShippingMethodName, bool GiftWrap, decimal GiftWrapFee,
+    bool CanBeCancelled);
 public static class OrderMappings
 {
     public static AdminOrderDetailsDto ToAdminDetailsDto(this Order o) =>
@@ -86,7 +87,7 @@ public static class OrderMappings
             o.AppliedCouponCode, o.ShippingCarrier, o.TrackingNumber, o.CancellationReason,
             o.CheckoutSessionId, o.PaymentReference,
             o.CreatedAtUtc, o.PaidAtUtc, o.ShippedAtUtc, o.DeliveredAtUtc, o.CancelledAtUtc,
-            GetAllowedActions(o), o.ShippingMethodCode, o.ShippingMethodName, o.GiftWrap, o.GiftWrapFee.Amount, o.GiftMessage);
+            GetAllowedActions(o), o.ShippingMethodCode, o.ShippingMethodName, o.GiftWrap, o.GiftWrapFee.Amount, o.GiftMessage, o.CancelledByCustomer);
 
     /// books: the purchased books, for slugs and covers. Optional: a line whose
     /// book can't be found still renders, just without a link or cover. The
@@ -109,7 +110,7 @@ public static class OrderMappings
             o.ShippingAddress.City, o.ShippingAddress.CountryCode,
             o.ShippingCarrier, o.TrackingNumber,
             o.CreatedAtUtc, o.ShippedAtUtc, o.DeliveredAtUtc,
-            o.ShippingMethodCode, o.ShippingMethodName, o.GiftWrap, o.GiftWrapFee.Amount);
+            o.ShippingMethodCode, o.ShippingMethodName, o.GiftWrap, o.GiftWrapFee.Amount, o.CanBeCancelled);
 
     // Tells the admin UI which buttons to render, straight from the
     // aggregate's own state machine. The frontend never has to duplicate

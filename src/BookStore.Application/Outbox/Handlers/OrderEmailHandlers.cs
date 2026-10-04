@@ -82,6 +82,6 @@ public sealed class OrderCancelledEmailHandler(
         // WasPaid comes from the event, not the order: by now the order is
         // Cancelled and no longer remembers whether it had been paid.
         await emailSender.SendAsync(
-            OrderEmailTemplates.OrderCancelled(order, e.WasPaid, storeOptions.Value), ct);
+     OrderEmailTemplates.OrderCancelled(order, e.WasPaid, storeOptions.Value, e.ByCustomer), ct);
     }
 }

@@ -102,8 +102,11 @@ public static class OrderEmailTemplates
             text);
     }
 
-    public static EmailMessage OrderCancelled(Order order, bool wasPaid, StoreOptions store)
+    public static EmailMessage OrderCancelled(Order order, bool wasPaid, StoreOptions store, bool byCustomer = false)
     {
+        var intro = byCustomer
+            ? $"As you requested, order <strong>{EmailLayout.Encode(order.OrderNumber)}</strong> has been cancelled."
+            : $"Order <strong>{EmailLayout.Encode(order.OrderNumber)}</strong> has been cancelled.";
         var refundNote = wasPaid
             ? "<p style=\"margin:0 0 16px;\">Your refund has been issued and should appear on your original payment method within 5&ndash;10 business days.</p>"
             : string.Empty;

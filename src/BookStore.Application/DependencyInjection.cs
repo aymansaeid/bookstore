@@ -1,6 +1,7 @@
 ﻿using BookStore.Application.Abstractions.Outbox;
 using BookStore.Application.Behaviors;
 using BookStore.Application.Catalog;
+using BookStore.Application.Orders;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -29,6 +30,7 @@ public static class DependencyInjection
             .WithScopedLifetime());
 
         services.AddScoped<TaxonomyLookupLoader>();
+        services.AddScoped<OrderCancellation>();
 
         return services;
     }

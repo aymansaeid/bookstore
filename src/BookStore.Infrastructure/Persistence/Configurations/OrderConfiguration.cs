@@ -109,6 +109,8 @@ public sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
 
         ConfigureMoney(builder.OwnsOne(o => o.GiftWrapFee), "GiftWrapFee");
         builder.Navigation(o => o.GiftWrapFee).IsRequired();
+
+        builder.Property(o => o.CancelledByCustomer).IsRequired();
     }
 
     private static void ConfigureMoney(OwnedNavigationBuilder<Order, Money> owned, string columnPrefix)

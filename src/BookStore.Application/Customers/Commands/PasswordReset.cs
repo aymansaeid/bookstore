@@ -41,6 +41,11 @@ public sealed class RequestPasswordResetCommandHandler(
         if (customer is null || !customer.IsActive || customer.IsAnonymized)
             return Result.Success();
 
+        // Same inbox-flood protection as resend-verification.
+        var lastIssued = await tokenRepository.GetLatestIssuedAtAsync(customer.Id, SecurityTokenPurpose.PasswordReset, ct);
+        if (lastIssued is { } issuedAt && DateTimeOffset.UtcNow - issuedAt < TimeSpan.FromSeconds(60))
+            return Result.Success();
+
         // Invalidate outstanding reset tokens: requesting a new link should
         // make the previous one dead, not leave several live at once.
         await tokenRepository.InvalidateAllAsync(customer.Id, SecurityTokenPurpose.PasswordReset, ct);

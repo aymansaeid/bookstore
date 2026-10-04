@@ -24,6 +24,7 @@ public sealed class Order : AggregateRoot<int>
 
     public OrderStatus Status { get; private set; }
     public string? CancellationReason { get; private set; }
+    public bool CancelledByCustomer { get; private set; }
 
     /// Client-generated key for this checkout attempt. A retried request with
     /// the same key gets the original order back instead of a second one.
@@ -200,7 +201,7 @@ public sealed class Order : AggregateRoot<int>
         Status = OrderStatus.Expired;
     }
 
-    public void Cancel(string reason)
+    public void Cancel(string reason, bool byCustomer = false)
     {
         if (!CanBeCancelled)
             throw new InvalidOrderStateTransitionException(Id, Status, "cancel");
@@ -210,12 +211,14 @@ public sealed class Order : AggregateRoot<int>
         var wasPaid = Status == OrderStatus.Paid;
         Status = OrderStatus.Cancelled;
         CancellationReason = reason.Trim();
+        CancelledByCustomer = byCustomer;
         CancelledAtUtc = DateTimeOffset.UtcNow;
 
         Raise(new OrderCancelledDomainEvent(
             Id, OrderNumber, CustomerEmail, wasPaid,
             _lines.Select(l => new OrderLineSnapshot(l.BookId, l.Quantity)).ToList(),
-            DateTimeOffset.UtcNow));
+            DateTimeOffset.UtcNow,
+            byCustomer));
     }
 
     /// Records a refund the gateway has already executed. Once per order:

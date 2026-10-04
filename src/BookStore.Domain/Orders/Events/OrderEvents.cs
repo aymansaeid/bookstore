@@ -18,13 +18,16 @@ public sealed record OrderExpiredDomainEvent(
     IReadOnlyCollection<OrderLineSnapshot> Lines,
     DateTimeOffset OccurredOnUtc) : IDomainEvent;
 
+/// ByCustomer is last and defaulted: outbox rows written before this field
+/// existed still deserialize, as false.
 public sealed record OrderCancelledDomainEvent(
     int OrderId,
     string OrderNumber,
     string CustomerEmail,
     bool WasPaid,
     IReadOnlyCollection<OrderLineSnapshot> Lines,
-    DateTimeOffset OccurredOnUtc) : IDomainEvent;
+    DateTimeOffset OccurredOnUtc,
+    bool ByCustomer = false) : IDomainEvent;
 
 public sealed record OrderShippedDomainEvent(
     int OrderId,

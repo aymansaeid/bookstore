@@ -19,6 +19,7 @@ public sealed record CustomerLoginRequest(string Email, string Password);
 public sealed record VerifyEmailRequest(string Token);
 public sealed record ForgotPasswordRequest(string Email);
 public sealed record ResetPasswordRequest(string Token, string NewPassword);
+public sealed record ResendVerificationRequest(string Email);
 
 [ApiController]
 [Route("api/customers/auth")]
@@ -97,4 +98,12 @@ public sealed class CustomerAuthController(ISender sender, IWebHostEnvironment e
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ResetPassword(ResetPasswordRequest r, CancellationToken ct) =>
         (await sender.Send(new ResetPasswordCommand(r.Token, r.NewPassword), ct)).ToActionResult();
+
+    /// Always 204. Sends a fresh link only to an active, unverified account,
+    /// at most once a minute. Every earlier link stops working.
+    [HttpPost("resend-verification")]
+    [EnableRateLimiting("customer-auth")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> ResendVerification(ResendVerificationRequest r, CancellationToken ct) =>
+        (await sender.Send(new ResendVerificationEmailCommand(r.Email), ct)).ToActionResult();
 }

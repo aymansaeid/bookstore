@@ -46,4 +46,27 @@ public static class AdminEmailTemplates
         return new EmailMessage(toEmail, $"Low stock: {items.Count} book(s) need attention",
             EmailLayout.Wrap(store.Name, store.SupportEmail, content), text.ToString());
     }
+    public static EmailMessage OrderCancelledByCustomer(string toEmail, string orderNumber, StoreOptions store)
+    {
+        var url = $"{store.AdminBaseUrl}/orders";
+
+        var content = $"""
+        <h1 style="margin:0 0 16px;font-size:22px;">Customer cancelled a paid order</h1>
+        <p style="margin:0 0 8px;">Order <strong>{EmailLayout.Encode(orderNumber)}</strong> was cancelled by the customer and has been refunded.</p>
+        <p style="margin:0;"><strong>If it's already packed, don't ship it.</strong> Its books are back in stock.</p>
+        {EmailLayout.Button(url, "Open orders")}
+        """;
+
+        var text = $"""
+        Customer cancelled a paid order
+
+        Order {orderNumber} was cancelled by the customer and has been refunded.
+        If it's already packed, don't ship it. Its books are back in stock.
+
+        {url}
+        """;
+
+        return new EmailMessage(toEmail, $"Cancelled by customer: {orderNumber}",
+            EmailLayout.Wrap(store.Name, store.SupportEmail, content), text);
+    }
 }

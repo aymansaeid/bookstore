@@ -1,14 +1,16 @@
 ﻿using BookStore.Api.Common;
 using BookStore.Application.Orders;
 using BookStore.Application.Orders.Checkout;
+using BookStore.Application.Orders.Commands;
 using BookStore.Application.Orders.Queries;
+using BookStore.Domain.Orders;
 using BookStore.Infrastructure.Auth;
 using MediatR;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
-using System.Security.Claims;
 using Microsoft.IdentityModel.JsonWebTokens;
+using System.Security.Claims;
 namespace BookStore.Api.Controllers;
 
 public sealed record TrackOrderRequest(string OrderNumber, string Email);
@@ -31,6 +33,9 @@ public sealed record QuoteRequest(
     string? CouponCode,
     string? ShippingMethod,
     bool GiftWrap = false);
+
+public sealed record CancelMyOrderRequest(
+    string OrderNumber, string Email, CustomerCancelReason Reason, string? Comment);
 
 [ApiController]
 [Route("api/orders")]
@@ -97,4 +102,13 @@ public sealed class OrdersController(ISender sender) : ControllerBase
         var auth = await HttpContext.AuthenticateAsync(CustomerTokenGenerator.CustomerScheme);
         return auth.Succeeded ? int.Parse(auth.Principal.FindFirstValue(JwtRegisteredClaimNames.Sub)!) : null;
     }
+
+    /// Customer or guest cancels before shipping. Paid orders are refunded.
+    [HttpPost("cancel")]
+    [EnableRateLimiting("order-lookup")]
+    [ProducesResponseType(typeof(PublicOrderDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> Cancel(CancelMyOrderRequest r, CancellationToken ct) =>
+        (await sender.Send(new CancelMyOrderCommand(r.OrderNumber, r.Email, r.Reason, r.Comment), ct)).ToActionResult();
 }
