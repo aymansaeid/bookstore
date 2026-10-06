@@ -62,4 +62,25 @@ public class BookImageTests
 
         act.Should().Throw<InvalidOperationException>();
     }
+
+    [Fact]
+    public void VariantKeys_FollowTheMasterKey()
+    {
+        var book = CreateBook();
+        var image = book.AddImage("books/abc.webp", "Cover", 1000, 1500, [600, 300]);
+
+        image.VariantWidths.Should().Equal(300, 600);
+        image.VariantStorageKey(300).Should().Be("books/abc-300.webp");
+        image.AllStorageKeys().Should().Equal("books/abc.webp", "books/abc-300.webp", "books/abc-600.webp");
+    }
+
+    [Fact]
+    public void LegacyImage_HasNoVariants()
+    {
+        var book = CreateBook();
+        var image = book.AddImage("books/old.jpg", "Cover");
+
+        image.Width.Should().BeNull();
+        image.AllStorageKeys().Should().Equal("books/old.jpg");
+    }
 }

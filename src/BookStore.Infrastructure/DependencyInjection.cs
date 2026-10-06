@@ -166,6 +166,8 @@ public static class DependencyInjection
         services.AddScoped<ICatalogQueries, CatalogQueries>();
         services.AddScoped<ICatalogSearch, CatalogSearch>();
 
+        services.AddSingleton<IImageProcessor, ImageSharpProcessor>();
+
         return services;
     }
 }

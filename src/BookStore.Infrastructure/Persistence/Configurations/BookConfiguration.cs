@@ -70,10 +70,18 @@ public sealed class BookConfiguration : IEntityTypeConfiguration<Book>
 
         builder.OwnsMany(b => b.Images, image =>
         {
+
             image.ToTable("BookImages");
             image.WithOwner().HasForeignKey("BookId");
             image.HasKey(i => i.Id);
 
+            image.Property(i => i.Width);
+            image.Property(i => i.Height);
+
+            // Field-only property: the domain exposes VariantWidths as a parsed list,
+            // the database stores the backing string.
+            image.Property<string>("_variantWidths").HasColumnName("VariantWidths").HasMaxLength(50).IsRequired();
+            image.Ignore(i => i.VariantWidths);
             image.Property(i => i.StorageKey).HasMaxLength(500).IsRequired();
             image.Property(i => i.AltText).HasMaxLength(300).IsRequired();
             image.Property(i => i.DisplayOrder).IsRequired();

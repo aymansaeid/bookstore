@@ -55,7 +55,7 @@ public sealed record AdminOrderDetailsDto(
 
 public sealed record PublicOrderLineDto(
     string Title, int Quantity, decimal UnitPrice, decimal LineTotal,
-    int BookId, string? BookSlug, string? CoverImageUrl);
+    int BookId, string? BookSlug, string? CoverImageUrl , string? CoverThumbnailUrl);
 public sealed record PublicOrderDto(
     string OrderNumber,
     OrderStatus Status,
@@ -104,7 +104,8 @@ public static class OrderMappings
                     l.BookTitleSnapshot, l.Quantity, l.UnitPriceAtPurchase.Amount, l.LineTotal.Amount,
                     l.BookId,
                     book?.Slug.Value,
-                    book is not null && storage is not null ? BookMappings.CoverUrl(book, storage) : null);
+                    book is not null && storage is not null ? BookMappings.CoverUrl(book, storage) : null,
+                    book is not null && storage is not null ? BookMappings.CoverThumbnailUrl(book, storage) : null);
             }).ToList(),
             o.Subtotal.Amount, o.ShippingCost.Amount, o.DiscountAmount.Amount, o.Total.Amount, o.Total.Currency,
             o.ShippingAddress.City, o.ShippingAddress.CountryCode,

@@ -11,8 +11,8 @@ using Microsoft.Extensions.Options;
 namespace BookStore.Application.Orders.Checkout;
 
 public sealed record QuoteLineDto(
-    int BookId, string Title, string Slug, string? CoverImageUrl,
-    decimal UnitPrice, decimal? OldPrice, int Quantity, decimal LineTotal, bool Available);
+    int BookId, string Title, string Slug, string? CoverImageUrl, string? CoverThumbnailUrl,
+    decimal UnitPrice, decimal? OldPrice, int Quantity, decimal LineTotal, bool Available );
 
 public sealed record QuoteCouponDto(string Code, int DiscountPercentage);
 
@@ -122,6 +122,7 @@ public sealed class QuoteCheckoutQueryHandler(
 
             lines.Add(new QuoteLineDto(
                 book.Id, book.Title, book.Slug.Value, BookMappings.CoverUrl(book, fileStorage),
+                BookMappings.CoverThumbnailUrl(book, fileStorage),
                 book.Price.Amount, book.SavingsAmount is null ? null : book.CompareAtPrice,
                 cartLine.Quantity, lineTotal.Amount, available));
         }

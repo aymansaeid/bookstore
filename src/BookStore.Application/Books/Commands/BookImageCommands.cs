@@ -30,6 +30,7 @@ public sealed class UploadBookImageCommandHandler(
     IBookRepository bookRepository,
     IUnitOfWork unitOfWork,
     IFileStorage fileStorage,
+    IImageProcessor imageProcessor,
     ILogger<UploadBookImageCommandHandler> logger)
     : ICommandHandler<UploadBookImageCommand, BookImageDto>
 {
@@ -42,24 +43,54 @@ public sealed class UploadBookImageCommandHandler(
         if (book.Images.Count >= Domain.Books.Book.MaxImages)
             return Result.Failure<BookImageDto>(BookErrors.TooManyImages);
 
-        // Save the file first, then record it. If the DB write fails we
-        // delete the file below; the reverse order would risk a DB row
-        // pointing at a file that was never written.
-        var stored = await fileStorage.SaveAsync(command.Content, command.ContentType, "books", ct);
-
+        ProcessedImage processed;
         try
         {
-            book.AddImage(stored.StorageKey, command.AltText);
-            await unitOfWork.SaveChangesAsync(ct);
+            processed = await imageProcessor.ProcessAsync(command.Content, ct);
         }
-        catch
+        catch (InvalidImageException ex)
         {
-            await SafeDeleteAsync(stored.StorageKey, ct);
-            throw;
+            // The processor's message says exactly what's wrong (too big,
+            // too small, damaged): pass it to the admin.
+            return Result.Failure<BookImageDto>(Error.Validation("Book.InvalidImage", ex.Message));
         }
 
-        var image = book.Images.First(i => i.StorageKey == stored.StorageKey);
-        return Result.Success(image.ToDto(fileStorage));
+        using (processed)
+        {
+            var baseKey = $"books/{Guid.NewGuid():N}";
+            var masterKey = $"{baseKey}.webp";
+            var savedKeys = new List<string>();
+
+            try
+            {
+                await fileStorage.SaveWithKeyAsync(masterKey, processed.Master, ct);
+                savedKeys.Add(masterKey);
+
+                foreach (var variant in processed.Variants)
+                {
+                    var variantKey = $"{baseKey}-{variant.Width}.webp";
+                    await fileStorage.SaveWithKeyAsync(variantKey, variant.Content, ct);
+                    savedKeys.Add(variantKey);
+                }
+
+                var image = book.AddImage(
+                    masterKey, command.AltText, processed.Width, processed.Height,
+                    processed.Variants.Select(v => v.Width).ToList());
+
+                await unitOfWork.SaveChangesAsync(ct);
+
+                return Result.Success(image.ToDto(fileStorage));
+            }
+            catch
+            {
+                // Files first, row second: if anything failed, remove every
+                // file already written, so no orphans are left behind.
+                foreach (var key in savedKeys)
+                    await SafeDeleteAsync(key, ct);
+
+                throw;
+            }
+        }
     }
 
     private async Task SafeDeleteAsync(string storageKey, CancellationToken ct)
@@ -70,7 +101,6 @@ public sealed class UploadBookImageCommandHandler(
         }
         catch (Exception ex)
         {
-            // An orphaned file wastes disk space but breaks nothing.
             logger.LogError(ex, "Failed to clean up orphaned upload {StorageKey}", storageKey);
         }
     }
@@ -95,21 +125,28 @@ public sealed class DeleteBookImageCommandHandler(
         if (book is null)
             return Result.Failure(BookErrors.NotFound(command.BookId));
 
-        if (book.Images.All(i => i.Id != command.ImageId))
+        var image = book.Images.FirstOrDefault(i => i.Id == command.ImageId);
+        if (image is null)
             return Result.Failure(BookErrors.ImageNotFound(command.ImageId));
 
-        var storageKey = book.RemoveImage(command.ImageId);
+        // Collected BEFORE removal: the master and every variant.
+        var keys = image.AllStorageKeys();
+
+        book.RemoveImage(command.ImageId);
         await unitOfWork.SaveChangesAsync(ct);
 
-        // File deletion comes after the DB commit: a leftover file is
-        // harmless, a dangling DB row pointing at a deleted file is not.
-        try
+        // Files after the commit: a leftover file is harmless, a row
+        // pointing at a deleted file is not.
+        foreach (var key in keys)
         {
-            await fileStorage.DeleteAsync(storageKey, ct);
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Image row deleted but file {StorageKey} remains", storageKey);
+            try
+            {
+                await fileStorage.DeleteAsync(key, ct);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Image row deleted but file {StorageKey} remains", key);
+            }
         }
 
         return Result.Success();
@@ -141,7 +178,8 @@ public sealed class SetBookCoverImageCommandHandler(IBookRepository bookReposito
     }
 }
 
-public sealed record ReorderBookImagesCommand(int BookId, IReadOnlyList<int> ImageIdsInOrder) : ICommand, IAuditableCommand
+public sealed record ReorderBookImagesCommand(int BookId, IReadOnlyList<int> ImageIdsInOrder)
+    : ICommand, IAuditableCommand
 {
     public string AuditEntityType => "Book";
     public string? AuditEntityId => BookId.ToString();

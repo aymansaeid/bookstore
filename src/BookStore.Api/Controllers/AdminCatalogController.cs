@@ -90,4 +90,10 @@ public sealed class AdminCatalogController(ISender sender) : ControllerBase
     [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
     public async Task<IActionResult> ReindexSearch(CancellationToken ct) =>
         (await sender.Send(new RebuildSearchIndexCommand(), ct)).ToActionResult();
+
+    /// Converts images uploaded before WebP variants existed. Safe to re-run.
+    [HttpPost("catalog/images/regenerate")]
+    [ProducesResponseType(typeof(ImageRegenerationResult), StatusCodes.Status200OK)]
+    public async Task<IActionResult> RegenerateImages(CancellationToken ct) =>
+        (await sender.Send(new RegenerateImageVariantsCommand(), ct)).ToActionResult();
 }

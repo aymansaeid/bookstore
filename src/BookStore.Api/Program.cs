@@ -103,7 +103,16 @@ try
 
     app.UseExceptionHandler();
     app.UseHttpsRedirection();
-    app.UseStaticFiles();
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        OnPrepareResponse = context =>
+        {
+            // Upload file names are random and never reused: a changed image
+            // always gets a new URL. So browsers can keep them for a year.
+            if (context.Context.Request.Path.StartsWithSegments("/uploads"))
+                context.Context.Response.Headers.CacheControl = "public, max-age=31536000, immutable";
+        }
+    });
     app.UseCors(CorsExtensions.PolicyName);
     app.UseRateLimiter();
 

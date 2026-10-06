@@ -1,5 +1,6 @@
 ﻿using BookStore.Application.Abstractions.Storage;
 using Microsoft.Extensions.Options;
+using System.Text.RegularExpressions;
 
 namespace BookStore.Infrastructure.Storage;
 
@@ -11,7 +12,7 @@ public sealed class LocalFileStorageOptions
     public string PublicBaseUrl { get; init; } = "/uploads";
 }
 
-public sealed class LocalFileStorage(IOptions<LocalFileStorageOptions> options) : IFileStorage
+public sealed partial class LocalFileStorage(IOptions<LocalFileStorageOptions> options) : IFileStorage
 {
     private readonly LocalFileStorageOptions _options = options.Value;
 
@@ -61,4 +62,29 @@ public sealed class LocalFileStorage(IOptions<LocalFileStorageOptions> options) 
 
         return resolved;
     }
+
+    public async Task SaveWithKeyAsync(string storageKey, Stream content, CancellationToken ct = default)
+    {
+        // Server-chosen keys only, but verified anyway: lower-case segments,
+        // one extension, no "..". ResolveSafePath then confirms the final path
+        // stays inside the upload root.
+        if (!SafeKey().IsMatch(storageKey))
+            throw new ArgumentException($"Unsafe storage key '{storageKey}'.", nameof(storageKey));
+
+        var absolutePath = ResolveSafePath(storageKey);
+        Directory.CreateDirectory(Path.GetDirectoryName(absolutePath)!);
+
+        await using var fileStream = File.Create(absolutePath);
+        await content.CopyToAsync(fileStream, ct);
+    }
+
+    public Task<Stream?> OpenReadAsync(string storageKey, CancellationToken ct = default)
+    {
+        var absolutePath = ResolveSafePath(storageKey);
+
+        return Task.FromResult<Stream?>(File.Exists(absolutePath) ? File.OpenRead(absolutePath) : null);
+    }
+
+    [GeneratedRegex("^[a-z0-9]+(/[a-z0-9-]+)+\\.[a-z0-9]+$")]
+    private static partial Regex SafeKey();
 }

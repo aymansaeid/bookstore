@@ -5,13 +5,18 @@ using BookStore.Domain.Books;
 
 namespace BookStore.Application.Books;
 
-public sealed record BookImageDto(int Id, string Url, string AltText, int DisplayOrder, bool IsCover);
+public sealed record ImageVariantDto(int Width, string Url);
+
+public sealed record BookImageDto(
+    int Id, string Url, string AltText, int DisplayOrder, bool IsCover,
+    int? Width, int? Height, IReadOnlyList<ImageVariantDto> Variants, string SrcSet);
 
 /// Compact card for edition pickers and "complements your library".
 public sealed record BookSummaryDto(
     int Id, string Slug, string Title, string Author, string? EditionLabel, int? Volumes,
     decimal Price, decimal? OldPrice, string Currency, bool InStock,
-    string? CoverImageUrl, decimal? AverageRating, int ReviewCount);
+    string? CoverImageUrl, decimal? AverageRating, int ReviewCount,
+    string? CoverImageSrcSet);
 
 /// Only loaded for a single book (the book page); null in list responses.
 public sealed record BookPageExtras(IReadOnlyList<BookSummaryDto> Editions, IReadOnlyList<BookSummaryDto> Related);
@@ -28,7 +33,8 @@ public sealed record PublicBookDto(
     decimal? OldPrice, decimal? SavingsAmount, int? SavingsPercent,
     bool InstallmentsAllowed, IReadOnlyList<string> Highlights, IReadOnlyList<string> Badges,
     string? EditionLabel,
-    IReadOnlyList<BookSummaryDto>? Editions, IReadOnlyList<BookSummaryDto>? Related);
+    IReadOnlyList<BookSummaryDto>? Editions, IReadOnlyList<BookSummaryDto>? Related,
+    string? CoverImageSrcSet);
 
 public sealed record AdminBookDto(
     int Id, string Slug, string Title, string? Subtitle, string Author, string Isbn, string Description,
@@ -67,13 +73,15 @@ public static class BookMappings
             b.SavingsAmount is null ? null : b.CompareAtPrice, b.SavingsAmount, b.SavingsPercent,
             b.InstallmentsAllowed, b.Highlights.ToList(), BadgeNames(b.Badges),
             b.EditionLabel,
-            extras?.Editions, extras?.Related);
+            extras?.Editions, extras?.Related,
+            CoverSrcSet(b, storage));
     }
 
     public static BookSummaryDto ToSummaryDto(this Book b, IFileStorage storage, RatingSnapshot? rating) =>
         new(b.Id, b.Slug.Value, b.Title, b.Author, b.EditionLabel, b.Volumes,
             b.Price.Amount, b.SavingsAmount is null ? null : b.CompareAtPrice, b.Price.Currency,
-            b.AvailableToSell > 0, CoverUrl(b, storage), rating?.AverageRating, rating?.ReviewCount ?? 0);
+            b.AvailableToSell > 0, CoverUrl(b, storage), rating?.AverageRating, rating?.ReviewCount ?? 0,
+            CoverSrcSet(b, storage));
 
     public static AdminBookDto ToAdminDto(this Book b, IFileStorage storage) =>
         new(b.Id, b.Slug.Value, b.Title, b.Subtitle, b.Author, b.Isbn, b.Description,
@@ -88,11 +96,46 @@ public static class BookMappings
             b.Highlights.ToList(), BadgeNames(b.Badges), b.EditionLabel,
             b.EditionGroupId, b.OrderedRelatedBookIds);
 
-    public static BookImageDto ToDto(this BookImage i, IFileStorage storage) =>
-        new(i.Id, storage.GetPublicUrl(i.StorageKey), i.AltText, i.DisplayOrder, i.IsCover);
+    public static BookImageDto ToDto(this BookImage i, IFileStorage storage)
+    {
+        var masterUrl = storage.GetPublicUrl(i.StorageKey);
+        var variants = i.VariantWidths
+            .Select(w => new ImageVariantDto(w, storage.GetPublicUrl(i.VariantStorageKey(w))))
+            .ToList();
+
+        return new BookImageDto(
+            i.Id, masterUrl, i.AltText, i.DisplayOrder, i.IsCover,
+            i.Width, i.Height, variants, BuildSrcSet(masterUrl, i.Width, variants));
+    }
 
     public static string? CoverUrl(Book b, IFileStorage storage) =>
         b.CoverImage is null ? null : storage.GetPublicUrl(b.CoverImage.StorageKey);
+
+    public static string? CoverSrcSet(Book b, IFileStorage storage) =>
+        b.CoverImage?.ToDto(storage).SrcSet;
+
+    /// Smallest variant at least `preferredWidth` wide; the master if there's
+    /// none (older images, or small originals).
+    public static string? CoverThumbnailUrl(Book b, IFileStorage storage, int preferredWidth = 300)
+    {
+        if (b.CoverImage is not { } cover)
+            return null;
+
+        var width = cover.VariantWidths.Where(w => w >= preferredWidth).DefaultIfEmpty().Min();
+        return width == 0
+            ? storage.GetPublicUrl(cover.StorageKey)
+            : storage.GetPublicUrl(cover.VariantStorageKey(width));
+    }
+
+    private static string BuildSrcSet(string masterUrl, int? masterWidth, IReadOnlyList<ImageVariantDto> variants)
+    {
+        var candidates = variants.Select(v => $"{v.Url} {v.Width}w").ToList();
+        if (masterWidth is { } w)
+            candidates.Add($"{masterUrl} {w}w");
+
+        // Older images with no known width: a single plain candidate.
+        return candidates.Count == 0 ? masterUrl : string.Join(", ", candidates);
+    }
 
     private static IReadOnlyList<string> BadgeNames(BookBadges badges) =>
         Enum.GetValues<BookBadges>()

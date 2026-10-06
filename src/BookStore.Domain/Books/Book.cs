@@ -246,7 +246,9 @@ public sealed class Book : AggregateRoot<int>
 
     /// The first image added automatically becomes the cover, so a book is
     /// never left with images but nothing to show in a listing.
-    public BookImage AddImage(string storageKey, string altText)
+    public BookImage AddImage(
+        string storageKey, string altText,
+        int? width = null, int? height = null, IReadOnlyList<int>? variantWidths = null)
     {
         if (_images.Count >= MaxImages)
             throw new InvalidOperationException($"A book can have at most {MaxImages} images.");
@@ -254,7 +256,7 @@ public sealed class Book : AggregateRoot<int>
         var isFirst = _images.Count == 0;
         var nextOrder = isFirst ? 0 : _images.Max(i => i.DisplayOrder) + 1;
 
-        var image = BookImage.Create(storageKey, altText.Trim(), nextOrder, isFirst);
+        var image = BookImage.Create(storageKey, altText.Trim(), nextOrder, isFirst, width, height, variantWidths);
         _images.Add(image);
 
         return image;
@@ -455,4 +457,12 @@ public sealed class Book : AggregateRoot<int>
         SearchText = SearchNormalizer.Normalize(string.Join(' ', parts));
     }
 
+    public void ReplaceImageRendition(
+    int imageId, string storageKey, int width, int height, IReadOnlyList<int> variantWidths)
+    {
+        var image = _images.FirstOrDefault(i => i.Id == imageId)
+            ?? throw new InvalidOperationException($"Image {imageId} does not belong to this book.");
+
+        image.SetRendition(storageKey, width, height, variantWidths);
+    }
 }

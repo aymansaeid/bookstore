@@ -2,6 +2,7 @@
 using BookStore.Application.Abstractions.Messaging;
 using BookStore.Application.Abstractions.Repositories;
 using BookStore.Application.Abstractions.Storage;
+using BookStore.Application.Books; 
 using BookStore.Application.Common;
 using BookStore.Domain.Wishlists;
 
@@ -78,7 +79,8 @@ public sealed class GetWishlistQueryHandler(
                 return new WishlistItemDto(
                     b.Id, b.Slug.Value, b.Title, b.Author,
                     b.Price.Amount, b.Price.Currency, b.AvailableToSell > 0,
-                    b.CoverImage is null ? null : fileStorage.GetPublicUrl(b.CoverImage.StorageKey),
+                    BookMappings.CoverUrl(b, fileStorage),             
+                    BookMappings.CoverThumbnailUrl(b, fileStorage),    
                     i.AddedAtUtc);
             })
             .OrderByDescending(d => d.AddedAtUtc)
