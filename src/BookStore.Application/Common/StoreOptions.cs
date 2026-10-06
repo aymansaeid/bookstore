@@ -20,6 +20,8 @@ public sealed class StoreOptions
     public PickupSettings Pickup { get; init; } = new();
     public GiftWrapSettings GiftWrap { get; init; } = new();
 
+    public SellerSettings Seller { get; init; } = new();
+
 
 }
 
@@ -42,4 +44,17 @@ public sealed class GiftWrapSettings
 
     /// One fee per order, in the store currency.
     public decimal Fee { get; init; }
+}
+
+/// The legal seller identity printed in contracts. Fill in before launch.
+public sealed class SellerSettings
+{
+    public string LegalName { get; init; } = string.Empty;
+    public string Address { get; init; } = string.Empty;
+    public string Phone { get; init; } = string.Empty;
+    public string Email { get; init; } = string.Empty;
+    public string KepAddress { get; init; } = string.Empty;
+    public string TaxOffice { get; init; } = string.Empty;
+    public string TaxNumber { get; init; } = string.Empty;
+    public string MersisNumber { get; init; } = string.Empty;
 }

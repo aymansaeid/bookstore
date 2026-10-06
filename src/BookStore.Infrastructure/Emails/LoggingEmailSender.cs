@@ -10,9 +10,11 @@ public sealed class LoggingEmailSender(ILogger<LoggingEmailSender> logger) : IEm
     public Task SendAsync(EmailMessage message, CancellationToken ct = default)
     {
         logger.LogInformation(
-            "EMAIL (not sent)\n  To: {To}\n  Subject: {Subject}\n---\n{Text}\n---",
-            message.ToEmail, message.Subject, message.TextBody);
-
+        "EMAIL (not sent)\n  To: {To}\n  Subject: {Subject}\n  Attachments: {Attachments}\n---\n{Text}\n---",
+        message.ToEmail, message.Subject,
+        string.Join(", ", (message.Attachments ?? []).Select(a => a.FileName)),
+        message.TextBody);
+        
         return Task.CompletedTask;
     }
 }

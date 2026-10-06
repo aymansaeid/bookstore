@@ -8,7 +8,7 @@ namespace BookStore.Application.Emails;
 
 public static class OrderEmailTemplates
 {
-    public static EmailMessage OrderConfirmation(Order order, StoreOptions store)
+    public static EmailMessage OrderConfirmation(Order order, StoreOptions store, bool includesLegalDocuments = false)
     {
         var money = MoneyFormatter(order.Total.Currency);
         var trackUrl = $"{store.StorefrontBaseUrl}/track?order={Uri.EscapeDataString(order.OrderNumber)}";
@@ -47,6 +47,7 @@ public static class OrderEmailTemplates
             {EmailLayout.LineItemsTable(lines)}
             {totals}
             {EmailLayout.Button(trackUrl, "Track your order")}
+            {(includesLegalDocuments ? "<p style=\"margin:16px 0 0;color:#57534e;font-size:13px;\">Your distance sales contract and pre-information form are attached to this email. Please keep them for your records.</p>" : "")}
             <p style="margin:24px 0 8px;font-weight:600;">Shipping to</p>
             <p style="margin:0;color:#57534e;">{addressHtml}</p>
             """;

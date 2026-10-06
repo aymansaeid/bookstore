@@ -1,4 +1,6 @@
 ﻿using BookStore.Api.Common;
+using BookStore.Application.Legal;
+using BookStore.Application.Legal.Queries;
 using BookStore.Application.Orders;
 using BookStore.Application.Orders.Checkout;
 using BookStore.Application.Orders.Commands;
@@ -24,7 +26,8 @@ public sealed record CheckoutRequest(
     string AcceptedTermsVersion,
     string? ShippingMethod = null,
     bool GiftWrap = false,
-    string? GiftMessage = null);
+    string? GiftMessage = null,
+    string? Language = null);
 
 public sealed record QuoteRequest(
     IReadOnlyCollection<CartLineDto> Lines,
@@ -33,6 +36,8 @@ public sealed record QuoteRequest(
     string? CouponCode,
     string? ShippingMethod,
     bool GiftWrap = false);
+
+public sealed record OrderDocumentsRequest(string OrderNumber, string Email);
 
 public sealed record CancelMyOrderRequest(
     string OrderNumber, string Email, CustomerCancelReason Reason, string? Comment);
@@ -70,7 +75,8 @@ public sealed class OrdersController(ISender sender) : ControllerBase
         HttpContext.Connection.RemoteIpAddress?.ToString(),
         request.ShippingMethod,
         request.GiftWrap,
-        request.GiftMessage);
+        request.GiftMessage,
+        request.Language);
 
         return (await sender.Send(command, ct)).ToActionResult();
     }
@@ -111,4 +117,12 @@ public sealed class OrdersController(ISender sender) : ControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Cancel(CancelMyOrderRequest r, CancellationToken ct) =>
         (await sender.Send(new CancelMyOrderCommand(r.OrderNumber, r.Email, r.Reason, r.Comment), ct)).ToActionResult();
+
+    /// The contract and pre-information form exactly as the buyer accepted them.
+    [HttpPost("documents")]
+    [EnableRateLimiting("order-lookup")]
+    [ProducesResponseType(typeof(IReadOnlyList<OrderLegalRecordDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Documents(OrderDocumentsRequest r, CancellationToken ct) =>
+        (await sender.Send(new GetOrderLegalRecordsQuery(r.OrderNumber, r.Email), ct)).ToActionResult();
 }

@@ -1,5 +1,7 @@
 ﻿using BookStore.Api.Common;
 using BookStore.Application.Common;
+using BookStore.Application.Legal;
+using BookStore.Application.Legal.Queries;
 using BookStore.Application.Orders;
 using BookStore.Application.Orders.Commands;
 using BookStore.Application.Orders.Queries;
@@ -63,4 +65,10 @@ public sealed class AdminOrdersController(ISender sender) : ControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Cancel(int id, CancelOrderRequest request, CancellationToken ct) =>
         (await sender.Send(new CancelOrderCommand(id, request.Reason), ct)).ToActionResult();
+
+    [HttpGet("{id:int}/documents")]
+    [ProducesResponseType(typeof(IReadOnlyList<OrderLegalRecordDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Documents(int id, CancellationToken ct) =>
+    (await sender.Send(new GetAdminOrderLegalRecordsQuery(id), ct)).ToActionResult();
 }

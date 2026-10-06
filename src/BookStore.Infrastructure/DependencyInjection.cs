@@ -168,6 +168,9 @@ public static class DependencyInjection
 
         services.AddSingleton<IImageProcessor, ImageSharpProcessor>();
 
+        services.AddScoped<ILegalDocumentRepository, LegalDocumentRepository>();
+        services.AddScoped<IOrderLegalRecordRepository, OrderLegalRecordRepository>();
+
         return services;
     }
 }

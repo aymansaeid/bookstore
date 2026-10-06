@@ -3,11 +3,14 @@ using BookStore.Application.Abstractions.Messaging;
 using BookStore.Application.Abstractions.Payments;
 using BookStore.Application.Abstractions.Repositories;
 using BookStore.Application.Common;
+using BookStore.Application.Legal;
 using BookStore.Application.Payments;
+using BookStore.Application.Returns;
 using BookStore.Domain.Books;
 using BookStore.Domain.Common;
 using BookStore.Domain.Coupons;
 using BookStore.Domain.Customers;
+using BookStore.Domain.Legal;
 using BookStore.Domain.Orders;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -21,9 +24,12 @@ public sealed class CheckoutCartCommandHandler(
     IShippingZoneRepository shippingZoneRepository,
     ICustomerRepository customerRepository,
     IPaymentGateway paymentGateway,
+    ILegalDocumentRepository legalDocumentRepository,
+    IOrderLegalRecordRepository orderLegalRecordRepository,
     IUnitOfWork unitOfWork,
     IOptions<StoreOptions> storeOptions,
     IOptions<PaymentOptions> paymentOptions,
+    IOptions<ReturnOptions> returnOptions,
     ILogger<CheckoutCartCommandHandler> logger)
     : ICommandHandler<CheckoutCartCommand, CheckoutCartResponse>
 {
@@ -50,9 +56,18 @@ public sealed class CheckoutCartCommandHandler(
             return Result.Failure<CheckoutCartResponse>(CheckoutErrors.IdempotencyKeyReused);
         }
 
-        // 0b. Current terms only.
-        if (!string.Equals(command.AcceptedTermsVersion, payments.CurrentTermsVersion, StringComparison.Ordinal))
-            return Result.Failure<CheckoutCartResponse>(CheckoutErrors.TermsOutdated(payments.CurrentTermsVersion));
+        // 0b. The buyer must have accepted the CURRENTLY published contract in
+        // their language (or the config fallback until one is published).
+        var language = LegalLanguages.Normalize(command.Language);
+        var contract = await legalDocumentRepository.GetPublishedAsync(
+            LegalDocumentType.DistanceSalesContract, language, ct);
+        var preInformation = await legalDocumentRepository.GetPublishedAsync(
+            LegalDocumentType.PreInformationForm, language, ct);
+
+        var requiredTermsVersion = contract?.Version ?? payments.CurrentTermsVersion;
+
+        if (!string.Equals(command.AcceptedTermsVersion, requiredTermsVersion, StringComparison.Ordinal))
+            return Result.Failure<CheckoutCartResponse>(CheckoutErrors.TermsOutdated(requiredTermsVersion));
 
         // 0c. Options that need no data: refuse early.
         if (isPickup && !store.Pickup.Enabled)
@@ -185,7 +200,7 @@ public sealed class CheckoutCartCommandHandler(
         // 7. Build the order.
         var order = Order.Create(
             customerEmail, address, store.Currency,
-            command.IdempotencyKey, payments.CurrentTermsVersion, command.ClientIp);
+            command.IdempotencyKey, requiredTermsVersion, command.ClientIp);
 
         if (customer is not null)
             order.AssignToCustomer(customer.Id);
@@ -200,6 +215,17 @@ public sealed class CheckoutCartCommandHandler(
 
         if (command.GiftWrap)
             order.AddGiftWrap(Money.From(store.GiftWrap.Fee, store.Currency), command.GiftMessage);
+
+        // The exact text this buyer saw, filled in with this order's details.
+        var legalContext = LegalContextFactory.FromOrder(order, language, store, returnOptions.Value.WindowDays);
+        var legalRecords = new[] { preInformation, contract }
+            .Where(document => document is not null)
+            .Select(document => OrderLegalRecord.Create(
+                order.OrderNumber, document!, LegalTemplateRenderer.RenderDocument(document!, legalContext)))
+            .ToList();
+
+        if (legalRecords.Count == 0)
+            logger.LogWarning("Order {OrderNumber} placed with no published legal documents.", order.OrderNumber);
 
         // 8. Payment session.
         var orderQuery = $"?order={Uri.EscapeDataString(order.OrderNumber)}";
@@ -235,6 +261,12 @@ public sealed class CheckoutCartCommandHandler(
         {
             order.AttachCheckoutSession(session.SessionId, session.CheckoutUrl, session.ExpiresAtUtc);
             orderRepository.Add(order);
+
+            // Same SaveChanges as the order: an order never exists without the
+            // documents its buyer accepted.
+            foreach (var record in legalRecords)
+                orderLegalRecordRepository.Add(record);
+
             await unitOfWork.SaveChangesAsync(ct);
         }
         catch

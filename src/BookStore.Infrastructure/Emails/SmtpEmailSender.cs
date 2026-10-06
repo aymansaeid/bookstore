@@ -19,11 +19,16 @@ public sealed class SmtpEmailSender(IOptions<EmailOptions> options) : IEmailSend
 
         // Both parts: clients that block HTML fall back to plain text, and
         // spam filters treat text-less HTML mail with suspicion.
-        mime.Body = new BodyBuilder
+        var body = new BodyBuilder
         {
             HtmlBody = message.HtmlBody,
             TextBody = message.TextBody
-        }.ToMessageBody();
+        };
+
+        foreach (var attachment in message.Attachments ?? [])
+            body.Attachments.Add(attachment.FileName, attachment.Content, ContentType.Parse(attachment.ContentType));
+
+        mime.Body = body.ToMessageBody();
 
         // A fresh connection per email. Fine at this volume; if you ever send
         // in bulk, pool the client instead.

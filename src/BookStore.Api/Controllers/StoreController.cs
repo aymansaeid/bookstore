@@ -1,5 +1,7 @@
 ﻿using BookStore.Application.Common;
+using BookStore.Application.Legal.Queries;
 using BookStore.Application.Payments;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
@@ -14,18 +16,21 @@ public sealed record StoreConfigDto(
 
 [ApiController]
 [Route("api/store")]
-public sealed class StoreController(IOptions<StoreOptions> storeOptions, IOptions<PaymentOptions> paymentOptions)
-    : ControllerBase
+public sealed class StoreController(
+    ISender sender, IOptions<StoreOptions> storeOptions, IOptions<PaymentOptions> paymentOptions) : ControllerBase
 {
-    /// Pure configuration, so it reads options directly rather than going
-    /// through MediatR: there's no business logic to put in a handler.
+    /// ?lang=ar|tr|en selects which language's contract version to accept.
     [HttpGet("config")]
     [ProducesResponseType(typeof(StoreConfigDto), StatusCodes.Status200OK)]
-    public IActionResult GetConfig() =>
-        Ok(new StoreConfigDto(
+    public async Task<IActionResult> GetConfig([FromQuery] string? lang, CancellationToken ct)
+    {
+        var termsVersion = (await sender.Send(new GetCurrentTermsVersionQuery(lang), ct)).Value;
+
+        return Ok(new StoreConfigDto(
             storeOptions.Value.Name,
             storeOptions.Value.Currency,
-            paymentOptions.Value.CurrentTermsVersion,
+            termsVersion,
             paymentOptions.Value.CheckoutSessionMinutes,
             paymentOptions.Value.Provider == PaymentProvider.Mock));
+    }
 }

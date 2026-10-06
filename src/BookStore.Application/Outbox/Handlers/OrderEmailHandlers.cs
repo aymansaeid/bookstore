@@ -6,6 +6,7 @@ using BookStore.Application.Emails;
 using BookStore.Domain.Orders.Events;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using BookStore.Domain.Legal;
 
 namespace BookStore.Application.Outbox.Handlers;
 
@@ -16,6 +17,7 @@ public sealed class OrderPaidEmailHandler(
     IOrderRepository orderRepository,
     IEmailSender emailSender,
     IOptions<StoreOptions> storeOptions,
+    IOrderLegalRecordRepository legalRecordRepository,
     ILogger<OrderPaidEmailHandler> logger) : IOutboxMessageHandler
 {
     public string MessageType => nameof(OrderPaidDomainEvent);
@@ -33,8 +35,26 @@ public sealed class OrderPaidEmailHandler(
             return;
         }
 
-        await emailSender.SendAsync(OrderEmailTemplates.OrderConfirmation(order, storeOptions.Value), ct);
+        var records = await legalRecordRepository.ListByOrderNumberAsync(order.OrderNumber, ct);
+
+        var message = OrderEmailTemplates.OrderConfirmation(order, storeOptions.Value, includesLegalDocuments: records.Count > 0)
+            with
+        {
+            Attachments = records.Select(r => new EmailAttachment(
+                $"{FileSlug(r.DocumentType)}-{order.OrderNumber}-v{r.Version}.html",
+                "text/html; charset=utf-8",
+                System.Text.Encoding.UTF8.GetBytes(r.RenderedHtml))).ToList()
+        };
+
+        await emailSender.SendAsync(message, ct);
     }
+
+    private static string FileSlug(LegalDocumentType type) => type switch
+    {
+        LegalDocumentType.DistanceSalesContract => "distance-sales-contract",
+        LegalDocumentType.PreInformationForm => "pre-information-form",
+        _ => type.ToString().ToLowerInvariant()
+    };
 }
 
 public sealed class OrderShippedEmailHandler(
@@ -82,6 +102,6 @@ public sealed class OrderCancelledEmailHandler(
         // WasPaid comes from the event, not the order: by now the order is
         // Cancelled and no longer remembers whether it had been paid.
         await emailSender.SendAsync(
-     OrderEmailTemplates.OrderCancelled(order, e.WasPaid, storeOptions.Value, e.ByCustomer), ct);
+            OrderEmailTemplates.OrderCancelled(order, e.WasPaid, storeOptions.Value, e.ByCustomer), ct);
     }
 }
