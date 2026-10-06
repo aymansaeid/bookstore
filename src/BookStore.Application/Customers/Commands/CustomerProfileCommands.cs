@@ -86,7 +86,7 @@ public sealed class DeleteCustomerAccountCommandHandler(
     IReviewRepository reviewRepository,
     IRefreshTokenRepository refreshTokenRepository,
     IPasswordHasher passwordHasher,
-    IUnitOfWork unitOfWork)
+    IUnitOfWork unitOfWork, ILibraryEntryRepository libraryRepository)
     : ICommandHandler<DeleteCustomerAccountCommand>
 {
     public async Task<Result> Handle(DeleteCustomerAccountCommand command, CancellationToken ct)
@@ -108,6 +108,7 @@ public sealed class DeleteCustomerAccountCommandHandler(
         // Reviews are personal expression with no retention obligation (unlike
         // invoices), so under KVKK they're deleted rather than anonymized.
         await reviewRepository.DeleteByCustomerAsync(customer.Id, ct);
+        await libraryRepository.DeleteByCustomerAsync(customer.Id, ct);
 
         customer.Anonymize();
         await refreshTokenRepository.RevokeAllForCustomerAsync(customer.Id, "Account deleted", ct);

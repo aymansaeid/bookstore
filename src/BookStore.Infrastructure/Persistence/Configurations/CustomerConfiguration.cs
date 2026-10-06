@@ -24,6 +24,12 @@ public sealed class CustomerConfiguration : IEntityTypeConfiguration<Customer>
         builder.Property(c => c.IsAnonymized).IsRequired();
         builder.Property(c => c.AcceptsMarketingEmails).IsRequired();
         builder.Property(c => c.RowVersion).IsRowVersion();
+        builder.Property(c => c.ReadingLevel).HasConversion<string>().HasMaxLength(20);
+        builder.Property(c => c.MonthlyBudget).HasColumnType("decimal(18,2)");
+
+        builder.PrimitiveCollection(c => c.InterestCategoryIds)
+        .HasField("_interestCategoryIds")
+        .UsePropertyAccessMode(PropertyAccessMode.Field);
 
         builder.OwnsMany(c => c.Addresses, address =>
         {

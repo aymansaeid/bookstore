@@ -56,4 +56,12 @@ public sealed class ReportingQueries(BookStoreDbContext dbContext) : IReportingQ
         .Where(r => r.OrderId == o.Id && r.Status == ReturnStatus.Completed)
         .Sum(r => (decimal?)r.RefundAmount.Amount) ?? 0m))
             .ToListAsync(ct);
+
+    public Task<int> CountUnitsSoldAsync(int bookId, DateTimeOffset sinceUtc, CancellationToken ct = default) =>
+    dbContext.Orders
+        .AsNoTracking()
+        .Where(o => RevenueStatuses.Contains(o.Status) && o.PaidAtUtc >= sinceUtc)
+        .SelectMany(o => o.Lines)
+        .Where(l => l.BookId == bookId)
+        .SumAsync(l => (int?)l.Quantity ?? 0, ct);
 }

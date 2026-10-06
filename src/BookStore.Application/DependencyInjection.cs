@@ -1,6 +1,8 @@
 ﻿using BookStore.Application.Abstractions.Outbox;
 using BookStore.Application.Behaviors;
+using BookStore.Application.Books.Queries;
 using BookStore.Application.Catalog;
+using BookStore.Application.Library;
 using BookStore.Application.Orders;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
@@ -31,6 +33,8 @@ public static class DependencyInjection
 
         services.AddScoped<TaxonomyLookupLoader>();
         services.AddScoped<OrderCancellation>();
+        services.AddScoped<LibraryReader>();
+        services.AddScoped<BookPageAssembler>();
 
         return services;
     }

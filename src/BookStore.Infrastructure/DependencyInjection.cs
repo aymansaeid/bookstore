@@ -171,6 +171,10 @@ public static class DependencyInjection
         services.AddScoped<ILegalDocumentRepository, LegalDocumentRepository>();
         services.AddScoped<IOrderLegalRecordRepository, OrderLegalRecordRepository>();
 
+        services.AddMemoryCache();
+        services.AddScoped<ILibraryEntryRepository, LibraryEntryRepository>();
+        services.AddScoped<IStoreStatsQueries, StoreStatsQueries>();
+
         return services;
     }
 }

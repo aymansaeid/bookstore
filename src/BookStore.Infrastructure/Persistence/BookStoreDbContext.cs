@@ -4,6 +4,7 @@ using BookStore.Domain.Catalog;
 using BookStore.Domain.Coupons;
 using BookStore.Domain.Customers;
 using BookStore.Domain.Legal;
+using BookStore.Domain.Library;
 using BookStore.Domain.Notifications;
 using BookStore.Domain.Orders;
 using BookStore.Domain.Returns;
@@ -35,6 +36,8 @@ public sealed class BookStoreDbContext(DbContextOptions<BookStoreDbContext> opti
     public DbSet<ReturnRequest> ReturnRequests => Set<ReturnRequest>();
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<Muhaqqiq> Muhaqqiqs => Set<Muhaqqiq>();
+
+    public DbSet<LibraryEntry> LibraryEntries => Set<LibraryEntry>();
 
     // BookStoreDbContext (with using BookStore.Domain.Legal;)
     public DbSet<LegalDocument> LegalDocuments => Set<LegalDocument>();

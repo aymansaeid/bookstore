@@ -34,7 +34,8 @@ public sealed record PublicBookDto(
     bool InstallmentsAllowed, IReadOnlyList<string> Highlights, IReadOnlyList<string> Badges,
     string? EditionLabel,
     IReadOnlyList<BookSummaryDto>? Editions, IReadOnlyList<BookSummaryDto>? Related,
-    string? CoverImageSrcSet);
+    string? CoverImageSrcSet,
+    int? SoldLast7Days);
 
 public sealed record AdminBookDto(
     int Id, string Slug, string Title, string? Subtitle, string Author, string Isbn, string Description,
@@ -56,7 +57,8 @@ public static class BookMappings
         IFileStorage storage,
         RatingSnapshot? rating = null,
         TaxonomyLookup? taxonomy = null,
-        BookPageExtras? extras = null)
+        BookPageExtras? extras = null,
+        int? soldLast7Days = null)
     {
         var lookup = taxonomy ?? TaxonomyLookup.Empty;
 
@@ -74,7 +76,8 @@ public static class BookMappings
             b.InstallmentsAllowed, b.Highlights.ToList(), BadgeNames(b.Badges),
             b.EditionLabel,
             extras?.Editions, extras?.Related,
-            CoverSrcSet(b, storage));
+            CoverSrcSet(b, storage),
+            soldLast7Days);
     }
 
     public static BookSummaryDto ToSummaryDto(this Book b, IFileStorage storage, RatingSnapshot? rating) =>

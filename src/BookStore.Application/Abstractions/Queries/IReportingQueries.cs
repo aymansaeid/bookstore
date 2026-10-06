@@ -24,4 +24,6 @@ public interface IReportingQueries
     /// accountant sees refunds and cancellations too.
     Task<IReadOnlyList<OrderExportRow>> ListOrdersForExportAsync(
         DateTimeOffset fromUtc, DateTimeOffset toUtcExclusive, CancellationToken ct = default);
+
+    Task<int> CountUnitsSoldAsync(int bookId, DateTimeOffset sinceUtc, CancellationToken ct = default);
 }

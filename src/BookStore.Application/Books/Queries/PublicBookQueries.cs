@@ -29,31 +29,15 @@ public sealed class GetPublicBooksQueryHandler(
     }
 }
 
-public sealed record GetPublicBookByIdQuery(int BookId) : IQuery<PublicBookDto>;
-
-public sealed class GetPublicBookByIdQueryHandler(
+/// Everything the single-book page needs, shared by the id and slug routes.
+public sealed class BookPageAssembler(
     IBookRepository bookRepository,
     IReviewQueries reviewQueries,
+    IReportingQueries reportingQueries,
     TaxonomyLookupLoader taxonomyLoader,
     IFileStorage fileStorage)
-    : IQueryHandler<GetPublicBookByIdQuery, PublicBookDto>
 {
-    public async Task<Result<PublicBookDto>> Handle(GetPublicBookByIdQuery query, CancellationToken ct)
-    {
-        var book = await bookRepository.GetByIdAsync(query.BookId, ct);
-        if (book is null || !book.IsActive)
-            return Result.Failure<PublicBookDto>(BookErrors.NotFound(query.BookId));
-
-        return Result.Success(await MapAsync(book, bookRepository, reviewQueries, taxonomyLoader, fileStorage, ct));
-    }
-
-    internal static async Task<PublicBookDto> MapAsync(
-     Book book,
-     IBookRepository bookRepository,
-     IReviewQueries reviewQueries,
-     TaxonomyLookupLoader taxonomyLoader,
-     IFileStorage fileStorage,
-     CancellationToken ct)
+    public async Task<PublicBookDto> AssembleAsync(Book book, CancellationToken ct)
     {
         var editions = book.EditionGroupId is { } groupId
             ? (await bookRepository.ListEditionGroupAsync(groupId, forUpdate: false, ct))
@@ -67,32 +51,43 @@ public sealed class GetPublicBookByIdQueryHandler(
             ? new Dictionary<int, Book>()
             : (await bookRepository.ListByIdsAsync(relatedIds, ct)).ToDictionary(b => b.Id);
 
-        // Curated order, hidden books skipped.
         var related = relatedIds
             .Where(id => relatedById.TryGetValue(id, out var r) && r.IsActive)
             .Select(id => relatedById[id])
             .ToList();
 
-        // One ratings query for the book and every card around it.
         var allIds = editions.Select(b => b.Id).Concat(related.Select(b => b.Id)).Append(book.Id).Distinct().ToList();
         var ratings = await reviewQueries.GetRatingSnapshotsAsync(allIds, ct);
         var taxonomy = await taxonomyLoader.LoadAsync(ct);
+
+        var soldLast7Days = await reportingQueries.CountUnitsSoldAsync(book.Id, DateTimeOffset.UtcNow.AddDays(-7), ct);
 
         var extras = new BookPageExtras(
             editions.Select(b => b.ToSummaryDto(fileStorage, ratings.GetValueOrDefault(b.Id))).ToList(),
             related.Select(b => b.ToSummaryDto(fileStorage, ratings.GetValueOrDefault(b.Id))).ToList());
 
-        return book.ToPublicDto(fileStorage, ratings.GetValueOrDefault(book.Id), taxonomy, extras);
+        return book.ToPublicDto(fileStorage, ratings.GetValueOrDefault(book.Id), taxonomy, extras, soldLast7Days);
+    }
+}
+
+public sealed record GetPublicBookByIdQuery(int BookId) : IQuery<PublicBookDto>;
+
+public sealed class GetPublicBookByIdQueryHandler(IBookRepository bookRepository, BookPageAssembler assembler)
+    : IQueryHandler<GetPublicBookByIdQuery, PublicBookDto>
+{
+    public async Task<Result<PublicBookDto>> Handle(GetPublicBookByIdQuery query, CancellationToken ct)
+    {
+        var book = await bookRepository.GetByIdAsync(query.BookId, ct);
+        if (book is null || !book.IsActive)
+            return Result.Failure<PublicBookDto>(BookErrors.NotFound(query.BookId));
+
+        return Result.Success(await assembler.AssembleAsync(book, ct));
     }
 }
 
 public sealed record GetPublicBookBySlugQuery(string Slug) : IQuery<PublicBookDto>;
 
-public sealed class GetPublicBookBySlugQueryHandler(
-    IBookRepository bookRepository,
-    IReviewQueries reviewQueries,
-    TaxonomyLookupLoader taxonomyLoader,
-    IFileStorage fileStorage)
+public sealed class GetPublicBookBySlugQueryHandler(IBookRepository bookRepository, BookPageAssembler assembler)
     : IQueryHandler<GetPublicBookBySlugQuery, PublicBookDto>
 {
     public async Task<Result<PublicBookDto>> Handle(GetPublicBookBySlugQuery query, CancellationToken ct)
@@ -104,15 +99,12 @@ public sealed class GetPublicBookBySlugQueryHandler(
         }
         catch (ArgumentException)
         {
-            // A "slug" made only of punctuation can't be normalised: it
-            // simply doesn't exist.
             book = null;
         }
 
         if (book is null || !book.IsActive)
             return Result.Failure<PublicBookDto>(BookErrors.SlugNotFound(query.Slug));
 
-        return Result.Success(await GetPublicBookByIdQueryHandler.MapAsync(
-     book, bookRepository, reviewQueries, taxonomyLoader, fileStorage, ct));
+        return Result.Success(await assembler.AssembleAsync(book, ct));
     }
 }

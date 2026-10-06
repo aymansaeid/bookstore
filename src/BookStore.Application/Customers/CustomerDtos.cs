@@ -1,10 +1,12 @@
-﻿using BookStore.Domain.Customers;
+﻿using BookStore.Domain.Books;
+using BookStore.Domain.Customers;
 
 namespace BookStore.Application.Customers;
 
 public sealed record CustomerProfileDto(
     int Id, string Email, string FirstName, string LastName, string? Phone,
-    bool IsEmailVerified, bool AcceptsMarketingEmails, DateTimeOffset CreatedAtUtc);
+    bool IsEmailVerified, bool AcceptsMarketingEmails, DateTimeOffset CreatedAtUtc,
+    ReaderLevel? ReadingLevel, decimal? MonthlyBudget, IReadOnlyList<int> InterestCategoryIds);
 
 public sealed record CustomerAddressDto(
     int Id, string Label, string RecipientName, string Phone, string Line1, string? Line2,
@@ -19,7 +21,8 @@ public static class CustomerMappings
 {
     public static CustomerProfileDto ToProfileDto(this Customer c) =>
         new(c.Id, c.Email, c.FirstName, c.LastName, c.Phone,
-            c.IsEmailVerified, c.AcceptsMarketingEmails, c.CreatedAtUtc);
+            c.IsEmailVerified, c.AcceptsMarketingEmails, c.CreatedAtUtc,
+            c.ReadingLevel, c.MonthlyBudget, c.InterestCategoryIds.ToList());
 
     public static CustomerAddressDto ToDto(this CustomerAddress a) =>
         new(a.Id, a.Label, a.RecipientName, a.Phone, a.Line1, a.Line2,

@@ -1,4 +1,5 @@
-﻿using BookStore.Domain.Common;
+﻿using BookStore.Domain.Books;
+using BookStore.Domain.Common;
 using BookStore.Domain.Customers.Events;
 
 namespace BookStore.Domain.Customers;
@@ -6,6 +7,16 @@ namespace BookStore.Domain.Customers;
 public sealed class Customer : AggregateRoot<int>
 {
     public const int MaxAddresses = 10;
+
+    public const int MaxInterests = 10;
+    public const decimal MaxMonthlyBudget = 1_000_000m;
+
+    /// «ما يعرفه أفندي عنك»: self-declared, all optional.
+    public ReaderLevel? ReadingLevel { get; private set; }
+    public decimal? MonthlyBudget { get; private set; }
+
+    private readonly List<int> _interestCategoryIds = [];
+    public IReadOnlyCollection<int> InterestCategoryIds => _interestCategoryIds.AsReadOnly();
 
     public string Email { get; private set; } = string.Empty;
     public string PasswordHash { get; private set; } = string.Empty;
@@ -117,6 +128,9 @@ public sealed class Customer : AggregateRoot<int>
         IsActive = false;
         IsAnonymized = true;
         _addresses.Clear();
+        ReadingLevel = null;
+        MonthlyBudget = null;
+        _interestCategoryIds.Clear();
     }
 
     public CustomerAddress AddAddress(
@@ -177,4 +191,22 @@ public sealed class Customer : AggregateRoot<int>
     /// What appears publicly on reviews: first name and surname initial.
     public string PublicDisplayName =>
         string.IsNullOrEmpty(LastName) ? FirstName : $"{FirstName} {LastName[0]}.";
+
+    /// Category existence is checked by the application layer; this guards
+    /// the rules a customer can enforce on its own.
+    public void SetReadingProfile(ReaderLevel? level, decimal? monthlyBudget, IReadOnlyCollection<int> interestCategoryIds)
+    {
+        if (monthlyBudget is < 0 or > MaxMonthlyBudget)
+            throw new ArgumentOutOfRangeException(nameof(monthlyBudget), $"Budget must be between 0 and {MaxMonthlyBudget}.");
+        if (interestCategoryIds.Count > MaxInterests)
+            throw new ArgumentException($"At most {MaxInterests} interests.", nameof(interestCategoryIds));
+        if (interestCategoryIds.Distinct().Count() != interestCategoryIds.Count)
+            throw new ArgumentException("Each interest can appear only once.", nameof(interestCategoryIds));
+
+        ReadingLevel = level;
+        MonthlyBudget = monthlyBudget;
+
+        _interestCategoryIds.Clear();
+        _interestCategoryIds.AddRange(interestCategoryIds);
+    }
 }

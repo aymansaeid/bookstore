@@ -2,11 +2,14 @@
 using BookStore.Application.Customers;
 using BookStore.Application.Customers.Commands;
 using BookStore.Application.Customers.Queries;
+using BookStore.Application.Library;
 using BookStore.Application.Orders;
 using BookStore.Application.Reviews;
 using BookStore.Application.Reviews.Commands;
 using BookStore.Application.Reviews.Queries;
 using BookStore.Application.Wishlists;
+using BookStore.Domain.Books;
+using BookStore.Domain.Library;
 using BookStore.Infrastructure.Auth;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -17,6 +20,8 @@ using System.Security.Claims;
 
 namespace BookStore.Api.Controllers;
 
+public sealed record ReadingProfileRequest(ReaderLevel? ReadingLevel, decimal? MonthlyBudget, IReadOnlyList<int>? InterestCategoryIds);
+public sealed record ReadingProgressRequest(ReadingStatus Status, int ProgressPercent);
 public sealed record UpdateProfileRequest(string FirstName, string LastName, string? Phone, bool AcceptsMarketingEmails);
 public sealed record ChangeCustomerPasswordRequest(string CurrentPassword, string NewPassword);
 public sealed record DeleteAccountRequest(string Password);
@@ -142,4 +147,37 @@ public sealed class CustomerAccountController(ISender sender) : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteReview(int reviewId, CancellationToken ct) =>
         (await sender.Send(new DeleteMyReviewCommand(CustomerId(), reviewId), ct)).ToActionResult();
+
+    /// «ما يعرفه أفندي عنك»: level, monthly budget, interests (category ids).
+    [HttpPut("reading-profile")]
+    [ProducesResponseType(typeof(CustomerProfileDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> UpdateReadingProfile(ReadingProfileRequest r, CancellationToken ct) =>
+        (await sender.Send(new UpdateReadingProfileCommand(
+            CustomerId(), r.ReadingLevel, r.MonthlyBudget, r.InterestCategoryIds), ct)).ToActionResult();
+
+    [HttpGet("library")]
+    [ProducesResponseType(typeof(LibraryDto), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetLibrary(CancellationToken ct) =>
+        (await sender.Send(new GetLibraryQuery(CustomerId()), ct)).ToActionResult();
+
+    [HttpPut("library/{bookId:int}/progress")]
+    [ProducesResponseType(typeof(LibraryItemDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> UpdateProgress(int bookId, ReadingProgressRequest r, CancellationToken ct) =>
+        (await sender.Send(new UpdateReadingProgressCommand(CustomerId(), bookId, r.Status, r.ProgressPercent), ct))
+        .ToActionResult();
+
+    /// "I already own this one" (bought elsewhere).
+    [HttpPut("library/{bookId:int}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> AddOwnedBook(int bookId, CancellationToken ct) =>
+        (await sender.Send(new AddOwnedBookCommand(CustomerId(), bookId), ct)).ToActionResult();
+
+    /// Removes a manually added book; purchased books stay.
+    [HttpDelete("library/{bookId:int}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> RemoveOwnedBook(int bookId, CancellationToken ct) =>
+        (await sender.Send(new RemoveOwnedBookCommand(CustomerId(), bookId), ct)).ToActionResult();
 }

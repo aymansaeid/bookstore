@@ -25,4 +25,14 @@ public sealed class ReturnRequestRepository(BookStoreDbContext dbContext) : IRet
             .FirstOrDefaultAsync(ct);
 
     public void Add(ReturnRequest request) => dbContext.ReturnRequests.Add(request);
+
+    public async Task<IReadOnlyList<ReturnRequest>> ListCompletedForOrdersAsync(
+    IReadOnlyCollection<int> orderIds, CancellationToken ct = default) =>
+    orderIds.Count == 0
+        ? []
+        : await dbContext.ReturnRequests
+            .AsNoTracking()
+            .Include(r => r.Lines)
+            .Where(r => orderIds.Contains(r.OrderId) && r.Status == ReturnStatus.Completed)
+            .ToListAsync(ct);
 }

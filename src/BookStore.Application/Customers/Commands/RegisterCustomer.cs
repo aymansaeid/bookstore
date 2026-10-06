@@ -7,6 +7,7 @@ using BookStore.Application.Auth;
 using BookStore.Application.Common;
 using BookStore.Application.Emails;
 using BookStore.Domain.Auth;
+using BookStore.Domain.Books;
 using BookStore.Domain.Customers;
 using FluentValidation;
 using Microsoft.Extensions.Options;
@@ -15,7 +16,9 @@ namespace BookStore.Application.Customers.Commands;
 
 public sealed record RegisterCustomerCommand(
     string Email, string Password, string FirstName, string LastName,
-    string? Phone, bool AcceptsMarketingEmails) : ICommand;
+    string? Phone, bool AcceptsMarketingEmails,
+    ReaderLevel? ReadingLevel = null,
+    IReadOnlyList<int>? InterestCategoryIds = null) : ICommand;
 
 public sealed class RegisterCustomerCommandValidator : AbstractValidator<RegisterCustomerCommand>
 {
@@ -36,7 +39,8 @@ public sealed class RegisterCustomerCommandHandler(
     ITokenHasher tokenHasher,
     IEmailSender emailSender,
     IUnitOfWork unitOfWork,
-    IOptions<StoreOptions> storeOptions)
+    IOptions<StoreOptions> storeOptions,
+    ICategoryRepository categoryRepository)
     : ICommandHandler<RegisterCustomerCommand>
 {
     private static readonly TimeSpan VerificationValidity = TimeSpan.FromHours(24);
@@ -62,6 +66,21 @@ public sealed class RegisterCustomerCommandHandler(
             email,
             passwordHasher.Hash(command.Password),
             command.FirstName, command.LastName, command.Phone, command.AcceptsMarketingEmails);
+
+        // Interests picked during sign-up (spec 5.8). Stale or unknown ids are
+        // dropped silently: a tag list must never be the reason a sign-up fails.
+        if (command.ReadingLevel is not null || command.InterestCategoryIds is { Count: > 0 })
+        {
+            var active = (await categoryRepository.ListAsync(includeInactive: false, ct)).Select(c => c.Id).ToHashSet();
+
+            var interests = (command.InterestCategoryIds ?? [])
+                .Where(active.Contains)
+                .Distinct()
+                .Take(Customer.MaxInterests)
+                .ToList();
+
+            customer.SetReadingProfile(command.ReadingLevel, null, interests);
+        }
 
         customerRepository.Add(customer);
         await unitOfWork.SaveChangesAsync(ct); // Needed so customer.Id exists.

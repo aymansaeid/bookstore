@@ -1,6 +1,8 @@
-﻿using BookStore.Application.Common;
+﻿using BookStore.Application.Abstractions.Queries;
+using BookStore.Application.Common;
 using BookStore.Application.Legal.Queries;
 using BookStore.Application.Payments;
+using BookStore.Application.Store;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -32,5 +34,20 @@ public sealed class StoreController(
             termsVersion,
             paymentOptions.Value.CheckoutSessionMinutes,
             paymentOptions.Value.Provider == PaymentProvider.Mock));
+    }
+
+    /// Home hero «أرقام الثقة». Cached 10 minutes.
+    [HttpGet("stats")]
+    [ProducesResponseType(typeof(StoreStatsDto), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetStats(CancellationToken ct)
+    {
+        var result = await sender.Send(new GetStoreStatsQuery(), ct);
+
+        return result.IsSuccess
+            ? Ok(result.Value)
+            : BadRequest(result.Error);
+
+        // Alternatively, if you know this query never fails, you can just do:
+        // return Ok((await sender.Send(new GetStoreStatsQuery(), ct)).Value);
     }
 }

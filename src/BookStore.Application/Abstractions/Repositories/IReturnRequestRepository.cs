@@ -13,4 +13,6 @@ public interface IReturnRequestRepository
     Task<ReturnRequest?> GetLatestForOrderAsync(int orderId, CancellationToken ct = default);
 
     void Add(ReturnRequest request);
+
+    Task<IReadOnlyList<ReturnRequest>> ListCompletedForOrdersAsync(IReadOnlyCollection<int> orderIds, CancellationToken ct = default);
 }
