@@ -225,23 +225,34 @@ public sealed class Book : AggregateRoot<int>
         if (newPrice.Amount <= 0)
             throw new ArgumentOutOfRangeException(nameof(newPrice), "Price must be positive.");
 
+        var oldPrice = Price;
         Price = newPrice;
 
-        // A price raised to (or above) the old price means there's no discount
-        // any more. Keeping it would show a crossed-out price BELOW the real
-        // one, which misleads customers.
         if (CompareAtPrice is { } was && was <= newPrice.Amount)
             CompareAtPrice = null;
+
+        // Only real drops on visible books. Re-saving the same price, or
+        // raising it, notifies nobody.
+        if (IsActive && newPrice.Amount < oldPrice.Amount)
+            Raise(new BookPriceDroppedDomainEvent(Id, oldPrice.Amount, newPrice.Amount, newPrice.Currency, DateTimeOffset.UtcNow));
     }
 
     public void Activate()
     {
+        var wasInactive = !IsActive;
         var wasUnavailable = !IsActive || AvailableToSell <= 0;
         IsActive = true;
 
         if (wasUnavailable && AvailableToSell > 0)
             Raise(new BookBackInStockDomainEvent(Id, Title, DateTimeOffset.UtcNow));
+
+        // A hidden book going live counts as "new" for its muhaqqiqs' followers.
+        // Each (book, muhaqqiq) pair notifies once ever, so hiding and showing
+        // the book again re-raises this event but notifies nobody twice.
+        if (wasInactive && _muhaqqiqs.Count > 0)
+            Raise(new MuhaqqiqWorkAddedDomainEvent(Id, OrderedMuhaqqiqIds, DateTimeOffset.UtcNow));
     }
+
     public void Deactivate() => IsActive = false;
 
     /// The first image added automatically becomes the cover, so a book is
@@ -356,6 +367,8 @@ public sealed class Book : AggregateRoot<int>
         if (muhaqqiqIds.Distinct().Count() != muhaqqiqIds.Count)
             throw new ArgumentException("Each muhaqqiq can be credited only once.", nameof(muhaqqiqIds));
 
+        var addedMuhaqqiqIds = muhaqqiqIds.Where(id => _muhaqqiqs.All(link => link.MuhaqqiqId != id)).ToList();
+
         CategoryId = categoryId;
 
         _muhaqqiqs.RemoveAll(link => !muhaqqiqIds.Contains(link.MuhaqqiqId));
@@ -369,6 +382,9 @@ public sealed class Book : AggregateRoot<int>
             else
                 _muhaqqiqs.Add(BookMuhaqqiq.Create(muhaqqiqIds[i], i));
         }
+
+        if (IsActive && addedMuhaqqiqIds.Count > 0)
+            Raise(new MuhaqqiqWorkAddedDomainEvent(Id, addedMuhaqqiqIds, DateTimeOffset.UtcNow));
     }
 
     public void SetMerchandising(

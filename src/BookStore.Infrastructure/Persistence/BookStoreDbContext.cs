@@ -42,6 +42,11 @@ public sealed class BookStoreDbContext(DbContextOptions<BookStoreDbContext> opti
     // BookStoreDbContext (with using BookStore.Domain.Legal;)
     public DbSet<LegalDocument> LegalDocuments => Set<LegalDocument>();
     public DbSet<OrderLegalRecord> OrderLegalRecords => Set<OrderLegalRecord>();
+
+    // BookStoreDbContext (with using BookStore.Domain.Notifications;)
+    public DbSet<Notification> Notifications => Set<Notification>();
+    public DbSet<MuhaqqiqFollow> MuhaqqiqFollows => Set<MuhaqqiqFollow>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(BookStoreDbContext).Assembly);

@@ -34,6 +34,7 @@ public sealed class WishlistItemConfiguration : IEntityTypeConfiguration<Wishlis
     {
         builder.ToTable("WishlistItems");
         builder.HasKey(w => w.Id);
+        builder.HasIndex(w => w.BookId);
 
         builder.HasIndex(w => new { w.CustomerId, w.BookId }).IsUnique();
         builder.HasIndex(w => w.CustomerId);

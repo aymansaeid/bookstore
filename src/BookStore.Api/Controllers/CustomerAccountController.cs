@@ -3,6 +3,7 @@ using BookStore.Application.Customers;
 using BookStore.Application.Customers.Commands;
 using BookStore.Application.Customers.Queries;
 using BookStore.Application.Library;
+using BookStore.Application.Notifications;
 using BookStore.Application.Orders;
 using BookStore.Application.Reviews;
 using BookStore.Application.Reviews.Commands;
@@ -180,4 +181,43 @@ public sealed class CustomerAccountController(ISender sender) : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> RemoveOwnedBook(int bookId, CancellationToken ct) =>
         (await sender.Send(new RemoveOwnedBookCommand(CustomerId(), bookId), ct)).ToActionResult();
+
+    [HttpGet("notifications")]
+    [ProducesResponseType(typeof(NotificationsPageDto), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetNotifications(
+    CancellationToken ct, [FromQuery] bool unreadOnly = false, [FromQuery] int page = 1, [FromQuery] int pageSize = 20) =>
+    (await sender.Send(new GetNotificationsQuery(CustomerId(), unreadOnly, page, pageSize), ct)).ToActionResult();
+
+    /// For the header bell: poll about once a minute.
+    [HttpGet("notifications/unread-count")]
+    [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetUnreadCount(CancellationToken ct) =>
+        (await sender.Send(new GetUnreadNotificationCountQuery(CustomerId()), ct)).ToActionResult();
+
+    [HttpPost("notifications/{notificationId:int}/read")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> MarkRead(int notificationId, CancellationToken ct) =>
+        (await sender.Send(new MarkNotificationReadCommand(CustomerId(), notificationId), ct)).ToActionResult();
+
+    [HttpPost("notifications/read-all")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> MarkAllRead(CancellationToken ct) =>
+        (await sender.Send(new MarkAllNotificationsReadCommand(CustomerId()), ct)).ToActionResult();
+
+    [HttpGet("follows/muhaqqiqs")]
+    [ProducesResponseType(typeof(IReadOnlyList<FollowedMuhaqqiqDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetFollows(CancellationToken ct) =>
+        (await sender.Send(new GetFollowedMuhaqqiqsQuery(CustomerId()), ct)).ToActionResult();
+
+    [HttpPut("follows/muhaqqiqs/{muhaqqiqId:int}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Follow(int muhaqqiqId, CancellationToken ct) =>
+        (await sender.Send(new FollowMuhaqqiqCommand(CustomerId(), muhaqqiqId), ct)).ToActionResult();
+
+    [HttpDelete("follows/muhaqqiqs/{muhaqqiqId:int}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> Unfollow(int muhaqqiqId, CancellationToken ct) =>
+        (await sender.Send(new UnfollowMuhaqqiqCommand(CustomerId(), muhaqqiqId), ct)).ToActionResult();
 }

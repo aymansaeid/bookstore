@@ -175,6 +175,9 @@ public static class DependencyInjection
         services.AddScoped<ILibraryEntryRepository, LibraryEntryRepository>();
         services.AddScoped<IStoreStatsQueries, StoreStatsQueries>();
 
+        services.AddScoped<INotificationRepository, NotificationRepository>();
+        services.AddScoped<IMuhaqqiqFollowRepository, MuhaqqiqFollowRepository>();
+
         return services;
     }
 }

@@ -9,4 +9,8 @@ public interface IWishlistRepository
     Task<WishlistItem?> GetAsync(int customerId, int bookId, CancellationToken ct = default);
     void Add(WishlistItem item);
     void Remove(WishlistItem item);
+    Task<IReadOnlyList<int>> ListCustomerIdsByBookAsync(int bookId, CancellationToken ct = default);
+    Task DeleteByCustomerAsync(int customerId, CancellationToken ct = default);
+
+
 }

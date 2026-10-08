@@ -3,6 +3,7 @@ using BookStore.Application.Behaviors;
 using BookStore.Application.Books.Queries;
 using BookStore.Application.Catalog;
 using BookStore.Application.Library;
+using BookStore.Application.Notifications;
 using BookStore.Application.Orders;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
@@ -35,6 +36,8 @@ public static class DependencyInjection
         services.AddScoped<OrderCancellation>();
         services.AddScoped<LibraryReader>();
         services.AddScoped<BookPageAssembler>();
+
+        services.AddScoped<NotificationWriter>();
 
         return services;
     }

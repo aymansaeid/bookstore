@@ -1,4 +1,5 @@
 ﻿using BookStore.Application.Abstractions.Repositories;
+using BookStore.Application.Common;
 using BookStore.Domain.Notifications;
 using BookStore.Domain.Wishlists;
 using Microsoft.EntityFrameworkCore;
@@ -48,4 +49,80 @@ public sealed class WishlistRepository(BookStoreDbContext dbContext) : IWishlist
     public void Add(WishlistItem item) => dbContext.WishlistItems.Add(item);
 
     public void Remove(WishlistItem item) => dbContext.WishlistItems.Remove(item);
+
+    public async Task<IReadOnlyList<int>> ListCustomerIdsByBookAsync(int bookId, CancellationToken ct = default) =>
+        await dbContext.WishlistItems.Where(w => w.BookId == bookId).Select(w => w.CustomerId).ToListAsync(ct);
+
+    public async Task DeleteByCustomerAsync(int customerId, CancellationToken ct = default) =>
+        await dbContext.WishlistItems.Where(w => w.CustomerId == customerId).ExecuteDeleteAsync(ct);
+}
+
+public sealed class NotificationRepository(BookStoreDbContext dbContext) : INotificationRepository
+{
+    public async Task<IReadOnlySet<int>> CustomersWithKeyAsync(
+        string dedupKey, IReadOnlyCollection<int> customerIds, CancellationToken ct = default) =>
+        (await dbContext.Notifications
+            .Where(n => n.DedupKey == dedupKey && customerIds.Contains(n.CustomerId))
+            .Select(n => n.CustomerId)
+            .ToListAsync(ct))
+        .ToHashSet();
+
+    public void AddRange(IEnumerable<Notification> notifications) => dbContext.Notifications.AddRange(notifications);
+
+    public async Task<PagedResult<Notification>> ListAsync(
+        int customerId, bool unreadOnly, int page, int pageSize, CancellationToken ct = default)
+    {
+        var query = dbContext.Notifications.AsNoTracking().Where(n => n.CustomerId == customerId);
+        if (unreadOnly)
+            query = query.Where(n => n.ReadAtUtc == null);
+
+        var total = await query.CountAsync(ct);
+        var items = await query
+            .OrderByDescending(n => n.CreatedAtUtc)
+            .ThenByDescending(n => n.Id)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(ct);
+
+        return new PagedResult<Notification>(items, page, pageSize, total);
+    }
+
+    public Task<int> CountUnreadAsync(int customerId, CancellationToken ct = default) =>
+        dbContext.Notifications.CountAsync(n => n.CustomerId == customerId && n.ReadAtUtc == null, ct);
+
+    public Task<Notification?> GetAsync(int notificationId, int customerId, CancellationToken ct = default) =>
+        dbContext.Notifications.FirstOrDefaultAsync(n => n.Id == notificationId && n.CustomerId == customerId, ct);
+
+    public async Task MarkAllReadAsync(int customerId, CancellationToken ct = default)
+    {
+        var now = DateTimeOffset.UtcNow;
+        await dbContext.Notifications
+            .Where(n => n.CustomerId == customerId && n.ReadAtUtc == null)
+            .ExecuteUpdateAsync(setters => setters.SetProperty(n => n.ReadAtUtc, now), ct);
+    }
+
+    public async Task DeleteByCustomerAsync(int customerId, CancellationToken ct = default) =>
+        await dbContext.Notifications.Where(n => n.CustomerId == customerId).ExecuteDeleteAsync(ct);
+}
+
+public sealed class MuhaqqiqFollowRepository(BookStoreDbContext dbContext) : IMuhaqqiqFollowRepository
+{
+    public Task<MuhaqqiqFollow?> GetAsync(int customerId, int muhaqqiqId, CancellationToken ct = default) =>
+        dbContext.MuhaqqiqFollows.FirstOrDefaultAsync(f => f.CustomerId == customerId && f.MuhaqqiqId == muhaqqiqId, ct);
+
+    public async Task<IReadOnlyList<MuhaqqiqFollow>> ListByCustomerAsync(int customerId, CancellationToken ct = default) =>
+        await dbContext.MuhaqqiqFollows.AsNoTracking().Where(f => f.CustomerId == customerId).ToListAsync(ct);
+
+    public async Task<IReadOnlyList<int>> ListFollowerIdsAsync(int muhaqqiqId, CancellationToken ct = default) =>
+        await dbContext.MuhaqqiqFollows.Where(f => f.MuhaqqiqId == muhaqqiqId).Select(f => f.CustomerId).ToListAsync(ct);
+
+    public Task<int> CountByCustomerAsync(int customerId, CancellationToken ct = default) =>
+        dbContext.MuhaqqiqFollows.CountAsync(f => f.CustomerId == customerId, ct);
+
+    public void Add(MuhaqqiqFollow follow) => dbContext.MuhaqqiqFollows.Add(follow);
+
+    public void Remove(MuhaqqiqFollow follow) => dbContext.MuhaqqiqFollows.Remove(follow);
+
+    public async Task DeleteByCustomerAsync(int customerId, CancellationToken ct = default) =>
+        await dbContext.MuhaqqiqFollows.Where(f => f.CustomerId == customerId).ExecuteDeleteAsync(ct);
 }
