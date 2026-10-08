@@ -178,6 +178,9 @@ public static class DependencyInjection
         services.AddScoped<INotificationRepository, NotificationRepository>();
         services.AddScoped<IMuhaqqiqFollowRepository, MuhaqqiqFollowRepository>();
 
+        services.AddScoped<IReadingPathRepository, ReadingPathRepository>();
+        services.AddScoped<IPathEnrollmentRepository, PathEnrollmentRepository>();
+
         return services;
     }
 }

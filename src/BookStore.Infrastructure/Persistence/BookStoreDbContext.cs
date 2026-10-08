@@ -7,6 +7,7 @@ using BookStore.Domain.Legal;
 using BookStore.Domain.Library;
 using BookStore.Domain.Notifications;
 using BookStore.Domain.Orders;
+using BookStore.Domain.ReadingPaths;
 using BookStore.Domain.Returns;
 using BookStore.Domain.Reviews;
 using BookStore.Domain.Shipping;
@@ -39,13 +40,14 @@ public sealed class BookStoreDbContext(DbContextOptions<BookStoreDbContext> opti
 
     public DbSet<LibraryEntry> LibraryEntries => Set<LibraryEntry>();
 
-    // BookStoreDbContext (with using BookStore.Domain.Legal;)
     public DbSet<LegalDocument> LegalDocuments => Set<LegalDocument>();
     public DbSet<OrderLegalRecord> OrderLegalRecords => Set<OrderLegalRecord>();
 
-    // BookStoreDbContext (with using BookStore.Domain.Notifications;)
     public DbSet<Notification> Notifications => Set<Notification>();
     public DbSet<MuhaqqiqFollow> MuhaqqiqFollows => Set<MuhaqqiqFollow>();
+
+    public DbSet<ReadingPath> ReadingPaths => Set<ReadingPath>();
+    public DbSet<PathEnrollment> PathEnrollments => Set<PathEnrollment>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

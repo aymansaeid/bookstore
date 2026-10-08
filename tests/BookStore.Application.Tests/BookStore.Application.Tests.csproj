@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\BookStore.Application\BookStore.Application.csproj" />
+
   </ItemGroup>
 
 </Project>

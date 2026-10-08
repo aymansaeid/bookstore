@@ -5,6 +5,8 @@ using BookStore.Application.Customers.Queries;
 using BookStore.Application.Library;
 using BookStore.Application.Notifications;
 using BookStore.Application.Orders;
+using BookStore.Application.ReadingPaths;
+using BookStore.Application.Recommendations;
 using BookStore.Application.Reviews;
 using BookStore.Application.Reviews.Commands;
 using BookStore.Application.Reviews.Queries;
@@ -220,4 +222,28 @@ public sealed class CustomerAccountController(ISender sender) : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> Unfollow(int muhaqqiqId, CancellationToken ct) =>
         (await sender.Send(new UnfollowMuhaqqiqCommand(CustomerId(), muhaqqiqId), ct)).ToActionResult();
+
+    /// «صباح الخير يا أحمد، هذه اقتراحات اليوم»
+    [HttpGet("recommendations")]
+    [ProducesResponseType(typeof(RecommendationsDto), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetRecommendations(CancellationToken ct, [FromQuery] int limit = 6) =>
+        (await sender.Send(new GetRecommendationsQuery(CustomerId(), limit), ct)).ToActionResult();
+
+    /// «مساراتي»
+    [HttpGet("paths")]
+    [ProducesResponseType(typeof(IReadOnlyList<MyReadingPathDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetMyPaths(CancellationToken ct) =>
+        (await sender.Send(new GetMyReadingPathsQuery(CustomerId()), ct)).ToActionResult();
+
+    /// «ابدأ المسار»
+    [HttpPut("paths/{pathId:int}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> StartPath(int pathId, CancellationToken ct) =>
+        (await sender.Send(new StartReadingPathCommand(CustomerId(), pathId), ct)).ToActionResult();
+
+    [HttpDelete("paths/{pathId:int}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> LeavePath(int pathId, CancellationToken ct) =>
+        (await sender.Send(new LeaveReadingPathCommand(CustomerId(), pathId), ct)).ToActionResult();
 }

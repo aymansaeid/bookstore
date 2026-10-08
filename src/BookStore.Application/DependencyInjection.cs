@@ -5,6 +5,7 @@ using BookStore.Application.Catalog;
 using BookStore.Application.Library;
 using BookStore.Application.Notifications;
 using BookStore.Application.Orders;
+using BookStore.Application.ReadingPaths;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -38,6 +39,9 @@ public static class DependencyInjection
         services.AddScoped<BookPageAssembler>();
 
         services.AddScoped<NotificationWriter>();
+
+        services.AddScoped<ReadingPathAssembler>();
+        services.AddScoped<PathViewerLoader>();
 
         return services;
     }
