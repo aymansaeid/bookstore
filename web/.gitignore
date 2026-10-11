@@ -1,0 +1,8 @@
+# The repo root .gitignore already covers node_modules/ and .env
+dist/
+coverage/
+*.local
+.env.*
+!.env.example
+.vite/
+*.tsbuildinfo
