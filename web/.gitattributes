@@ -1,0 +1,8 @@
+# Keep LF in the working tree on every OS. Without this, Git for Windows'
+# core.autocrlf checks files out as CRLF and `prettier --check` fails.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.webp binary
+*.woff2 binary

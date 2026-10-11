@@ -1,0 +1,8 @@
+.root {
+  display: grid;
+  place-items: center;
+  min-block-size: 100dvh;
+  padding-inline: 16px;
+  color: var(--muted, #8c877f);
+  font-size: 15px;
+}
