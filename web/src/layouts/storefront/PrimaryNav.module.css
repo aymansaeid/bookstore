@@ -1,0 +1,55 @@
+.list {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ke.css: padding 8px 11px, radius 10. Min height raised to 44px (§8.4). */
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-block-size: 44px;
+  padding-inline: 11px;
+  border-radius: 10px;
+  color: var(--ink3);
+  font-size: 15px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
+}
+
+.link:hover {
+  color: var(--ink);
+  background: var(--paper2);
+}
+
+.active,
+.active:hover {
+  color: var(--red);
+  background: var(--redl);
+}
+
+.ai {
+  padding-inline: 6px;
+  border-radius: 5px;
+  background: linear-gradient(90deg, var(--red), #f0584c);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.6;
+}
+
+.drawer .list {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2px;
+}
+
+.drawer .link {
+  min-block-size: 48px;
+  padding-inline: 14px;
+  font-size: 16px;
+}

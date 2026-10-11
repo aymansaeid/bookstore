@@ -1,0 +1,79 @@
+/* Slides in from the inline-start edge (the right side in RTL). */
+.drawer {
+  inset-block: 0;
+  inset-inline-start: 0;
+  inset-inline-end: auto;
+  margin: 0;
+  inline-size: min(320px, 86vw);
+  max-inline-size: none;
+  block-size: 100dvh;
+  max-block-size: none;
+  padding: 0 0 env(safe-area-inset-bottom);
+  border: 0;
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: var(--sh2);
+}
+
+.drawer[open] {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  transform: none;
+  transition: transform 0.25s ease;
+}
+
+@starting-style {
+  .drawer[open] {
+    transform: translateX(100%);
+  }
+}
+
+.drawer::backdrop {
+  background: rgba(20, 18, 16, 0.45);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-block-end: 1px solid var(--line);
+}
+
+.logo {
+  block-size: 40px;
+}
+
+.close {
+  display: grid;
+  place-items: center;
+  inline-size: 44px;
+  block-size: 44px;
+  border-radius: 12px;
+  color: var(--ink3);
+}
+
+.secondary {
+  margin-block-start: 8px;
+  padding-block-start: 8px;
+  border-block-start: 1px solid var(--line);
+}
+
+.link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-block-size: 48px;
+  padding-inline: 14px;
+  color: var(--ink3);
+  font-size: 15px;
+}
+
+.meta {
+  margin-block-start: auto;
+  padding: 16px;
+  color: var(--gray);
+  font-size: 13px;
+}

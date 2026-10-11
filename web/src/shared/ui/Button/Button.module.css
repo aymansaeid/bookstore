@@ -1,0 +1,71 @@
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-block-size: 52px;
+  padding-inline: 26px;
+  border: 0;
+  border-radius: var(--r-btn);
+  font-size: 15px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color 0.2s,
+    box-shadow 0.2s,
+    transform 0.2s;
+}
+
+.btn:disabled,
+.btn[aria-disabled='true'] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Small size still meets the 44px touch target (spec §8.4). */
+.sm {
+  min-block-size: 44px;
+  padding-inline: 18px;
+  font-size: 14px;
+}
+
+.red {
+  background: var(--red);
+  color: #fff;
+  box-shadow: 0 10px 24px -10px rgba(227, 30, 36, 0.6);
+}
+
+.red:hover:not(:disabled) {
+  background: var(--red2);
+}
+
+.ink {
+  background: var(--ink);
+  color: #fff;
+}
+
+.ink:hover:not(:disabled) {
+  background: var(--ink3);
+}
+
+.gold {
+  background: linear-gradient(135deg, #d9b874, #b38a3e);
+  color: #1a1409;
+}
+
+.ghost {
+  background: var(--card);
+  border: 1px solid var(--line2);
+  color: var(--ink);
+}
+
+.ghost:hover:not(:disabled) {
+  border-color: var(--ink);
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #fff;
+}

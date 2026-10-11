@@ -1,0 +1,7 @@
+/* §2: multiply hides the logo's white background on light surfaces. */
+.logo {
+  display: block;
+  inline-size: auto;
+  block-size: 62px;
+  mix-blend-mode: multiply;
+}

@@ -1,0 +1,44 @@
+.section {
+  border-block-end: 1px solid var(--ink-line);
+}
+
+.heading {
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  inline-size: 100%;
+  min-block-size: 52px;
+  font-weight: 600;
+}
+
+.toggleIcon {
+  transition: transform 0.2s;
+}
+
+.toggle[aria-expanded='true'] .toggleIcon {
+  transform: rotate(45deg);
+}
+
+.body {
+  padding-block-end: 12px;
+}
+
+@media (min-width: 768px) {
+  .section {
+    border: 0;
+  }
+
+  .heading {
+    margin-block-end: 16px;
+  }
+
+  .body {
+    padding: 0;
+  }
+}

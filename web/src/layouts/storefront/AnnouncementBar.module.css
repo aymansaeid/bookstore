@@ -1,0 +1,76 @@
+.root {
+  --focus-ring: var(--gold2);
+  background: var(--ink);
+  color: var(--on-ink);
+  font-size: 12.5px;
+}
+
+/* Mobile (§8.3): one message only. 44px touch target. */
+.inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  min-block-size: 44px;
+}
+
+.side {
+  display: none;
+}
+
+.mid {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-inline-size: 0;
+  min-block-size: 44px;
+}
+
+.midText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mid b {
+  color: var(--gold2);
+  font-weight: 600;
+}
+
+.new {
+  flex-shrink: 0;
+  background: linear-gradient(90deg, var(--red), var(--gold));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 700;
+}
+
+.dot {
+  inline-size: 3px;
+  block-size: 3px;
+  border-radius: 50%;
+  background: #555;
+}
+
+.link:hover {
+  color: #fff;
+}
+
+@media (min-width: 1024px) {
+  .inner {
+    justify-content: space-between;
+    min-block-size: 40px;
+  }
+
+  .side {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-shrink: 0;
+  }
+
+  .mid {
+    min-block-size: 40px;
+  }
+}

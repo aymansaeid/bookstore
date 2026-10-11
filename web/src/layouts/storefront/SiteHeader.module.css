@@ -1,0 +1,192 @@
+.root {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: var(--z-header);
+  background: rgba(255, 253, 249, 0.92);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  border-block-end: 1px solid var(--line);
+}
+
+/* Mobile: [☰][logo ......][bell cart]  /  [search full width] */
+.bar {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    'menu logo actions'
+    'search search search';
+  align-items: center;
+  column-gap: 4px;
+  padding-block: 6px 10px;
+}
+
+.menuButton {
+  grid-area: menu;
+  display: grid;
+  place-items: center;
+  inline-size: 44px;
+  block-size: 44px;
+  border-radius: 12px;
+  color: var(--ink3);
+}
+
+.logo {
+  grid-area: logo;
+  justify-self: start;
+  border-radius: 8px;
+}
+
+.logoImg {
+  block-size: 40px;
+}
+
+.nav {
+  grid-area: nav;
+  display: none;
+  min-inline-size: 0;
+}
+
+.search {
+  grid-area: search;
+  margin-block-start: 6px;
+}
+
+.actions {
+  grid-area: actions;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.iconLink {
+  position: relative;
+  display: grid;
+  place-items: center;
+  inline-size: 44px;
+  block-size: 44px;
+  border-radius: 14px;
+  color: var(--ink3);
+  transition: background-color 0.2s;
+}
+
+.iconLink:hover {
+  background: var(--paper2);
+}
+
+.account {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  min-block-size: 46px;
+  margin-inline-start: 6px;
+  padding: 5px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  background: #fff;
+}
+
+.accountAvatar {
+  display: grid;
+  place-items: center;
+  inline-size: 36px;
+  block-size: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--ink3), var(--ink));
+  color: var(--gold2);
+  font-weight: 700;
+}
+
+.accountText {
+  display: none;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.accountText b {
+  font-size: 13px;
+}
+
+.accountText small {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* Visibility helpers must stay after .iconLink so they win. */
+.desktopOnly {
+  display: none;
+}
+
+/* Tablet: [logo][search][actions]  /  [nav links] */
+@media (min-width: 768px) {
+  .bar {
+    grid-template-areas:
+      'logo search actions'
+      'nav nav nav';
+    column-gap: 20px;
+    padding-block: 12px 0;
+  }
+
+  .menuButton,
+  .mobileOnly {
+    display: none;
+  }
+
+  .desktopOnly {
+    display: grid;
+  }
+
+  .logoImg {
+    block-size: 52px;
+  }
+
+  /* Safety: the link row scrolls inside itself rather than widening the page. */
+  .nav {
+    display: block;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-block: 6px;
+  }
+
+  .search {
+    margin: 0;
+  }
+
+  .account {
+    display: flex;
+  }
+}
+
+@media (min-width: 1024px) {
+  .account {
+    padding-inline: 5px 14px;
+  }
+
+  .accountText {
+    display: flex;
+  }
+}
+
+/* Desktop (design): one 92px row  [logo][nav][search][actions] */
+@media (min-width: 1280px) {
+  .bar {
+    grid-template-columns: auto auto minmax(0, 1fr) auto;
+    grid-template-areas: 'logo nav search actions';
+    column-gap: 22px;
+    min-block-size: 92px;
+    padding-block: 0;
+  }
+
+  .logoImg {
+    block-size: 62px;
+  }
+
+  .nav {
+    padding: 0;
+    overflow: visible;
+  }
+
+  .iconLink {
+    inline-size: 46px;
+    block-size: 46px;
+  }
+}

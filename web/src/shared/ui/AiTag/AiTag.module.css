@@ -1,0 +1,18 @@
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 11px;
+  border-radius: var(--r-pill);
+  border: 1px solid rgba(227, 30, 36, 0.14);
+  background: linear-gradient(90deg, rgba(227, 30, 36, 0.09), rgba(201, 165, 92, 0.14));
+  color: var(--red2);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.dark {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(230, 205, 143, 0.25);
+  color: var(--gold2);
+}

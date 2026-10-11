@@ -1,0 +1,112 @@
+.form {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-block-size: 50px;
+  padding-inline: 14px 6px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--paper);
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+/* §4.8 focus state: ink border + soft halo. */
+.form:focus-within {
+  border-color: var(--ink);
+  box-shadow: 0 0 0 4px rgba(20, 18, 16, 0.06);
+}
+
+.searchIcon {
+  color: var(--muted);
+}
+
+/* 16px on touch devices so iOS doesn't zoom (§8.4). */
+.input {
+  flex: 1;
+  min-inline-size: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font-size: 16px;
+  outline: none;
+}
+
+.input::placeholder {
+  color: var(--muted);
+}
+
+.input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.tool {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  inline-size: 40px;
+  block-size: 44px;
+  border-radius: 9px;
+  color: var(--muted);
+  transition: color 0.2s;
+}
+
+.tool:hover {
+  color: var(--ink);
+}
+
+.submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-shrink: 0;
+  min-inline-size: 44px;
+  min-block-size: 40px;
+  padding-inline: 10px;
+  border-radius: 10px;
+  background: var(--ink);
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.submitLabel {
+  font-style: normal;
+  background: linear-gradient(90deg, #ff6a5e, var(--gold2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Under 640px the label stays for screen readers only; the ✦ remains visible. */
+@media (max-width: 639.98px) {
+  .submitLabel {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+/* Design values on desktop with a mouse: 14px text, 34px tools, 36px button. */
+@media (min-width: 1024px) and (pointer: fine) {
+  .input {
+    font-size: 14px;
+  }
+
+  .tool {
+    inline-size: 34px;
+    block-size: 34px;
+  }
+
+  .submit {
+    min-block-size: 36px;
+    padding-inline: 12px;
+  }
+}

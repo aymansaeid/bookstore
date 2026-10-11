@@ -8,6 +8,7 @@ import { RouteLoading } from '@/app/RouteLoading';
 import RootLayout from '@/layouts/RootLayout';
 import StorefrontLayout from '@/layouts/StorefrontLayout';
 import NotFoundPage from '@/pages/not-found/NotFoundPage';
+import type { ShellHandle } from '@/layouts/storefront/shellHandle';
 
 /**
  * Route tree. Every page and every layout except the storefront shell is
@@ -38,7 +39,11 @@ const storefrontRoutes: RouteObject[] = [
   // Reading paths and Ask Efendi
   { path: 'paths', lazy: lazyComponent(() => import('@/pages/paths/ReadingPathsPage')) },
   { path: 'paths/:slug', lazy: lazyComponent(() => import('@/pages/paths/ReadingPathPage')) },
-  { path: 'ask', lazy: lazyComponent(() => import('@/pages/ask/AskEfendiPage')) },
+  {
+    path: 'ask',
+    handle: { hideFooter: true, hideFab: true } satisfies ShellHandle,
+    lazy: lazyComponent(() => import('@/pages/ask/AskEfendiPage')),
+  },
 
   // Cart and checkout
   { path: 'cart', lazy: lazyComponent(() => import('@/pages/cart/CartPage')) },

@@ -1,0 +1,279 @@
+/* ===== Newsletter card: overlaps the footer by 60px ===== */
+.pre {
+  position: relative;
+  z-index: 1;
+  margin-block-start: 56px;
+}
+
+.cta {
+  --focus-ring: var(--gold2);
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  align-items: center;
+  gap: 24px;
+  padding: 32px 20px;
+  border: 1px solid rgba(230, 205, 143, 0.22);
+  border-radius: 24px;
+  background: var(--ink);
+  color: #fff;
+  box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.6);
+}
+
+.cta::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--star) 0 0 / 64px;
+  opacity: 0.07;
+  pointer-events: none;
+}
+
+/* ke.css: left -120px, which is inline-end in RTL. */
+.cta::after {
+  content: '';
+  position: absolute;
+  inline-size: 520px;
+  block-size: 520px;
+  inset-inline-end: -120px;
+  inset-block-start: -200px;
+  background: radial-gradient(closest-side, rgba(227, 30, 36, 0.35), transparent);
+  pointer-events: none;
+}
+
+.cta > * {
+  position: relative;
+  z-index: 1;
+}
+
+.ctaTitle {
+  margin-block-start: 14px;
+  font-family: var(--font-serif);
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.ctaLead {
+  margin-block-start: 8px;
+  color: #b9b1a3;
+}
+
+.ctaForm {
+  display: flex;
+  gap: 6px;
+  padding: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.ctaForm:focus-within {
+  border-color: var(--gold2);
+}
+
+.ctaInput {
+  flex: 1;
+  min-inline-size: 0;
+  padding-inline: 14px;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  font-size: 16px;
+  outline: none;
+}
+
+.ctaInput::placeholder {
+  color: var(--on-ink-faint);
+}
+
+.ctaSubmit {
+  min-block-size: 48px;
+}
+
+.ctaNote {
+  margin-block-start: 10px;
+  color: var(--on-ink-faint);
+  font-size: 12.5px;
+}
+
+/* ===== Footer ===== */
+.foot {
+  --focus-ring: var(--gold2);
+  margin-block-start: -60px;
+  padding-block-start: 100px;
+  background: var(--ink);
+  color: var(--on-ink-muted);
+  font-size: 14px;
+}
+
+.grid {
+  display: grid;
+  padding-block-end: 24px;
+  border-block-end: 1px solid var(--ink-line);
+}
+
+.brand {
+  padding-block-end: 16px;
+}
+
+.logoCapsule {
+  display: inline-block;
+  margin-block-end: 18px;
+  padding: 10px 18px;
+  border-radius: 16px;
+  background: var(--paper);
+}
+
+.logoImg {
+  block-size: 52px;
+}
+
+.about {
+  max-inline-size: 46ch;
+}
+
+.social {
+  display: flex;
+  gap: 8px;
+  margin-block-start: 18px;
+}
+
+.social a {
+  display: grid;
+  place-items: center;
+  inline-size: 44px;
+  block-size: 44px;
+  border: 1px solid var(--ink-line2);
+  border-radius: 12px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* 44px rows on touch screens (§8.4); compact list from 1024px. */
+.link {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 44px;
+  transition: color 0.2s;
+}
+
+.link:hover {
+  color: #fff;
+}
+
+.plain {
+  display: flex;
+  align-items: center;
+  min-block-size: 44px;
+}
+
+.strong {
+  color: #fff;
+}
+
+.webBadges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-block-start: 18px;
+}
+
+.webBadge {
+  padding: 6px 14px;
+  border: 1px solid #3a352f;
+  border-radius: 12px;
+  color: #fff;
+  font-size: 12px;
+  line-height: 1.25;
+}
+
+.webBadge small {
+  display: block;
+  color: var(--on-ink-faint);
+  font-size: 10px;
+}
+
+.bottom {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  padding-block: 20px;
+  font-size: 13px;
+}
+
+.pay {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pay li {
+  padding: 5px 11px;
+  border: 1px solid var(--ink-line2);
+  border-radius: 7px;
+  background: var(--ink2);
+  color: #d8d0c2;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 32px;
+    padding-block-end: 50px;
+  }
+
+  .brand {
+    grid-column: 1 / -1;
+  }
+
+  .bottom {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    min-block-size: 70px;
+    padding-block: 0;
+  }
+}
+
+@media (min-width: 1024px) {
+  .pre {
+    margin-block-start: 90px;
+  }
+
+  .cta {
+    grid-template-columns: 1.2fr 1fr;
+    gap: 40px;
+    padding: 50px 56px;
+    border-radius: 28px;
+  }
+
+  .ctaTitle {
+    font-size: 38px;
+  }
+
+  .foot {
+    padding-block-start: 120px;
+  }
+
+  .grid {
+    grid-template-columns: 1.6fr repeat(4, minmax(0, 1fr));
+    gap: 40px;
+  }
+
+  .brand {
+    grid-column: auto;
+    padding: 0;
+  }
+
+  .link,
+  .plain {
+    min-block-size: 0;
+    margin-block-end: 10px;
+  }
+}
