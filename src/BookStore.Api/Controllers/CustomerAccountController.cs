@@ -1,8 +1,10 @@
 ﻿using BookStore.Api.Common;
+using BookStore.Application.Common;
 using BookStore.Application.Customers;
 using BookStore.Application.Customers.Commands;
 using BookStore.Application.Customers.Queries;
 using BookStore.Application.Library;
+using BookStore.Application.Loyalty;
 using BookStore.Application.Notifications;
 using BookStore.Application.Orders;
 using BookStore.Application.ReadingPaths;
@@ -246,4 +248,21 @@ public sealed class CustomerAccountController(ISender sender) : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> LeavePath(int pathId, CancellationToken ct) =>
         (await sender.Send(new LeaveReadingPathCommand(CustomerId(), pathId), ct)).ToActionResult();
+
+    /// «لوحتي»: orders, books, wishlist, points, tier, unread notifications.
+    [HttpGet("summary")]
+    [ProducesResponseType(typeof(AccountSummaryDto), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetSummary(CancellationToken ct) =>
+        (await sender.Send(new GetAccountSummaryQuery(CustomerId()), ct)).ToActionResult();
+
+    /// «★ عضو ذهبي · ٦٤٠ نقطة» and the points page header.
+    [HttpGet("loyalty")]
+    [ProducesResponseType(typeof(LoyaltySummaryDto), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetLoyalty(CancellationToken ct) =>
+        (await sender.Send(new GetLoyaltySummaryQuery(CustomerId()), ct)).ToActionResult();
+
+    [HttpGet("loyalty/history")]
+    [ProducesResponseType(typeof(PagedResult<LoyaltyTransactionDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetLoyaltyHistory(CancellationToken ct, [FromQuery] int page = 1, [FromQuery] int pageSize = 20) =>
+        (await sender.Send(new GetLoyaltyHistoryQuery(CustomerId(), page, pageSize), ct)).ToActionResult();
 }

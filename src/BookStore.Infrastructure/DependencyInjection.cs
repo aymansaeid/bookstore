@@ -181,6 +181,8 @@ public static class DependencyInjection
         services.AddScoped<IReadingPathRepository, ReadingPathRepository>();
         services.AddScoped<IPathEnrollmentRepository, PathEnrollmentRepository>();
 
+        services.AddScoped<ILoyaltyRepository, LoyaltyRepository>();
+
         return services;
     }
 }

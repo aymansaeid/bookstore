@@ -5,6 +5,7 @@ using BookStore.Domain.Coupons;
 using BookStore.Domain.Customers;
 using BookStore.Domain.Legal;
 using BookStore.Domain.Library;
+using BookStore.Domain.Loyalty;
 using BookStore.Domain.Notifications;
 using BookStore.Domain.Orders;
 using BookStore.Domain.ReadingPaths;
@@ -48,6 +49,8 @@ public sealed class BookStoreDbContext(DbContextOptions<BookStoreDbContext> opti
 
     public DbSet<ReadingPath> ReadingPaths => Set<ReadingPath>();
     public DbSet<PathEnrollment> PathEnrollments => Set<PathEnrollment>();
+
+    public DbSet<LoyaltyTransaction> LoyaltyTransactions => Set<LoyaltyTransaction>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

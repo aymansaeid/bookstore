@@ -288,6 +288,7 @@ public sealed class Order : AggregateRoot<int>
 
         Status = OrderStatus.Delivered;
         DeliveredAtUtc = DateTimeOffset.UtcNow;
+        Raise(new OrderDeliveredDomainEvent(Id, OrderNumber, DateTimeOffset.UtcNow));
     }
 
     public void Refund()

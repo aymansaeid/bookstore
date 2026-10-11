@@ -6,6 +6,8 @@ namespace BookStore.Domain.Orders.Events;
 /// members are fields, and the outbox stores events as JSON.
 public sealed record OrderLineSnapshot(int BookId, int Quantity);
 
+public sealed record OrderDeliveredDomainEvent(int OrderId, string OrderNumber, DateTimeOffset OccurredOnUtc) : IDomainEvent;
+
 public sealed record OrderPaidDomainEvent(
     int OrderId,
     string OrderNumber,

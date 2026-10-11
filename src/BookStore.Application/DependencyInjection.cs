@@ -3,6 +3,7 @@ using BookStore.Application.Behaviors;
 using BookStore.Application.Books.Queries;
 using BookStore.Application.Catalog;
 using BookStore.Application.Library;
+using BookStore.Application.Loyalty;
 using BookStore.Application.Notifications;
 using BookStore.Application.Orders;
 using BookStore.Application.Orders.Checkout;
@@ -45,6 +46,9 @@ public static class DependencyInjection
         services.AddScoped<PathViewerLoader>();
 
         services.AddScoped<PathDiscountCalculator>();
+
+        services.AddScoped<LoyaltyService>();
+        services.AddScoped<LoyaltyReader>();
 
         return services;
     }

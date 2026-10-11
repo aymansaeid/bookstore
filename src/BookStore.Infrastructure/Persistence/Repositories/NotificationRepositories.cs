@@ -55,6 +55,8 @@ public sealed class WishlistRepository(BookStoreDbContext dbContext) : IWishlist
 
     public async Task DeleteByCustomerAsync(int customerId, CancellationToken ct = default) =>
         await dbContext.WishlistItems.Where(w => w.CustomerId == customerId).ExecuteDeleteAsync(ct);
+    public Task<int> CountByCustomerAsync(int customerId, CancellationToken ct = default) =>
+    dbContext.WishlistItems.CountAsync(w => w.CustomerId == customerId, ct);
 }
 
 public sealed class NotificationRepository(BookStoreDbContext dbContext) : INotificationRepository

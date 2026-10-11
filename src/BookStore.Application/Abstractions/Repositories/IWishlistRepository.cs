@@ -12,5 +12,7 @@ public interface IWishlistRepository
     Task<IReadOnlyList<int>> ListCustomerIdsByBookAsync(int bookId, CancellationToken ct = default);
     Task DeleteByCustomerAsync(int customerId, CancellationToken ct = default);
 
+    Task<int> CountByCustomerAsync(int customerId, CancellationToken ct = default);
+
 
 }

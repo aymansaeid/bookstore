@@ -90,7 +90,8 @@ public sealed class DeleteCustomerAccountCommandHandler(
     IWishlistRepository wishlistRepository, 
     IMuhaqqiqFollowRepository followRepository , 
     INotificationRepository notificationRepository,
-    IPathEnrollmentRepository pathEnrollmentRepository)
+    IPathEnrollmentRepository pathEnrollmentRepository,
+    ILoyaltyRepository loyaltyRepository)
     : ICommandHandler<DeleteCustomerAccountCommand>
 {
     public async Task<Result> Handle(DeleteCustomerAccountCommand command, CancellationToken ct)
@@ -117,6 +118,7 @@ public sealed class DeleteCustomerAccountCommandHandler(
         await followRepository.DeleteByCustomerAsync(customer.Id, ct);
         await notificationRepository.DeleteByCustomerAsync(customer.Id, ct);
         await pathEnrollmentRepository.DeleteByCustomerAsync(customer.Id, ct);
+        await loyaltyRepository.DeleteByCustomerAsync(customer.Id, ct);
 
         customer.Anonymize();
         await refreshTokenRepository.RevokeAllForCustomerAsync(customer.Id, "Account deleted", ct);

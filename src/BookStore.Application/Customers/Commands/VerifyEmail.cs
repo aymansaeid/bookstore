@@ -3,7 +3,9 @@ using BookStore.Application.Abstractions.Auth;
 using BookStore.Application.Abstractions.Messaging;
 using BookStore.Application.Abstractions.Repositories;
 using BookStore.Application.Common;
+using BookStore.Application.Loyalty;
 using BookStore.Domain.Auth;
+using BookStore.Domain.Orders;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
 
@@ -25,6 +27,7 @@ public sealed class VerifyEmailCommandHandler(
     IOrderRepository orderRepository,
     ITokenHasher tokenHasher,
     IUnitOfWork unitOfWork,
+    LoyaltyService loyalty,
     ILogger<VerifyEmailCommandHandler> logger)
     : ICommandHandler<VerifyEmailCommand>
 {
@@ -47,17 +50,22 @@ public sealed class VerifyEmailCommandHandler(
 
         // Decision #6 in action: past guest orders placed with this address
         // attach now, and only now, because the address is proven.
-        var guestOrders = await orderRepository.ListUnclaimedByEmailAsync(customer.Email, ct);
-        foreach (var order in guestOrders)
+        var claimedOrders = await orderRepository.ListUnclaimedByEmailAsync(customer.Email, ct);
+        foreach (var order in claimedOrders)
             order.AssignToCustomer(customer.Id);
 
-        if (guestOrders.Count > 0)
+        if (claimedOrders.Count > 0)
             logger.LogInformation(
                 "Attached {Count} guest order(s) to customer {CustomerId} on verification.",
-                guestOrders.Count, customer.Id);
+                claimedOrders.Count, customer.Id);
 
         await unitOfWork.SaveChangesAsync(ct);
         await transaction.CommitAsync(ct);
+
+        // Guest orders just claimed by this account: delivered ones earn their
+        // points now, exactly as if they'd been placed while signed in.
+        foreach (var claimed in claimedOrders.Where(o => o.Status == OrderStatus.Delivered))
+            await loyalty.AwardForOrderAsync(claimed, ct);
 
         return Result.Success();
     }

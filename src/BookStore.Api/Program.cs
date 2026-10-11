@@ -1,11 +1,10 @@
-using System.Text.Json.Serialization;
-using System.Threading.RateLimiting;
 using BookStore.Api.Common;
 using BookStore.Api.Extensions;
 using BookStore.Api.OpenApi;
 using BookStore.Application;
 using BookStore.Application.Abstractions;
 using BookStore.Application.Common;
+using BookStore.Application.Loyalty;
 using BookStore.Application.Payments;
 using BookStore.Application.Returns;
 using BookStore.Application.Reviews;
@@ -14,6 +13,8 @@ using BookStore.Infrastructure.Persistence.Seeding;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
 using Serilog;
+using System.Text.Json.Serialization;
+using System.Threading.RateLimiting;
 
 // Bootstrap logger: captures failures that happen before configuration is
 // even loaded (bad appsettings, failed options validation).
@@ -59,6 +60,13 @@ try
     builder.Services.AddOpenApi(o => o.AddDocumentTransformer<BearerSecuritySchemeTransformer>());
     builder.Services.AddProblemDetails();
     builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+
+    builder.Services.AddOptions<LoyaltyOptions>()
+    .Bind(builder.Configuration.GetSection(LoyaltyOptions.SectionName))
+    .Validate(o => o.CurrencyPerPoint > 0, "Loyalty:CurrencyPerPoint must be positive.")
+    .Validate(o => o.SilverFromPoints > 0 && o.GoldFromPoints > o.SilverFromPoints,
+        "Loyalty tiers must satisfy 0 < Silver < Gold.")
+    .ValidateOnStart();
 
     builder.Services.AddRateLimiter(options =>
     {
