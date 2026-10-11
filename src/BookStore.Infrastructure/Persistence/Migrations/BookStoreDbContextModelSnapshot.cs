@@ -815,6 +815,9 @@ namespace BookStore.Infrastructure.Persistence.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<int?>("AppliedReadingPathId")
+                        .HasColumnType("int");
+
                     b.Property<string>("CancellationReason")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
@@ -1793,6 +1796,29 @@ namespace BookStore.Infrastructure.Persistence.Migrations
                                 .HasForeignKey("OrderId");
                         });
 
+                    b.OwnsOne("BookStore.Domain.Common.Money", "PathDiscountAmount", b1 =>
+                        {
+                            b1.Property<int>("OrderId")
+                                .HasColumnType("int");
+
+                            b1.Property<decimal>("Amount")
+                                .HasColumnType("decimal(18,2)")
+                                .HasColumnName("PathDiscountAmount");
+
+                            b1.Property<string>("Currency")
+                                .IsRequired()
+                                .HasMaxLength(3)
+                                .HasColumnType("nvarchar(3)")
+                                .HasColumnName("PathDiscountAmount_Currency");
+
+                            b1.HasKey("OrderId");
+
+                            b1.ToTable("Orders");
+
+                            b1.WithOwner()
+                                .HasForeignKey("OrderId");
+                        });
+
                     b.OwnsOne("BookStore.Domain.Common.Money", "ShippingCost", b1 =>
                         {
                             b1.Property<int>("OrderId")
@@ -1929,6 +1955,9 @@ namespace BookStore.Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Lines");
+
+                    b.Navigation("PathDiscountAmount")
+                        .IsRequired();
 
                     b.Navigation("ShippingAddress")
                         .IsRequired();

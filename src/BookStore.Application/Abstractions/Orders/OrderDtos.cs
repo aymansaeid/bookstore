@@ -51,7 +51,7 @@ public sealed record AdminOrderDetailsDto(
     IReadOnlyList<string> AllowedActions,
     string ShippingMethodCode, string? ShippingMethodName,
     bool GiftWrap, decimal GiftWrapFee, string? GiftMessage,
-    bool CancelledByCustomer);
+    bool CancelledByCustomer  ,  decimal PathDiscountAmount, int? ReadingPathId);
 
 public sealed record PublicOrderLineDto(
     string Title, int Quantity, decimal UnitPrice, decimal LineTotal,
@@ -73,7 +73,7 @@ public sealed record PublicOrderDto(
     DateTimeOffset? ShippedAtUtc,
     DateTimeOffset? DeliveredAtUtc,
      string ShippingMethodCode, string? ShippingMethodName, bool GiftWrap, decimal GiftWrapFee,
-    bool CanBeCancelled);
+    bool CanBeCancelled, decimal PathDiscountAmount, int? ReadingPathId);
 public static class OrderMappings
 {
     public static AdminOrderDetailsDto ToAdminDetailsDto(this Order o) =>
@@ -83,11 +83,11 @@ public static class OrderMappings
                 o.ShippingAddress.CountryCode),
             o.Lines.Select(l => new OrderLineDto(
                 l.BookId, l.BookTitleSnapshot, l.Quantity, l.UnitPriceAtPurchase.Amount, l.LineTotal.Amount)).ToList(),
-            o.Subtotal.Amount, o.ShippingCost.Amount, o.DiscountAmount.Amount, o.Total.Amount, o.Total.Currency,
+            o.Subtotal.Amount, o.ShippingCost.Amount, o.CouponDiscountAmount.Amount, o.Total.Amount, o.Total.Currency,
             o.AppliedCouponCode, o.ShippingCarrier, o.TrackingNumber, o.CancellationReason,
             o.CheckoutSessionId, o.PaymentReference,
             o.CreatedAtUtc, o.PaidAtUtc, o.ShippedAtUtc, o.DeliveredAtUtc, o.CancelledAtUtc,
-            GetAllowedActions(o), o.ShippingMethodCode, o.ShippingMethodName, o.GiftWrap, o.GiftWrapFee.Amount, o.GiftMessage, o.CancelledByCustomer);
+            GetAllowedActions(o), o.ShippingMethodCode, o.ShippingMethodName, o.GiftWrap, o.GiftWrapFee.Amount, o.GiftMessage, o.CancelledByCustomer  ,  o.PathDiscountAmount.Amount, o.AppliedReadingPathId);
 
     /// books: the purchased books, for slugs and covers. Optional: a line whose
     /// book can't be found still renders, just without a link or cover. The
@@ -107,11 +107,11 @@ public static class OrderMappings
                     book is not null && storage is not null ? BookMappings.CoverUrl(book, storage) : null,
                     book is not null && storage is not null ? BookMappings.CoverThumbnailUrl(book, storage) : null);
             }).ToList(),
-            o.Subtotal.Amount, o.ShippingCost.Amount, o.DiscountAmount.Amount, o.Total.Amount, o.Total.Currency,
+            o.Subtotal.Amount, o.ShippingCost.Amount, o.CouponDiscountAmount.Amount, o.Total.Amount, o.Total.Currency,
             o.ShippingAddress.City, o.ShippingAddress.CountryCode,
             o.ShippingCarrier, o.TrackingNumber,
             o.CreatedAtUtc, o.ShippedAtUtc, o.DeliveredAtUtc,
-            o.ShippingMethodCode, o.ShippingMethodName, o.GiftWrap, o.GiftWrapFee.Amount, o.CanBeCancelled);
+            o.ShippingMethodCode, o.ShippingMethodName, o.GiftWrap, o.GiftWrapFee.Amount, o.CanBeCancelled, o.PathDiscountAmount.Amount, o.AppliedReadingPathId);
 
     // Tells the admin UI which buttons to render, straight from the
     // aggregate's own state machine. The frontend never has to duplicate

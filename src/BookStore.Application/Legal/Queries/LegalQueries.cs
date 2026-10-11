@@ -108,7 +108,7 @@ public sealed class PreviewCheckoutLegalQueryHandler(
             ShippingMethod: selected?.Name ?? selected?.Carrier ?? selected?.Code,
             Lines: quote.Lines.Select(l => new LegalLine(l.Title, l.Quantity, l.UnitPrice, l.LineTotal)).ToList(),
             Subtotal: quote.Subtotal,
-            Discount: quote.DiscountAmount,
+            Discount: quote.DiscountAmount + quote.PathDiscountAmount,
             Shipping: quote.ShippingCost,
             GiftWrap: quote.GiftWrap.Selected ? quote.GiftWrap.Fee : 0,
             Total: quote.Total);

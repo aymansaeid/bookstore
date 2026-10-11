@@ -12,13 +12,16 @@ namespace BookStore.Application.Orders.Checkout;
 
 public sealed record QuoteLineDto(
     int BookId, string Title, string Slug, string? CoverImageUrl, string? CoverThumbnailUrl,
-    decimal UnitPrice, decimal? OldPrice, int Quantity, decimal LineTotal, bool Available );
+    decimal UnitPrice, decimal? OldPrice, int Quantity, decimal LineTotal, bool Available);
 
 public sealed record QuoteCouponDto(string Code, int DiscountPercentage);
 
 public sealed record QuoteShippingOptionDto(
     string Code, string? Name, string? Carrier, decimal Price, bool IsFree,
     int? MinDays, int? MaxDays, bool IsPickup, bool IsRecommended);
+
+public sealed record QuotePathDiscountDto(
+    int ReadingPathId, string? Title, int DiscountPercentage, decimal Amount, bool Applied, IReadOnlyList<int> MissingBookIds);
 
 public sealed record QuoteGiftWrapDto(bool Available, decimal Fee, bool Selected);
 
@@ -35,7 +38,9 @@ public sealed record CheckoutQuoteDto(
     QuoteGiftWrapDto GiftWrap,
     decimal Total,
     bool CanCheckout,
-    IReadOnlyList<string> Problems);
+    IReadOnlyList<string> Problems,
+    decimal PathDiscountAmount,
+    QuotePathDiscountDto? PathDiscount);
 
 public sealed record QuoteCheckoutQuery(
     IReadOnlyCollection<CartLineDto> Lines,
@@ -44,7 +49,8 @@ public sealed record QuoteCheckoutQuery(
     string? CouponCode,
     string? ShippingMethod,
     bool GiftWrap,
-    int? CustomerId) : IQuery<CheckoutQuoteDto>;
+    int? CustomerId,
+    int? ReadingPathId = null) : IQuery<CheckoutQuoteDto>;
 
 public sealed class QuoteCheckoutQueryValidator : AbstractValidator<QuoteCheckoutQuery>
 {
@@ -77,7 +83,8 @@ public sealed class QuoteCheckoutQueryHandler(
     IShippingZoneRepository shippingZoneRepository,
     ICustomerRepository customerRepository,
     IFileStorage fileStorage,
-    IOptions<StoreOptions> storeOptions)
+    IOptions<StoreOptions> storeOptions,
+    PathDiscountCalculator pathDiscountCalculator)
     : IQueryHandler<QuoteCheckoutQuery, CheckoutQuoteDto>
 {
     public async Task<Result<CheckoutQuoteDto>> Handle(QuoteCheckoutQuery query, CancellationToken ct)
@@ -147,8 +154,18 @@ public sealed class QuoteCheckoutQueryHandler(
                 problems.Add("Checkout.CouponInvalid");
         }
 
-        var discount = CheckoutPricing.Discount(coupon, subtotal);
-        var merchandiseTotal = subtotal.Subtract(discount);
+        // Same order of operations as checkout: path discount, then coupon on the rest.
+        var pathDiscount = await pathDiscountCalculator.CalculateAsync(
+            query.ReadingPathId, query.CustomerId, lines.Select(l => l.BookId).ToHashSet(), currency, ct);
+
+        if (pathDiscount.Problem is not null)
+            problems.Add(pathDiscount.Problem);
+
+        var pathAmount = pathDiscount.Applies ? pathDiscount.Amount : Money.Zero(currency);
+        var afterPath = subtotal.Subtract(pathAmount);
+
+        var discount = CheckoutPricing.Discount(coupon, afterPath);
+        var merchandiseTotal = afterPath.Subtract(discount);
 
         // Shipping: same function checkout charges with.
         var zone = countryCode is null ? null : await shippingZoneRepository.GetByCountryCodeAsync(countryCode, ct);
@@ -180,9 +197,7 @@ public sealed class QuoteCheckoutQueryHandler(
 
         var giftWrapFee = giftWrapSelected ? Money.From(store.GiftWrap.Fee, currency) : Money.Zero(currency);
 
-        // Same order of operations as Order.RecalculateTotal.
-        var total = subtotal.Subtract(discount).Add(shippingCost).Add(giftWrapFee);
-
+        var total = subtotal.Subtract(pathAmount).Subtract(discount).Add(shippingCost).Add(giftWrapFee);
         var distinctProblems = problems.Distinct().ToList();
 
         return Result.Success(new CheckoutQuoteDto(
@@ -199,6 +214,11 @@ public sealed class QuoteCheckoutQueryHandler(
             new QuoteGiftWrapDto(store.GiftWrap.Enabled, store.GiftWrap.Fee, giftWrapSelected),
             total.Amount,
             CanCheckout: lines.Count > 0 && distinctProblems.Count == 0,
-            distinctProblems));
+            distinctProblems,
+            pathAmount.Amount,
+            pathDiscount.ReadingPathId is { } pathId
+                ? new QuotePathDiscountDto(pathId, pathDiscount.PathTitle, pathDiscount.DiscountPercentage,
+                    pathAmount.Amount, pathDiscount.Applies, pathDiscount.MissingBookIds)
+                : null));
     }
 }

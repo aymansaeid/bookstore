@@ -111,6 +111,12 @@ public sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
         builder.Navigation(o => o.GiftWrapFee).IsRequired();
 
         builder.Property(o => o.CancelledByCustomer).IsRequired();
+
+        builder.Property(o => o.AppliedReadingPathId);
+        ConfigureMoney(builder.OwnsOne(o => o.PathDiscountAmount), "PathDiscountAmount");
+        builder.Navigation(o => o.PathDiscountAmount).IsRequired();
+        builder.Ignore(o => o.CouponDiscountAmount);
+
     }
 
     private static void ConfigureMoney(OwnedNavigationBuilder<Order, Money> owned, string columnPrefix)

@@ -45,6 +45,7 @@ public sealed class CheckoutCartCommandValidator : AbstractValidator<CheckoutCar
         RuleFor(x => x.IdempotencyKey)
             .NotEmpty().WithMessage("The Idempotency-Key header is required.")
             .Length(8, 100);
+        RuleFor(x => x.ReadingPathId).GreaterThan(0).When(x => x.ReadingPathId.HasValue);
     }
 
     internal static bool IsPickup(CheckoutCartCommand x) =>
@@ -63,6 +64,7 @@ public sealed class ShippingAddressDtoValidator : AbstractValidator<ShippingAddr
         RuleFor(x => x.StateOrProvince).MaximumLength(150);
         RuleFor(x => x.PostalCode).NotEmpty().MaximumLength(20);
         RuleFor(x => x.CountryCode).NotEmpty().Length(2);
+
     }
 }
 

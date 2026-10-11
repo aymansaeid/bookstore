@@ -29,6 +29,7 @@ public sealed record CheckoutCartCommand(
     string? ShippingMethod = null,
     bool GiftWrap = false,
     string? GiftMessage = null,
-      string? Language = null) : ICommand<CheckoutCartResponse>;
+          string? Language = null,
+    int? ReadingPathId = null) : ICommand<CheckoutCartResponse>;
 
 public sealed record CheckoutCartResponse(string OrderNumber, string CheckoutUrl, DateTimeOffset ExpiresAtUtc);

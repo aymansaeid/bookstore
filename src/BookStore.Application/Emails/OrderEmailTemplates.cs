@@ -18,8 +18,11 @@ public static class OrderEmailTemplates
         var totals = new StringBuilder("""<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:14px;margin-top:8px;">""");
         totals.Append(EmailLayout.TotalsRow("Subtotal", money(order.Subtotal.Amount)));
 
-        if (order.DiscountAmount.Amount > 0)
-            totals.Append(EmailLayout.TotalsRow($"Discount ({order.AppliedCouponCode})", $"-{money(order.DiscountAmount.Amount)}"));
+        if (order.PathDiscountAmount.Amount > 0)
+            totals.Append(EmailLayout.TotalsRow("Reading path discount", "−" + money(order.PathDiscountAmount.Amount)));
+
+        if (order.CouponDiscountAmount.Amount > 0)
+            totals.Append(EmailLayout.TotalsRow($"Discount ({order.AppliedCouponCode})", "−" + money(order.CouponDiscountAmount.Amount)));
 
         var shippingLabel = order.ShippingMethodCode == "pickup"
             ? order.ShippingMethodName ?? "Pickup"

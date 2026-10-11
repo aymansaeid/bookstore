@@ -74,6 +74,11 @@ public sealed class Order : AggregateRoot<int>
     public bool CanBeExpired => Status == OrderStatus.PendingPayment;
     public bool CanBeRefunded => Status is OrderStatus.Paid or OrderStatus.Shipped or OrderStatus.Delivered;
 
+    public Money PathDiscountAmount { get; private set; } = null!;
+    public int? AppliedReadingPathId { get; private set; }
+
+    public Money CouponDiscountAmount => DiscountAmount.Subtract(PathDiscountAmount);
+
     private Order() { } // EF Core
 
     public static Order Create(
@@ -108,6 +113,7 @@ public sealed class Order : AggregateRoot<int>
             TermsAcceptedAtUtc = now,
             TermsAcceptedFromIp = termsAcceptedFromIp,
             GiftWrapFee = Money.Zero(currency),
+            PathDiscountAmount = Money.Zero(currency),
             CreatedAtUtc = now
         };
     }
@@ -162,13 +168,19 @@ public sealed class Order : AggregateRoot<int>
         RecalculateTotal();
     }
 
-    public void ApplyDiscount(string couponCode, Money discountAmount)
+    public void ApplyDiscount(string couponCode, Money couponDiscount)
     {
         if (Status != OrderStatus.PendingPayment)
-            throw new InvalidOrderStateTransitionException(Id, Status, "apply a coupon to");
+            throw new InvalidOrderStateTransitionException(Id, Status, "apply a discount to");
+        if (string.IsNullOrWhiteSpace(couponCode))
+            throw new ArgumentException("Coupon code is required.", nameof(couponCode));
 
-        AppliedCouponCode = couponCode;
-        DiscountAmount = discountAmount;
+        var total = PathDiscountAmount.Add(couponDiscount);
+        if (couponDiscount.Amount < 0 || total.Amount > Subtotal.Amount)
+            throw new ArgumentOutOfRangeException(nameof(couponDiscount), "Discounts can't exceed the subtotal.");
+
+        AppliedCouponCode = couponCode.Trim().ToUpperInvariant();
+        DiscountAmount = total;
         RecalculateTotal();
     }
 
@@ -336,6 +348,22 @@ public sealed class Order : AggregateRoot<int>
         GiftWrap = true;
         GiftWrapFee = fee;
         GiftMessage = trimmed;
+        RecalculateTotal();
+    }
+    /// Must come BEFORE the coupon: the coupon is calculated on what remains
+    /// after the path discount, so the two never stack on the original price.
+    public void ApplyPathDiscount(int readingPathId, Money amount)
+    {
+        if (Status != OrderStatus.PendingPayment)
+            throw new InvalidOrderStateTransitionException(Id, Status, "apply a discount to");
+        if (AppliedCouponCode is not null)
+            throw new InvalidOperationException("Apply the path discount before the coupon.");
+        if (amount.Amount < 0 || amount.Amount > Subtotal.Amount)
+            throw new ArgumentOutOfRangeException(nameof(amount), "The path discount must be between zero and the subtotal.");
+
+        AppliedReadingPathId = readingPathId;
+        PathDiscountAmount = amount;
+        DiscountAmount = amount;
         RecalculateTotal();
     }
 }

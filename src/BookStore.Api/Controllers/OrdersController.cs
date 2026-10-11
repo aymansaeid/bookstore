@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.JsonWebTokens;
 using System.Security.Claims;
+
 namespace BookStore.Api.Controllers;
 
 public sealed record TrackOrderRequest(string OrderNumber, string Email);
@@ -27,7 +28,8 @@ public sealed record CheckoutRequest(
     string? ShippingMethod = null,
     bool GiftWrap = false,
     string? GiftMessage = null,
-    string? Language = null);
+    string? Language = null,
+    int? ReadingPathId = null);
 
 public sealed record QuoteRequest(
     IReadOnlyCollection<CartLineDto> Lines,
@@ -35,7 +37,8 @@ public sealed record QuoteRequest(
     int? SavedAddressId,
     string? CouponCode,
     string? ShippingMethod,
-    bool GiftWrap = false);
+    bool GiftWrap = false,
+    int? ReadingPathId = null);
 
 public sealed record OrderDocumentsRequest(string OrderNumber, string Email);
 
@@ -64,19 +67,20 @@ public sealed class OrdersController(ISender sender) : ControllerBase
             : null;
 
         var command = new CheckoutCartCommand(
-        request.CustomerEmail,
-        request.Lines,
-        request.ShippingAddress,
-        request.SavedAddressId,
-        request.CouponCode,
-        request.AcceptedTermsVersion,
-        idempotencyKey ?? string.Empty,
-        customerId,
-        HttpContext.Connection.RemoteIpAddress?.ToString(),
-        request.ShippingMethod,
-        request.GiftWrap,
-        request.GiftMessage,
-        request.Language);
+            request.CustomerEmail,
+            request.Lines,
+            request.ShippingAddress,
+            request.SavedAddressId,
+            request.CouponCode,
+            request.AcceptedTermsVersion,
+            idempotencyKey ?? string.Empty,
+            customerId,
+            HttpContext.Connection.RemoteIpAddress?.ToString(),
+            request.ShippingMethod,
+            request.GiftWrap,
+            request.GiftMessage,
+            request.Language,
+            request.ReadingPathId);
 
         return (await sender.Send(command, ct)).ToActionResult();
     }
@@ -99,7 +103,7 @@ public sealed class OrdersController(ISender sender) : ControllerBase
     public async Task<IActionResult> Quote(QuoteRequest request, CancellationToken ct) =>
         (await sender.Send(new QuoteCheckoutQuery(
             request.Lines, request.CountryCode, request.SavedAddressId, request.CouponCode,
-            request.ShippingMethod, request.GiftWrap, await OptionalCustomerIdAsync()), ct)).ToActionResult();
+            request.ShippingMethod, request.GiftWrap, await OptionalCustomerIdAsync(), request.ReadingPathId), ct)).ToActionResult();
 
     private async Task<int?> OptionalCustomerIdAsync()
     {

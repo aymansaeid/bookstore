@@ -30,7 +30,8 @@ public sealed class CheckoutCartCommandHandler(
     IOptions<StoreOptions> storeOptions,
     IOptions<PaymentOptions> paymentOptions,
     IOptions<ReturnOptions> returnOptions,
-    ILogger<CheckoutCartCommandHandler> logger)
+    ILogger<CheckoutCartCommandHandler> logger,
+    PathDiscountCalculator pathDiscountCalculator)
     : ICommandHandler<CheckoutCartCommand, CheckoutCartResponse>
 {
     public async Task<Result<CheckoutCartResponse>> Handle(CheckoutCartCommand command, CancellationToken ct)
@@ -153,11 +154,22 @@ public sealed class CheckoutCartCommandHandler(
             }
         }
 
-        // 4. Shipping method, priced by the SAME code the quote uses, from
-        // the books total after coupon.
+        // 4a. Path discount, priced exactly as the path page priced it. Refuse
+        // rather than silently charge more than the customer was shown.
         var subtotal = lineData.Aggregate(
             Money.Zero(store.Currency), (sum, l) => sum.Add(l.Book.Price.MultiplyBy(l.Quantity)));
-        var merchandiseTotal = subtotal.Subtract(CheckoutPricing.Discount(coupon, subtotal));
+
+        var pathDiscount = await pathDiscountCalculator.CalculateAsync(
+            command.ReadingPathId, customer?.Id, lineData.Select(l => l.Book.Id).ToHashSet(), store.Currency, ct);
+
+        if (command.ReadingPathId is not null && !pathDiscount.Applies)
+            return Result.Failure<CheckoutCartResponse>(CheckoutErrors.PathDiscountNotApplicable(
+                pathDiscount.Problem ?? PathDiscountRules.PathUnavailable, pathDiscount.MissingBookIds));
+
+        // 4b. Coupon on what's left after the path discount; shipping from what's
+        // left after both.
+        var afterPath = subtotal.Subtract(pathDiscount.Amount);
+        var merchandiseTotal = afterPath.Subtract(CheckoutPricing.Discount(coupon, afterPath));
 
         var zone = isPickup ? null : await shippingZoneRepository.GetByCountryCodeAsync(countryCode, ct);
         if (!isPickup && zone is null)
@@ -208,8 +220,11 @@ public sealed class CheckoutCartCommandHandler(
         foreach (var (book, quantity) in lineData)
             order.AddLine(book.Id, book.Title, quantity, book.Price);
 
+        if (pathDiscount.Applies)
+            order.ApplyPathDiscount(pathDiscount.ReadingPathId!.Value, pathDiscount.Amount);
+
         if (coupon is not null)
-            order.ApplyDiscount(coupon.Code, coupon.CalculateDiscount(order.Subtotal));
+            order.ApplyDiscount(coupon.Code, coupon.CalculateDiscount(order.Subtotal.Subtract(order.PathDiscountAmount)));
 
         order.SetShippingMethod(shippingChoice.Code, shippingChoice.DisplayName, shippingChoice.Price);
 

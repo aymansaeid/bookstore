@@ -37,4 +37,9 @@ public static class CheckoutErrors
 
     public static Error GiftWrapUnavailable =>
         Error.Validation("Checkout.GiftWrapUnavailable", "Gift wrapping isn't available right now.");
+
+    public static Error PathDiscountNotApplicable(string problem, IReadOnlyList<int> missingBookIds) =>
+    Error.Validation(problem, missingBookIds.Count > 0
+        ? $"The reading path discount needs these books in the cart: {string.Join(", ", missingBookIds)}."
+        : "The reading path discount can't be applied to this cart.");
 }
