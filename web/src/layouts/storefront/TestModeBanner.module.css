@@ -1,0 +1,8 @@
+.root {
+  padding: 6px 16px;
+  background: var(--goldl);
+  border-block-end: 1px solid var(--gold2);
+  color: var(--ink);
+  font-size: 13px;
+  text-align: center;
+}

@@ -7,4 +7,6 @@ export const env = {
    * and when explicitly enabled for a preview build.
    */
   mockPaymentsEnabled: import.meta.env.DEV || import.meta.env.VITE_ENABLE_MOCK_PAYMENTS === 'true',
+  /** '' = same origin (dev proxy). No trailing slash. */
+  apiBaseUrl: (import.meta.env.VITE_API_BASE_URL ?? '').trim().replace(/\/+$/, ''),
 } as const;

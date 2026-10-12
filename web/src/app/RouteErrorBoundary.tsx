@@ -7,6 +7,9 @@ import { DocumentTitle } from '@/shared/ui/DocumentTitle';
 
 import styles from './RouteErrorBoundary.module.css';
 
+import { isApiError } from '@/shared/api/ApiError';
+import { supportRequestId } from '@/shared/api/errorMessages';
+
 /**
  * Catches render and route-loading errors. Uses plain <a href> and a hard
  * reload on purpose: after an error the router state may not be trustworthy.
@@ -14,7 +17,10 @@ import styles from './RouteErrorBoundary.module.css';
 export function RouteErrorBoundary() {
   const error = useRouteError();
 
-  if (isRouteErrorResponse(error) && error.status === 404) {
+  if (
+    (isRouteErrorResponse(error) && error.status === 404) ||
+    (isApiError(error) && error.status === 404)
+  ) {
     return (
       <main id="main-content">
         <NotFoundPage />
@@ -27,6 +33,7 @@ export function RouteErrorBoundary() {
   }
 
   const chunkFailed = isChunkLoadError(error);
+  const requestId = supportRequestId(error);
   const heading = chunkFailed ? 'تحدّث الموقع' : 'حدث خطأ غير متوقع';
   const message = chunkFailed
     ? 'صدرت نسخة أحدث من الموقع. أعد تحميل الصفحة للمتابعة.'
@@ -37,6 +44,11 @@ export function RouteErrorBoundary() {
       <DocumentTitle title={heading} />
       <h1 className={styles.title}>{heading}</h1>
       <p className={styles.text}>{message}</p>
+      {requestId && (
+        <p className={styles.code}>
+          رمز الخطأ: <span dir="ltr">{requestId}</span>
+        </p>
+      )}
       <div className={styles.actions}>
         <button
           type="button"

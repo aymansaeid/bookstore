@@ -1,11 +1,13 @@
 import { Outlet, useMatches } from 'react-router';
 
+import { useShippingSummary } from '@/features/store/queries';
 import { AnnouncementBar } from '@/layouts/storefront/AnnouncementBar';
 import { BottomNav } from '@/layouts/storefront/BottomNav';
 import { EfendiFab } from '@/layouts/storefront/EfendiFab';
 import { isShellHandle, type ShellHandle } from '@/layouts/storefront/shellHandle';
 import { SiteFooter } from '@/layouts/storefront/SiteFooter';
 import { SiteHeader } from '@/layouts/storefront/SiteHeader';
+import { TestModeBanner } from '@/layouts/storefront/TestModeBanner';
 
 import styles from './StorefrontLayout.module.css';
 
@@ -20,13 +22,18 @@ function useShellOptions(): ShellHandle {
 /** Storefront frame: announcement bar, header, page, footer, bottom nav / FAB. */
 export default function StorefrontLayout() {
   const { hideFooter = false, hideFab = false } = useShellOptions();
+  const shipping = useShippingSummary();
 
   return (
     <div className={styles.shell}>
       <a href="#main-content" className={styles.skip}>
         تخطَّ إلى المحتوى
       </a>
-      <AnnouncementBar />
+      <TestModeBanner />
+      <AnnouncementBar
+        freeShippingThreshold={shipping.freeShippingThreshold}
+        countriesShippedTo={shipping.countries}
+      />
       <SiteHeader />
       <main id="main-content" tabIndex={-1} className={styles.main}>
         <Outlet />

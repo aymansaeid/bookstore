@@ -44,3 +44,9 @@
   text-decoration: none;
   cursor: pointer;
 }
+
+.code {
+  color: var(--gray);
+  font-size: 13px;
+  user-select: all;
+}
