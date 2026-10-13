@@ -1,0 +1,136 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-block-end: 16px;
+}
+
+.label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink3);
+}
+
+/* 16px text on touch screens so iOS doesn't zoom (§8.4). */
+.input {
+  inline-size: 100%;
+  min-block-size: 52px;
+  padding-inline: 16px;
+  border: 1px solid var(--line2);
+  border-radius: 14px;
+  background: #fff;
+  color: var(--ink);
+  font-size: 16px;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+.input::placeholder {
+  color: #a9a195;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--ink);
+  box-shadow: 0 0 0 4px rgba(20, 18, 16, 0.06);
+}
+
+.invalid,
+.invalid:focus {
+  border-color: var(--red);
+}
+
+.invalid:focus {
+  box-shadow: 0 0 0 4px rgba(227, 30, 36, 0.1);
+}
+
+.hint,
+.error {
+  font-size: 12.5px;
+}
+
+.hint {
+  color: var(--gray);
+}
+
+.error {
+  color: var(--red2);
+}
+
+.control {
+  position: relative;
+}
+
+.withButton {
+  padding-inline-end: 52px;
+}
+
+.reveal {
+  position: absolute;
+  inset-block: 4px;
+  inset-inline-end: 4px;
+  display: grid;
+  place-items: center;
+  inline-size: 44px;
+  border-radius: 10px;
+  color: var(--gray);
+}
+
+.reveal[aria-pressed='true'] {
+  color: var(--ink);
+}
+
+.check {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-block-size: 44px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.checkInput {
+  flex-shrink: 0;
+  inline-size: 20px;
+  block-size: 20px;
+  margin: 0;
+  border: 1.5px solid var(--line2);
+  border-radius: 6px;
+  background: #fff;
+  appearance: none;
+  cursor: pointer;
+}
+
+.checkInput:checked {
+  border-color: var(--ink);
+  background: var(--ink)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12 5 5 9-10'/%3E%3C/svg%3E")
+    center / 14px no-repeat;
+}
+
+.alert {
+  display: grid;
+  gap: 8px;
+  margin-block-end: 16px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-size: 14px;
+}
+
+.error.alert,
+.alert.error {
+  background: var(--redl);
+  color: var(--red2);
+}
+
+.success {
+  background: #e3f1ea;
+  color: var(--green);
+}
+
+@media (min-width: 1024px) and (pointer: fine) {
+  .input {
+    font-size: 15px;
+  }
+}

@@ -1,13 +1,22 @@
 import { Outlet } from 'react-router';
 
+import { EffendiPanel } from '@/features/auth/components/EffendiPanel';
+
+import styles from './AuthLayout.module.css';
+
 /**
- * Bare full-screen layout for login, register and the email-link pages:
- * no store header or footer (spec 5.8). Step 13 adds the split paper/ink panels.
+ * Spec 5.8 split screen: form on paper (right), Efendi on ink (left).
+ * Under 1024px only the form shows.
  */
 export default function AuthLayout() {
   return (
-    <main id="main-content">
-      <Outlet />
-    </main>
+    <div className={styles.root}>
+      <main id="main-content" className={styles.main}>
+        <div className={styles.column}>
+          <Outlet />
+        </div>
+      </main>
+      <EffendiPanel className={styles.panel} />
+    </div>
   );
 }

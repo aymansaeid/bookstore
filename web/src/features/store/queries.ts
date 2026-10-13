@@ -15,7 +15,7 @@ export const storeKeys = {
 export function useStoreConfig() {
   return useQuery({
     queryKey: storeKeys.config(UI_LANGUAGE),
-    queryFn: ({ signal }) => storeApi.config(UI_LANGUAGE, signal),
+    queryFn: () => storeApi.config(UI_LANGUAGE),
     staleTime: 5 * 60_000,
   });
 }
@@ -23,7 +23,7 @@ export function useStoreConfig() {
 export function useShippingRates() {
   return useQuery({
     queryKey: storeKeys.shippingRates(),
-    queryFn: ({ signal }) => storeApi.shippingRates(signal),
+    queryFn: () => storeApi.shippingRates(),
     staleTime: 10 * 60_000,
   });
 }
@@ -40,4 +40,12 @@ export function useShippingSummary() {
     freeShippingThreshold: home?.freeShippingThreshold ?? undefined,
     countries: data && data.length > 0 ? data.length : undefined,
   };
+}
+
+export function useStoreStats() {
+  return useQuery({
+    queryKey: [...STORE, 'stats'] as const,
+    queryFn: () => storeApi.stats(),
+    staleTime: 10 * 60_000,
+  });
 }

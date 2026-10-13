@@ -21,7 +21,7 @@ export function useCustomerSummary() {
   const customerId = useCustomerId();
   return useQuery({
     queryKey: meKeys.summary(customerId ?? 0),
-    queryFn: ({ signal }) => accountApi.summary(signal),
+    queryFn: () => accountApi.summary(),
     enabled: customerId !== null,
   });
 }
@@ -34,7 +34,7 @@ export function useUnreadNotificationsCount() {
   const customerId = useCustomerId();
   return useQuery({
     queryKey: meKeys.unreadCount(customerId ?? 0),
-    queryFn: ({ signal }) => accountApi.unreadNotificationsCount(signal),
+    queryFn: () => accountApi.unreadNotificationsCount(),
     enabled: customerId !== null,
     staleTime: 30_000,
     refetchInterval: 60_000,

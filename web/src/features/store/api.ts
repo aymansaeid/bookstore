@@ -21,9 +21,19 @@ export interface ShippingRate {
   freeShippingThreshold: number | null;
 }
 
+/** API guide §7b GET /api/store/stats (cached 10 min server-side). */
+export interface StoreStats {
+  bookCount: number;
+  muhaqqiqCount: number;
+  averageRating: number | null;
+  reviewCount: number;
+  countriesShippedTo: number;
+}
+
 export const storeApi = {
   config: (language: UiLanguage, signal?: AbortSignal) =>
     apiRequest<StoreConfig>('/api/store/config', { query: { lang: language }, signal }),
   shippingRates: (signal?: AbortSignal) =>
     apiRequest<ShippingRate[]>('/api/shipping/rates', { signal }),
+  stats: (signal?: AbortSignal) => apiRequest<StoreStats>('/api/store/stats', { signal }),
 };

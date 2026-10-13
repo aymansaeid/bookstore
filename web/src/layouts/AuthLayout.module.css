@@ -1,0 +1,35 @@
+.root {
+  display: grid;
+  min-block-size: 100dvh;
+  background: var(--paper);
+}
+
+.main {
+  display: flex;
+  justify-content: center;
+  padding: 24px 16px calc(32px + env(safe-area-inset-bottom));
+}
+
+.column {
+  inline-size: 100%;
+  max-inline-size: 440px;
+}
+
+.panel {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .root {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .main {
+    align-items: center;
+    padding: 48px;
+  }
+
+  .panel {
+    display: flex;
+  }
+}
