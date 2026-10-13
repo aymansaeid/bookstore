@@ -1,0 +1,36 @@
+/* 44px hit area around the 34px circle from the design. */
+.button {
+  display: grid;
+  place-items: center;
+  inline-size: 44px;
+  block-size: 44px;
+  border-radius: 50%;
+  color: var(--ink3);
+}
+
+.circle {
+  display: grid;
+  place-items: center;
+  inline-size: 34px;
+  block-size: 34px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: var(--sh1);
+  transition: transform 0.2s;
+}
+
+.button:hover .circle {
+  transform: scale(1.06);
+}
+
+.saved {
+  color: var(--red);
+}
+
+.saved svg {
+  fill: currentColor;
+}
+
+.button:disabled {
+  cursor: progress;
+}

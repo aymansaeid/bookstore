@@ -10,6 +10,7 @@ import { router } from '@/app/router';
 import { meKeys } from '@/features/account/queries';
 import { getSession, initSession, subscribeSession } from '@/features/auth/session';
 import { createQueryClient } from '@/shared/api/queryClient';
+import { initCartSync } from '@/features/cart/cartStore';
 
 const container = document.getElementById('root');
 if (!container) {
@@ -21,6 +22,7 @@ const queryClient = createQueryClient();
 // Restore the session from the refresh cookie (API guide §3, step 1). Runs
 // outside React so StrictMode's double effects can't fire two refreshes.
 initSession();
+initCartSync();
 
 // Signing out (here or in another tab) drops every cached customer query.
 subscribeSession(() => {

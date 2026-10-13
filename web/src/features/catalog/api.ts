@@ -1,10 +1,6 @@
 import { apiRequest } from '@/shared/api/http';
 
-export interface CategoryRef {
-  id: number;
-  slug: string;
-  name: string;
-}
+import type { CatalogSearchParams, CatalogSearchResult, CategoryRef } from './types';
 
 /** API guide §4b PublicCategoryDto (two-level tree). */
 export interface Category extends CategoryRef {
@@ -18,4 +14,6 @@ export interface Category extends CategoryRef {
 
 export const catalogApi = {
   categories: (signal?: AbortSignal) => apiRequest<Category[]>('/api/categories', { signal }),
+  search: (params: CatalogSearchParams, signal?: AbortSignal) =>
+    apiRequest<CatalogSearchResult>('/api/catalog/search', { query: { ...params }, signal }),
 };

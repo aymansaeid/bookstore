@@ -8,7 +8,7 @@ import { isShellHandle, type ShellHandle } from '@/layouts/storefront/shellHandl
 import { SiteFooter } from '@/layouts/storefront/SiteFooter';
 import { SiteHeader } from '@/layouts/storefront/SiteHeader';
 import { TestModeBanner } from '@/layouts/storefront/TestModeBanner';
-
+import { Toaster } from '@/shared/ui/toast/Toaster';
 import styles from './StorefrontLayout.module.css';
 
 function useShellOptions(): ShellHandle {
@@ -41,6 +41,7 @@ export default function StorefrontLayout() {
       {!hideFooter && <SiteFooter />}
       {!hideFab && <EfendiFab />}
       <BottomNav />
+      <Toaster />
     </div>
   );
 }

@@ -1,0 +1,274 @@
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  block-size: 100%;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
+  background: var(--card);
+  transition:
+    transform 0.25s,
+    box-shadow 0.25s,
+    border-color 0.25s;
+}
+
+.media {
+  position: relative;
+  overflow: hidden;
+  padding: 16px 20px 22px;
+  border-radius: 14px;
+  background: radial-gradient(90% 80% at 50% 30%, #fbf6ec, #ede3d0);
+}
+
+/* Oval floor shadow under the book */
+.media::after {
+  content: '';
+  position: absolute;
+  inset-inline: 18%;
+  inset-block-end: 14px;
+  block-size: 14px;
+  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.28), transparent);
+  filter: blur(2px);
+}
+
+.cover {
+  z-index: 1;
+}
+
+/* Top-right badges (inline-start in RTL) */
+.tags {
+  position: absolute;
+  inset-block-start: 10px;
+  inset-inline-start: 10px;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+}
+
+.tags span {
+  padding: 2px 9px;
+  border-radius: 7px;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.sale {
+  background: var(--red);
+}
+
+.new {
+  background: var(--green);
+}
+
+.deluxe {
+  background: var(--ink);
+}
+
+/* Heart top-left (inline-end) */
+.fav {
+  position: absolute;
+  inset-block-start: 5px;
+  inset-inline-end: 5px;
+  z-index: 3;
+}
+
+.match {
+  position: absolute;
+  inset-block-end: 10px;
+  inset-inline-start: 10px;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: var(--r-pill);
+  background: rgba(20, 18, 16, 0.82);
+  color: var(--gold2);
+  font-size: 11px;
+  font-weight: 700;
+  backdrop-filter: blur(6px);
+}
+
+.meta {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  padding: 12px 2px 0;
+}
+
+.category {
+  color: var(--gold);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.title {
+  margin-block: 2px 3px;
+  font-family: var(--font-serif);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.titleLink::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: inherit;
+}
+
+.titleLink:focus-visible {
+  outline: none;
+}
+
+.titleLink:focus-visible::after {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.author {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.edition {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-block-start: 3px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.edition i {
+  inline-size: 3px;
+  block-size: 3px;
+  border-radius: 50%;
+  background: var(--line2);
+}
+
+.footer {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px;
+  margin-block-start: auto;
+  padding-block-start: 12px;
+}
+
+.priceBlock {
+  min-inline-size: 0;
+}
+
+.rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.rating b {
+  color: #e0a526;
+  font-weight: 400;
+}
+
+.price {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+}
+
+.price small {
+  margin-inline-start: 2px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.old {
+  margin-inline-start: 6px;
+  color: var(--muted);
+  font-size: 12.5px;
+  font-weight: 400;
+}
+
+.soldOut {
+  color: var(--red2);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* 44px touch target; 40px from the design on desktop pointers. */
+.add {
+  position: relative;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  inline-size: 44px;
+  block-size: 44px;
+  border-radius: 12px;
+  background: var(--ink);
+  color: #fff;
+  transition: background-color 0.2s;
+}
+
+@media (min-width: 768px) {
+  .card {
+    padding: 14px;
+  }
+
+  .media {
+    padding: 24px 32px 28px;
+  }
+
+  .media::after {
+    inset-block-end: 18px;
+  }
+
+  .tags {
+    inset-block-start: 10px;
+    inset-inline-start: 10px;
+  }
+
+  .meta {
+    padding: 14px 4px 0;
+  }
+
+  .title {
+    font-size: 19px;
+  }
+
+  .price {
+    font-size: 19px;
+  }
+}
+
+@media (min-width: 1024px) and (pointer: fine) {
+  .add {
+    inline-size: 40px;
+    block-size: 40px;
+  }
+}
+
+/* Hover only where hovering exists (§8.4); nothing is hover-only. */
+@media (hover: hover) {
+  .card:hover {
+    border-color: transparent;
+    box-shadow:
+      0 0 0 1.5px var(--gold),
+      0 30px 50px -24px rgba(20, 18, 16, 0.35);
+    transform: translateY(-6px);
+  }
+
+  .card:hover .add {
+    background: var(--red);
+  }
+}

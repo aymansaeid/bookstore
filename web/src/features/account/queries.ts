@@ -12,7 +12,7 @@ export const meKeys = {
   unreadCount: (customerId: number) => ['me', 'unread-count', customerId] as const,
 };
 
-function useCustomerId(): number | null {
+export function useCustomerId(): number | null {
   const { status, customer } = useSession();
   return status === 'authenticated' && customer ? customer.id : null;
 }

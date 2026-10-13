@@ -71,3 +71,11 @@ export function countriesPhrase(count: number): string {
   if (count >= 3 && count <= 10) return `${formatCount(count)} دول`;
   return `${formatCount(count)} دولة`;
 }
+
+/** Arabic number agreement: مجلد واحد، مجلدان، ٦ مجلدات، ٥٠ مجلداً. */
+export function volumesLabel(count: number): string {
+  if (count <= 1) return 'مجلد واحد';
+  if (count === 2) return 'مجلدان';
+  if (count <= 10) return `${formatCount(count)} مجلدات`;
+  return `${formatCount(count)} مجلداً`;
+}

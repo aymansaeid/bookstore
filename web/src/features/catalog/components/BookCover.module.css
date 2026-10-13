@@ -1,0 +1,87 @@
+/* RTL: inline-start is the right edge, where the spine is. */
+.cover {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 2 / 2.95;
+  border-start-start-radius: 2px;
+  border-end-start-radius: 2px;
+  border-start-end-radius: 6px;
+  border-end-end-radius: 6px;
+  background: #1a1512;
+  box-shadow:
+    inset 3px 0 0 rgba(255, 255, 255, 0.06),
+    inset -10px 0 12px -8px rgba(0, 0, 0, 0.55),
+    0 1px 1px rgba(0, 0, 0, 0.2),
+    0 18px 30px -14px rgba(0, 0, 0, 0.55);
+}
+
+/* Gloss */
+.cover::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    260deg,
+    rgba(255, 255, 255, 0.14),
+    transparent 28%,
+    transparent 70%,
+    rgba(255, 255, 255, 0.06)
+  );
+  pointer-events: none;
+}
+
+/* Spine band, 7% wide */
+.cover::after {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  z-index: 2;
+  inline-size: 7%;
+  background: linear-gradient(
+    270deg,
+    rgba(0, 0, 0, 0.25),
+    rgba(255, 255, 255, 0.08) 40%,
+    rgba(0, 0, 0, 0.2)
+  );
+  pointer-events: none;
+}
+
+.image {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+
+/* Fallback: dark cloth, gold frame and star pattern, title in Amiri */
+.drawn {
+  display: grid;
+  place-items: center;
+  padding: 18% 14%;
+  background:
+    radial-gradient(ellipse at center, rgba(201, 165, 92, 0.12), transparent 70%),
+    var(--star) center / 42% auto,
+    var(--ink2);
+  color: var(--gold2);
+}
+
+.drawn .drawnTitle {
+  position: relative;
+  z-index: 3;
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-size: clamp(12px, 1.6vw, 18px);
+  line-height: 1.3;
+  text-align: center;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
+}
+
+.drawn::before {
+  inset: 6.5% 9.5% 6.5% 6.5%;
+  border: 1.5px solid rgba(230, 205, 143, 0.7);
+  border-radius: 2px;
+  background: none;
+}
