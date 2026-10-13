@@ -1,7 +1,15 @@
+import { useCustomerSummary, useUnreadNotificationsCount } from '@/features/account/queries';
+
 /**
- * Single source for the header and bottom-nav counters.
- * Step 4 wires wishlist + notifications to the session; step 5 wires the cart.
+ * Single source for the header and bottom-nav counters. Guests see none.
+ * The cart count is wired to the cart store in step 5.
  */
 export function useHeaderCounts() {
-  return { cart: 0, wishlist: 0, notifications: 0 };
+  const summary = useCustomerSummary();
+  const unread = useUnreadNotificationsCount();
+  return {
+    cart: 0,
+    wishlist: summary.data?.wishlistCount ?? 0,
+    notifications: unread.data ?? 0,
+  };
 }

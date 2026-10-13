@@ -58,3 +58,13 @@ export function activeBottomNavId(pathname: string): BottomNavId | null {
   if (isUnder(pathname, paths.account.root)) return 'account';
   return null;
 }
+/**
+ * Only same-site paths are accepted as ?returnTo=, never "//evil.com" or
+ * "https://…", so a crafted login link can't send the user to another site.
+ */
+export function safeReturnTo(value: string | null, fallback: string = paths.account.root): string {
+  if (!value?.startsWith('/') || value.startsWith('//') || value.startsWith('/\\')) {
+    return fallback;
+  }
+  return value;
+}

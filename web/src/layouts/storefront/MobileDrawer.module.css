@@ -77,3 +77,8 @@
   color: var(--gray);
   font-size: 13px;
 }
+
+.button {
+  inline-size: 100%;
+  text-align: start;
+}

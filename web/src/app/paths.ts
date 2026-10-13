@@ -40,6 +40,7 @@ export const paths = {
 
   // Auth (spec 5.8; API §7)
   login: '/login', // [backend]
+  loginWithReturn: (returnTo: string) => `/login?${new URLSearchParams({ returnTo }).toString()}`,
   register: '/register',
   forgotPassword: '/forgot-password', // [backend]
   resetPassword: '/reset-password', // [backend]

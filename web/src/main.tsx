@@ -7,6 +7,8 @@ import { createRoot } from 'react-dom/client';
 import { RouterProvider } from 'react-router/dom';
 
 import { router } from '@/app/router';
+import { meKeys } from '@/features/account/queries';
+import { getSession, initSession, subscribeSession } from '@/features/auth/session';
 import { createQueryClient } from '@/shared/api/queryClient';
 
 const container = document.getElementById('root');
@@ -15,6 +17,15 @@ if (!container) {
 }
 
 const queryClient = createQueryClient();
+
+// Restore the session from the refresh cookie (API guide §3, step 1). Runs
+// outside React so StrictMode's double effects can't fire two refreshes.
+initSession();
+
+// Signing out (here or in another tab) drops every cached customer query.
+subscribeSession(() => {
+  if (getSession().status === 'guest') queryClient.removeQueries({ queryKey: meKeys.all });
+});
 
 createRoot(container).render(
   <StrictMode>

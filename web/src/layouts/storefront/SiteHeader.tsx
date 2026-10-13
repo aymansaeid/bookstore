@@ -1,14 +1,17 @@
-import { useRef } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router';
 
 import { activeNavId } from '@/app/navigation';
 import { paths } from '@/app/paths';
+import { meKeys } from '@/features/account/queries';
 import { cx } from '@/shared/lib/cx';
 import { formatCount } from '@/shared/lib/format';
 import { CountBadge } from '@/shared/ui/CountBadge/CountBadge';
 import { Icon } from '@/shared/ui/Icon/Icon';
 import { Logo } from '@/shared/ui/Logo/Logo';
 
+import { AccountPill } from './AccountPill';
 import { HeaderSearch } from './HeaderSearch';
 import { MobileDrawer } from './MobileDrawer';
 import { PrimaryNav } from './PrimaryNav';
@@ -18,12 +21,24 @@ import { useHeaderCounts } from './useHeaderCounts';
 const withCount = (label: string, count: number) =>
   count > 0 ? `${label} (${formatCount(count)})` : label;
 
+/** API guide §7c: re-check the bell on every page navigation (not on first render). */
+function useRefreshUnreadOnNavigation(pathname: string) {
+  const queryClient = useQueryClient();
+  const previous = useRef(pathname);
+  useEffect(() => {
+    if (previous.current === pathname) return;
+    previous.current = pathname;
+    void queryClient.invalidateQueries({ queryKey: meKeys.unreadCountAll });
+  }, [pathname, queryClient]);
+}
+
 /** Spec §4.1 layer 2 (layer 1 is AnnouncementBar). Sticky, frosted. */
 export function SiteHeader() {
   const { pathname, search } = useLocation();
   const active = activeNavId(pathname, search);
   const counts = useHeaderCounts();
   const drawerRef = useRef<HTMLDialogElement>(null);
+  useRefreshUnreadOnNavigation(pathname);
 
   return (
     <header className={styles.root}>
@@ -73,17 +88,7 @@ export function SiteHeader() {
             <Icon name="cart" />
             <CountBadge count={counts.cart} />
           </Link>
-          {/* Guest state. Step 4 shows the name and loyalty tier («عضو ذهبي»). */}
-          <Link to={paths.login} className={styles.account}>
-            <span className={styles.accountAvatar} aria-hidden="true">
-              <Icon name="user" size={18} />
-            </span>
-            <span className={styles.accountText}>
-              <b>حسابي</b>
-              <small>تسجيل الدخول</small>
-            </span>
-            <span className="sr-only">حسابي: تسجيل الدخول</span>
-          </Link>
+          <AccountPill />
         </div>
       </div>
 

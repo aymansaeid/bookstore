@@ -3,6 +3,8 @@ import { Link, useLocation } from 'react-router';
 
 import type { NavId } from '@/app/navigation';
 import { paths } from '@/app/paths';
+import { logout, useSession } from '@/features/auth/session';
+import { cx } from '@/shared/lib/cx';
 import { Icon } from '@/shared/ui/Icon/Icon';
 import { Logo } from '@/shared/ui/Logo/Logo';
 
@@ -20,6 +22,7 @@ interface MobileDrawerProps {
  */
 export function MobileDrawer({ dialogRef, active }: MobileDrawerProps) {
   const location = useLocation();
+  const { status } = useSession();
 
   // Any navigation (a link inside, or back/forward) closes the menu.
   useEffect(() => {
@@ -62,6 +65,26 @@ export function MobileDrawer({ dialogRef, active }: MobileDrawerProps) {
             <Icon name="truck" />
             تتبّع الطلب
           </Link>
+        </li>
+        <li>
+          {status === 'authenticated' ? (
+            <button
+              type="button"
+              className={cx(styles.link, styles.button)}
+              onClick={() => {
+                close();
+                logout().catch(() => undefined);
+              }}
+            >
+              <Icon name="lock" />
+              تسجيل الخروج
+            </button>
+          ) : (
+            <Link to={paths.login} className={styles.link}>
+              <Icon name="lock" />
+              تسجيل الدخول
+            </Link>
+          )}
         </li>
       </ul>
 

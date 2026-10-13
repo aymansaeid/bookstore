@@ -1,0 +1,6 @@
+.checking {
+  display: grid;
+  place-items: center;
+  min-block-size: 40vh;
+  color: var(--gray);
+}

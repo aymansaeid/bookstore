@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { activeBottomNavId, activeNavId, searchUrl } from '@/app/navigation';
+import { safeReturnTo, activeBottomNavId, activeNavId, searchUrl } from '@/app/navigation';
 
 describe('activeNavId', () => {
   it.each([
@@ -42,5 +42,19 @@ describe('searchUrl', () => {
     expect(searchUrl('زاد المعاد')).toBe(
       '/search?q=%D8%B2%D8%A7%D8%AF+%D8%A7%D9%84%D9%85%D8%B9%D8%A7%D8%AF',
     );
+  });
+});
+
+describe('safeReturnTo', () => {
+  it.each([
+    ['/account/orders?x=1', '/account/orders?x=1'],
+    [null, '/account'],
+    ['', '/account'],
+    ['https://evil.com', '/account'],
+    ['//evil.com', '/account'],
+    ['/\\evil.com', '/account'],
+    ['javascript:alert(1)', '/account'],
+  ])('%s → %s', (value, expected) => {
+    expect(safeReturnTo(value)).toBe(expected);
   });
 });
