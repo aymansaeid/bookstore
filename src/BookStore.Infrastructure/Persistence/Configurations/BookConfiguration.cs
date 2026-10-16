@@ -144,6 +144,7 @@ public sealed class BookConfiguration : IEntityTypeConfiguration<Book>
             relation.WithOwner().HasForeignKey("BookId");
             relation.HasKey("BookId", nameof(BookRelation.RelatedBookId));
             relation.Property(r => r.DisplayOrder).IsRequired();
+            relation.Property(r => r.RelatedBookId).ValueGeneratedNever();
         });
 
         builder.Metadata.FindNavigation(nameof(Book.Related))!

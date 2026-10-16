@@ -1625,10 +1625,7 @@ namespace BookStore.Infrastructure.Persistence.Migrations
                                 .HasColumnType("int");
 
                             b1.Property<int>("RelatedBookId")
-                                .ValueGeneratedOnAdd()
                                 .HasColumnType("int");
-
-                            SqlServerPropertyBuilderExtensions.UseIdentityColumn(b1.Property<int>("RelatedBookId"));
 
                             b1.Property<int>("DisplayOrder")
                                 .HasColumnType("int");

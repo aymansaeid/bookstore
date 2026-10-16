@@ -134,3 +134,10 @@
     font-size: 15px;
   }
 }
+
+.textarea {
+  min-block-size: 132px;
+  padding-block: 14px;
+  line-height: 1.7;
+  resize: vertical;
+}

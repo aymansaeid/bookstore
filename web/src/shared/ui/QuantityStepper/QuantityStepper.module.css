@@ -1,0 +1,33 @@
+.stepper {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 52px;
+  padding: 3px;
+  border: 1px solid var(--line2);
+  border-radius: 14px;
+  background: var(--card);
+}
+
+.stepper button {
+  display: grid;
+  place-items: center;
+  inline-size: 44px;
+  block-size: 44px;
+  border-radius: 10px;
+  color: var(--ink);
+}
+
+.stepper button:hover:not(:disabled) {
+  background: var(--paper2);
+}
+
+.stepper button:disabled {
+  color: var(--line2);
+  cursor: not-allowed;
+}
+
+.stepper output {
+  min-inline-size: 32px;
+  font-weight: 700;
+  text-align: center;
+}

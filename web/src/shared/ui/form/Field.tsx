@@ -120,3 +120,35 @@ export function FormAlert({
     </div>
   );
 }
+
+/** Multi-line field, same look as TextField. */
+export function TextAreaField({
+  label,
+  error,
+  hint,
+  id,
+  className,
+  ...textarea
+}: ComponentProps<'textarea'> & {
+  label: string;
+  error?: string | undefined;
+  hint?: string | undefined;
+}) {
+  const autoId = useId();
+  const inputId = id ?? autoId;
+  return (
+    <div className={cx(styles.field, className)}>
+      <label htmlFor={inputId} className={styles.label}>
+        {label}
+      </label>
+      <textarea
+        id={inputId}
+        className={cx(styles.input, styles.textarea, error && styles.invalid)}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={describedBy(inputId, hint, error)}
+        {...textarea}
+      />
+      <Messages id={inputId} hint={hint} error={error} />
+    </div>
+  );
+}

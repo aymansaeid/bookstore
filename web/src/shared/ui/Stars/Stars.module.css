@@ -1,0 +1,19 @@
+.stars {
+  position: relative;
+  display: inline-block;
+  line-height: 1;
+  letter-spacing: 2px;
+  white-space: nowrap;
+}
+
+.base {
+  color: var(--line2);
+}
+
+.fill {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  overflow: hidden;
+  color: #e0a526;
+}
