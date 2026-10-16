@@ -47,7 +47,12 @@ const storefrontRoutes: RouteObject[] = [
 
   // Cart and checkout
   { path: 'cart', lazy: lazyComponent(() => import('@/pages/cart/CartPage')) },
-  { path: 'checkout', lazy: lazyComponent(() => import('@/pages/checkout/CheckoutPage')) },
+  {
+    path: 'checkout',
+    // The floating Efendi button would sit on the pay button.
+    handle: { hideFab: true } satisfies ShellHandle,
+    lazy: lazyComponent(() => import('@/pages/checkout/CheckoutPage')),
+  },
   {
     path: 'checkout/success',
     lazy: lazyComponent(() => import('@/pages/checkout/CheckoutSuccessPage')),

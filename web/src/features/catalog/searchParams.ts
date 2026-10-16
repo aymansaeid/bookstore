@@ -120,7 +120,7 @@ export function writeFilters(filters: CatalogSearchParams): URLSearchParams {
     if (value === undefined || value === false || value === '') continue;
     if (key === 'page' && value === 1) continue;
     if (Array.isArray(value)) {
-      for (const item of value) search.append(key, String(item));
+      for (const item of value) search.append(key, item);
     } else {
       search.set(key, String(value));
     }

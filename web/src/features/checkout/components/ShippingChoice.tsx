@@ -1,20 +1,14 @@
+import { STORE_COUNTRY } from '@/app/locale';
 import { useCartStore } from '@/features/cart/cartStore';
-import type { Quote, ShippingOption } from '@/features/checkout/types';
+import { shippingOptionName } from '@/features/checkout/shipping';
+import type { Quote } from '@/features/checkout/types';
 import { useShippingRates } from '@/features/store/queries';
 import { cx } from '@/shared/lib/cx';
 import { deliveryWindow } from '@/shared/lib/dates';
 import { countryName, formatMoney } from '@/shared/lib/format';
 import { Icon } from '@/shared/ui/Icon/Icon';
-import { STORE_COUNTRY } from '@/app/locale';
 
 import styles from './ShippingChoice.module.css';
-
-export function shippingOptionName(option: ShippingOption): string {
-  if (option.name) return option.name;
-  if (option.code === 'standard') return 'الشحن العادي';
-  if (option.isPickup) return 'الاستلام من المكتبة';
-  return option.code;
-}
 
 /** Only countries we ship to (API §4), Arabic names, home country first. */
 export function CountrySelect({

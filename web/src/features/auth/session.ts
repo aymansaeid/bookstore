@@ -143,6 +143,28 @@ export async function customerRequest<T>(
   }
 }
 
+/**
+ * For public endpoints that also accept a customer token (quote, legal
+ * preview, checkout): signed in → sent with the token, so the order joins the
+ * account and saved addresses work; guest → sent without one.
+ */
+export async function optionalCustomerRequest<T>(
+  path: string,
+  options: Omit<RequestOptions, 'accessToken'> = {},
+): Promise<T> {
+  const token = await getAccessToken();
+  if (!token) return apiRequest<T>(path, options);
+
+  try {
+    return await apiRequest<T>(path, { ...options, accessToken: token });
+  } catch (error) {
+    if (!(error instanceof ApiError) || error.status !== 401) throw error;
+    const fresh = accessToken !== token && hasFreshToken() ? accessToken : await refreshSession();
+    if (!fresh) throw error;
+    return apiRequest<T>(path, { ...options, accessToken: fresh });
+  }
+}
+
 /** POST /api/customers/auth/login. Throws ApiError (e.g. Customer.EmailNotVerified). */
 export async function login(email: string, password: string): Promise<Customer> {
   const response = await apiRequest<CustomerAuthResponse>('/api/customers/auth/login', {

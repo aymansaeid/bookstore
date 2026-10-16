@@ -1,0 +1,49 @@
+.totals {
+  display: grid;
+  gap: 10px;
+  transition: opacity 0.2s;
+}
+
+.stale {
+  opacity: 0.55;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+}
+
+.row dt {
+  color: var(--gray);
+}
+
+.saving dd {
+  color: var(--green);
+  font-weight: 600;
+}
+
+.total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding-block-start: 10px;
+  border-block-start: 1px dashed var(--line2);
+}
+
+.total dt {
+  font-weight: 700;
+}
+
+.total dd {
+  font-size: 28px;
+  font-weight: 700;
+}
+
+@media (min-width: 1024px) {
+  .total dd {
+    font-size: 34px;
+  }
+}

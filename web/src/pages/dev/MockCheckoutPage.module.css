@@ -1,0 +1,83 @@
+.page {
+  display: grid;
+  place-items: center;
+  min-block-size: 100dvh;
+  padding: 24px 16px;
+  background:
+    linear-gradient(rgba(20, 18, 16, 0.9), rgba(20, 18, 16, 0.9)),
+    var(--star) 0 0 / 64px,
+    var(--ink);
+}
+
+.card {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  inline-size: min(440px, 100%);
+  padding: 28px 22px;
+  border-radius: 22px;
+  background: var(--card);
+  box-shadow: var(--sh2);
+  text-align: center;
+}
+
+.logo {
+  block-size: 48px;
+  inline-size: auto;
+}
+
+.badge {
+  padding: 3px 12px;
+  border-radius: var(--r-pill);
+  background: var(--goldl);
+  color: #8a6a26;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.title {
+  font-family: var(--font-serif);
+  font-size: 26px;
+}
+
+.muted {
+  color: var(--gray);
+  font-size: 14px;
+}
+
+.facts {
+  display: grid;
+  gap: 10px;
+  inline-size: 100%;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+
+.facts div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+}
+
+.facts dt {
+  color: var(--gray);
+}
+
+.amount {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.timer {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.actions {
+  display: grid;
+  gap: 8px;
+  inline-size: 100%;
+}

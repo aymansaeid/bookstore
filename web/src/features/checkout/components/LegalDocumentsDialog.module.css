@@ -1,0 +1,122 @@
+.dialog {
+  inline-size: min(760px, calc(100vw - 24px));
+  max-block-size: calc(100dvh - 24px);
+  margin: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 20px;
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: var(--sh2);
+}
+
+.dialog[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+.dialog::backdrop {
+  background: rgba(20, 18, 16, 0.55);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-block: 12px 0;
+  padding-inline: 16px 8px;
+}
+
+.title {
+  font-family: var(--font-serif);
+  font-size: 22px;
+}
+
+.close {
+  display: grid;
+  place-items: center;
+  inline-size: 44px;
+  block-size: 44px;
+  border-radius: 12px;
+  color: var(--gray);
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 16px 12px;
+  border-block-end: 1px solid var(--line);
+}
+
+.tab {
+  min-block-size: 44px;
+  padding-inline: 14px;
+  border: 1px solid var(--line2);
+  border-radius: var(--r-pill);
+  color: var(--ink3);
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.active {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: #fff;
+}
+
+.scroll {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 16px;
+}
+
+.state {
+  padding-block: 24px;
+  color: var(--gray);
+  text-align: center;
+}
+
+.docTitle {
+  margin-block-end: 12px;
+  font-family: var(--font-serif);
+  font-size: 20px;
+}
+
+.html {
+  overflow-wrap: anywhere;
+  font-size: 14px;
+  line-height: 1.9;
+}
+
+.html :where(h1, h2, h3, h4) {
+  margin-block: 18px 8px;
+  font-size: 16px;
+}
+
+.html :where(p, ul, ol, table) {
+  margin-block-end: 10px;
+}
+
+.html :where(ul, ol) {
+  padding-inline-start: 22px;
+  list-style: revert;
+}
+
+.html table {
+  display: block;
+  overflow-x: auto;
+  border-collapse: collapse;
+}
+
+.html :where(td, th) {
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+}
+
+@media (min-width: 768px) {
+  .scroll {
+    padding: 20px 24px;
+  }
+}

@@ -84,7 +84,7 @@ export default function RegisterPage() {
     );
   }
 
-  const onSubmit = handleSubmit(async (values) => {
+  const onValid = async (values: RegisterValues) => {
     setServerError(null);
     try {
       await authApi.register({
@@ -104,7 +104,7 @@ export default function RegisterPage() {
       }
       if (!mapped) setServerError(errorMessage(error));
     }
-  });
+  };
 
   const topCategories = categories.data ?? [];
 
@@ -119,7 +119,7 @@ export default function RegisterPage() {
       <form
         noValidate
         onSubmit={(event) => {
-          void onSubmit(event);
+          void handleSubmit(onValid)(event);
         }}
       >
         {serverError && <FormAlert>{serverError}</FormAlert>}

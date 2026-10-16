@@ -65,7 +65,7 @@ async function readProblem(response: Response): Promise<ProblemDetails | null> {
     const text = await response.text();
     if (!text) return null;
     const data: unknown = JSON.parse(text);
-    return typeof data === 'object' && data !== null ? (data as ProblemDetails) : null;
+    return typeof data === 'object' && data !== null ? data : null;
   } catch {
     return null;
   }

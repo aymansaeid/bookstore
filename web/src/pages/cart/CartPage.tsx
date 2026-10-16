@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { Link } from 'react-router';
 
 import { paths } from '@/app/paths';
@@ -8,6 +7,7 @@ import { CartSummary } from '@/features/cart/components/CartSummary';
 import { FreeShippingBar } from '@/features/cart/components/FreeShippingBar';
 import { CheckoutSteps } from '@/features/checkout/components/CheckoutSteps';
 import { useQuote } from '@/features/checkout/useQuote';
+import { useQuoteSelfHeal } from '@/features/checkout/useQuoteSelfHeal';
 import { codeMessage, errorMessage } from '@/shared/api/errorMessages';
 import { cx } from '@/shared/lib/cx';
 import { booksPhrase, copiesPhrase, formatMoney } from '@/shared/lib/format';
@@ -15,7 +15,6 @@ import { Button, ButtonLink } from '@/shared/ui/Button/Button';
 import { buttonClass } from '@/shared/ui/Button/buttonClass';
 import { DocumentTitle } from '@/shared/ui/DocumentTitle';
 import { Icon } from '@/shared/ui/Icon/Icon';
-import { toast } from '@/shared/ui/toast/toastStore';
 
 import styles from './CartPage.module.css';
 
@@ -37,29 +36,7 @@ export default function CartPage() {
   const quote = useQuote();
   const data = quote.data;
 
-  // Self-healing problems (API §5b), only for a quote that matches the cart right now.
-  useEffect(() => {
-    if (!data || !quote.isCurrent) return;
-    const cart = useCartStore.getState();
-    const codes = new Set(data.problems.map((problem) => problem.code));
-
-    if (codes.has('Checkout.BookNotFound')) {
-      const present = new Set(data.lines.map((line) => line.bookId));
-      const gone = quote.request.lines
-        .filter((line) => !present.has(line.bookId))
-        .map((line) => line.bookId);
-      if (gone.length > 0) {
-        cart.removeMany(gone);
-        toast.error(codeMessage('Checkout.BookNotFound'));
-      }
-    }
-    if (codes.has('Checkout.ShippingMethodUnavailable') && cart.shippingMethod !== null) {
-      cart.setShippingMethod(null);
-    }
-    if (codes.has('Checkout.GiftWrapUnavailable') && cart.giftWrap) {
-      cart.setGiftWrap(false);
-    }
-  }, [data, quote.isCurrent, quote.request]);
+  useQuoteSelfHeal(quote);
 
   if (lines.length === 0) {
     return (

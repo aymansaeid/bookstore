@@ -1,0 +1,89 @@
+.list {
+  display: grid;
+  gap: 8px;
+  margin-block-end: 16px;
+  border: 0;
+}
+
+.option {
+  position: relative;
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  align-items: center;
+  gap: 2px 12px;
+  min-block-size: 56px;
+  padding: 12px 14px;
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  background: var(--card);
+  cursor: pointer;
+}
+
+.option input {
+  position: absolute;
+  opacity: 0;
+}
+
+.option:has(input:focus-visible) {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.radio {
+  grid-row: 1;
+  inline-size: 20px;
+  block-size: 20px;
+  border: 1.5px solid var(--line2);
+  border-radius: 50%;
+}
+
+.checked {
+  border-color: var(--ink);
+}
+
+.checked .radio {
+  border: 6px solid var(--ink);
+}
+
+.label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.default {
+  padding: 1px 8px;
+  border-radius: var(--r-pill);
+  background: var(--paper2);
+  color: var(--ink3);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.details {
+  grid-column: 2;
+  display: grid;
+  gap: 2px;
+  color: var(--gray);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.details [dir='ltr'] {
+  justify-self: start;
+}
+
+.manage {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  min-block-size: 44px;
+  color: var(--ink3);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
