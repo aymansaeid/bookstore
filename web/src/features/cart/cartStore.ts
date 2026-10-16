@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
+import { STORE_COUNTRY } from '@/app/locale';
+
 /**
  * Browser cart (API guide §5): ids and quantities only, never prices. The
  * cart page shows server totals from /api/orders/quote. Server rules
@@ -21,6 +23,10 @@ interface CartData {
   /** Buying a whole reading path at its discount (API §7d). */
   readingPathId: number | null;
   giftWrap: boolean;
+  /** ISO country for the quote's shipping options; the checkout address overrides it. */
+  countryCode: string;
+  /** null = let the server pick the standard option. */
+  shippingMethod: string | null;
 }
 
 interface CartActions {
@@ -32,10 +38,20 @@ interface CartActions {
   setCoupon: (code: string | null) => void;
   setGiftWrap: (giftWrap: boolean) => void;
   setReadingPath: (readingPathId: number | null) => void;
+  setCountry: (countryCode: string) => void;
+  setShippingMethod: (method: string | null) => void;
+  /** After a successful order: empties the cart, keeps the country. */
   clear: () => void;
 }
 
-const EMPTY: CartData = { lines: [], couponCode: null, readingPathId: null, giftWrap: false };
+const EMPTY: CartData = {
+  lines: [],
+  couponCode: null,
+  readingPathId: null,
+  giftWrap: false,
+  countryCode: STORE_COUNTRY,
+  shippingMethod: null,
+};
 
 const isId = (value: unknown): value is number =>
   typeof value === 'number' && Number.isSafeInteger(value) && value > 0;
@@ -46,6 +62,12 @@ const normalizeCoupon = (code: string): string | null => {
   const value = code.trim().toUpperCase().slice(0, 50);
   return value === '' ? null : value;
 };
+
+const isCountry = (value: unknown): value is string =>
+  typeof value === 'string' && /^[A-Z]{2}$/.test(value);
+
+const isMethod = (value: unknown): value is string =>
+  typeof value === 'string' && /^[a-z0-9-]{2,30}$/.test(value);
 
 /** Rebuilds a valid cart from whatever is in storage (edited, corrupt, old). */
 function sanitize(raw: unknown): CartData {
@@ -67,6 +89,8 @@ function sanitize(raw: unknown): CartData {
     couponCode: typeof data.couponCode === 'string' ? normalizeCoupon(data.couponCode) : null,
     readingPathId: lines.length > 0 && isId(data.readingPathId) ? data.readingPathId : null,
     giftWrap: data.giftWrap === true,
+    countryCode: isCountry(data.countryCode) ? data.countryCode : STORE_COUNTRY,
+    shippingMethod: isMethod(data.shippingMethod) ? data.shippingMethod : null,
   };
 }
 
@@ -111,6 +135,7 @@ export const useCartStore = create<CartData & CartActions>()(
       removeMany: (bookIds) => {
         const remove = new Set(bookIds);
         const lines = get().lines.filter((line) => !remove.has(line.bookId));
+        if (lines.length === get().lines.length) return;
         set({ lines, readingPathId: lines.length > 0 ? get().readingPathId : null });
       },
 
@@ -123,19 +148,36 @@ export const useCartStore = create<CartData & CartActions>()(
       setReadingPath: (readingPathId) => {
         set({ readingPathId });
       },
+      setCountry: (countryCode) => {
+        if (!isCountry(countryCode) || countryCode === get().countryCode) return;
+        // Options differ per country: let the server choose again.
+        set({ countryCode, shippingMethod: null });
+      },
+      setShippingMethod: (shippingMethod) => {
+        set({ shippingMethod });
+      },
       clear: () => {
-        set(EMPTY);
+        set({ ...EMPTY, countryCode: get().countryCode });
       },
     }),
     {
       name: CART_STORAGE_KEY,
       version: 1,
       storage: createJSONStorage(() => localStorage),
-      partialize: ({ lines, couponCode, readingPathId, giftWrap }) => ({
+      partialize: ({
         lines,
         couponCode,
         readingPathId,
         giftWrap,
+        countryCode,
+        shippingMethod,
+      }) => ({
+        lines,
+        couponCode,
+        readingPathId,
+        giftWrap,
+        countryCode,
+        shippingMethod,
       }),
       merge: (persisted, current) => ({ ...current, ...sanitize(persisted) }),
     },

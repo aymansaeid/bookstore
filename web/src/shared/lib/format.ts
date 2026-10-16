@@ -112,3 +112,9 @@ export const worksPhrase = (count: number): string =>
     few: 'أعمال محقّقة',
     many: 'عملاً محقّقاً',
   });
+
+export const booksPhrase = (count: number): string =>
+  arabicPlural(count, { one: 'كتاب واحد', two: 'كتابان', few: 'كتب', many: 'كتاباً' });
+
+export const copiesPhrase = (count: number): string =>
+  arabicPlural(count, { one: 'نسخة واحدة', two: 'نسختان', few: 'نسخ', many: 'نسخة' });

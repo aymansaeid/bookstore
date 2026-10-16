@@ -1,0 +1,52 @@
+.steps {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.step {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+}
+
+.step + .step::before {
+  content: '';
+  inline-size: 24px;
+  block-size: 1.5px;
+  background: var(--line2);
+}
+
+.number {
+  display: grid;
+  place-items: center;
+  inline-size: 26px;
+  block-size: 26px;
+  border: 1.5px solid var(--line2);
+  border-radius: 50%;
+  font-weight: 700;
+}
+
+.current {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.current .number {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: #fff;
+}
+
+.done {
+  color: var(--green);
+}
+
+.done .number {
+  border-color: var(--green);
+  background: var(--green);
+  color: #fff;
+}

@@ -1,0 +1,99 @@
+.select {
+  inline-size: 100%;
+  min-block-size: 48px;
+  padding-inline: 14px;
+  border: 1px solid var(--line2);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--ink);
+  font-size: 16px;
+}
+
+.options {
+  display: grid;
+  gap: 8px;
+  border: 0;
+}
+
+.option {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-block-size: 64px;
+  padding: 10px 14px;
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  background: var(--card);
+  cursor: pointer;
+}
+
+.option input {
+  position: absolute;
+  opacity: 0;
+}
+
+.option:has(input:focus-visible) {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.radio {
+  flex-shrink: 0;
+  inline-size: 20px;
+  block-size: 20px;
+  border: 1.5px solid var(--line2);
+  border-radius: 50%;
+}
+
+.checked {
+  border-color: var(--ink);
+}
+
+.checked .radio {
+  border: 6px solid var(--ink);
+}
+
+.body {
+  display: grid;
+  flex: 1;
+  min-inline-size: 0;
+}
+
+.name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.recommended {
+  padding: 1px 8px;
+  border-radius: var(--r-pill);
+  background: var(--goldl);
+  color: #8a6a26;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.detail {
+  color: var(--gray);
+  font-size: 12.5px;
+}
+
+.price {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.free {
+  color: var(--green);
+}
+
+@media (min-width: 1024px) and (pointer: fine) {
+  .select {
+    font-size: 14px;
+  }
+}

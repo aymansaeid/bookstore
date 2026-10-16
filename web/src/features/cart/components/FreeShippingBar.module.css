@@ -1,0 +1,44 @@
+.bar {
+  display: grid;
+  gap: 10px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--card);
+}
+
+.qualified {
+  border-color: rgba(30, 123, 82, 0.35);
+  background: #eef7f2;
+}
+
+.text {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.qualified .text {
+  color: var(--green);
+}
+
+.track {
+  overflow: hidden;
+  block-size: 8px;
+  border-radius: 4px;
+  background: var(--paper2);
+}
+
+.track span {
+  display: block;
+  block-size: 100%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--gold), var(--red));
+  transition: inline-size 0.4s ease;
+}
+
+.qualified .track span {
+  background: linear-gradient(90deg, #39a273, var(--green));
+}

@@ -63,3 +63,8 @@ export function errorMessage(error: unknown): string {
 export function supportRequestId(error: unknown): string | null {
   return error instanceof ApiError && error.status >= 500 ? error.requestId : null;
 }
+
+/** Arabic text for a bare code (e.g. a quote problem), not a thrown error. */
+export function codeMessage(code: string): string {
+  return MESSAGES[code] ?? FALLBACK;
+}
