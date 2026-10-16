@@ -1,0 +1,51 @@
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-block-start: 32px;
+}
+
+.pages {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.step,
+.page {
+  display: grid;
+  place-items: center;
+  min-inline-size: 44px;
+  block-size: 44px;
+  padding-inline: 6px;
+  border: 1px solid var(--line2);
+  border-radius: 12px;
+  background: var(--card);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.step:hover,
+.page:hover {
+  border-color: var(--ink);
+}
+
+.current,
+.current:hover {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: #fff;
+}
+
+.disabled {
+  opacity: 0.4;
+}
+
+.disabled:hover {
+  border-color: var(--line2);
+}
+
+.gap {
+  color: var(--muted);
+}

@@ -109,3 +109,20 @@
     grid-template-columns: repeat(6, minmax(0, 1fr));
   }
 }
+
+/* Next to the 280px filter sidebar: 2 / 3 / 3 / 4 columns */
+.gridNarrow {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 640px) {
+  .gridNarrow {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1280px) {
+  .gridNarrow {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}

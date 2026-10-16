@@ -14,7 +14,7 @@ interface BookListProps {
    * row: swipes sideways on mobile, 3 / 4 / 6 columns from 768 / 1024 / 1280.
    * grid: 2 / 3 / 4 columns (listing pages).
    */
-  layout?: 'row' | 'grid';
+  layout?: 'row' | 'grid' | 'gridNarrow';
   skeletonCount?: number;
   emptyText?: string;
 }

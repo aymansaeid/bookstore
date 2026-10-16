@@ -1,0 +1,124 @@
+.header {
+  --focus-ring: var(--gold2);
+  position: relative;
+  overflow: hidden;
+  margin-block: 8px 24px;
+  padding: 24px 20px;
+  border-radius: 24px;
+  background: var(--ink);
+  color: #fff;
+}
+
+.header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--star) 0 0 / 72px;
+  opacity: 0.06;
+}
+
+.header > * {
+  position: relative;
+}
+
+.letter {
+  position: absolute;
+  inset-block-start: -30px;
+  inset-inline-end: 12px;
+  color: var(--gold2);
+  font-family: var(--font-ruqaa);
+  font-size: 180px;
+  line-height: 1;
+  opacity: 0.12;
+  pointer-events: none;
+}
+
+.kicker {
+  color: var(--gold2);
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.title {
+  margin-block-start: 4px;
+  font-family: var(--font-serif);
+  font-size: 30px;
+  line-height: 1.25;
+}
+
+.lead {
+  max-inline-size: 70ch;
+  margin-block-start: 8px;
+  color: var(--on-ink-muted);
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+  margin-block-start: 14px;
+  color: var(--on-ink);
+  font-size: 14px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-block-start: 16px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 40px;
+  padding-inline: 14px;
+  border: 1px solid rgba(230, 205, 143, 0.35);
+  border-radius: var(--r-pill);
+  color: var(--gold2);
+  font-size: 13px;
+}
+
+a.chip:hover {
+  border-color: var(--gold2);
+}
+
+.person {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Spec 5.1 muhaqqiq avatar: gold Ruqaʿa initial on ink with a gold ring */
+.avatar {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  inline-size: 72px;
+  block-size: 72px;
+  border-radius: 50%;
+  background: var(--ink2);
+  box-shadow:
+    0 0 0 2px var(--ink),
+    0 0 0 4px var(--gold);
+  color: var(--gold2);
+  font-family: var(--font-ruqaa);
+  font-size: 34px;
+}
+
+@media (min-width: 1024px) {
+  .header {
+    margin-block: 12px 32px;
+    padding: 36px 40px;
+  }
+
+  .title {
+    font-size: 44px;
+  }
+
+  .letter {
+    font-size: 240px;
+  }
+}

@@ -124,3 +124,14 @@ export interface CatalogSearchResult {
   searchedTerms: string[];
   sort: CatalogSort;
 }
+
+/** API guide §4b PublicMuhaqqiqDto. */
+export interface PublicMuhaqqiq {
+  id: number;
+  slug: string;
+  name: string;
+  bio: string | null;
+  specialties: string[];
+  isFeatured: boolean;
+  worksCount: number;
+}

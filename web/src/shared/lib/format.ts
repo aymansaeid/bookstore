@@ -79,3 +79,36 @@ export function volumesLabel(count: number): string {
   if (count <= 10) return `${formatCount(count)} مجلدات`;
   return `${formatCount(count)} مجلداً`;
 }
+
+interface PluralForms {
+  one: string;
+  two: string;
+  /** 3–10: «٥ نتائج» */
+  few: string;
+  /** 11+: «٢٤ نتيجة» */
+  many: string;
+}
+
+/** Arabic number agreement for any noun. */
+export function arabicPlural(count: number, forms: PluralForms): string {
+  if (count === 1) return forms.one;
+  if (count === 2) return forms.two;
+  if (count >= 3 && count <= 10) return `${formatCount(count)} ${forms.few}`;
+  return `${formatCount(count)} ${forms.many}`;
+}
+
+export const resultsPhrase = (count: number): string =>
+  count === 0
+    ? 'لا توجد نتائج'
+    : arabicPlural(count, { one: 'نتيجة واحدة', two: 'نتيجتان', few: 'نتائج', many: 'نتيجة' });
+
+export const editionsPhrase = (count: number): string =>
+  arabicPlural(count, { one: 'إصدار واحد', two: 'إصداران', few: 'إصدارات', many: 'إصداراً' });
+
+export const worksPhrase = (count: number): string =>
+  arabicPlural(count, {
+    one: 'عمل محقّق',
+    two: 'عملان محقّقان',
+    few: 'أعمال محقّقة',
+    many: 'عملاً محقّقاً',
+  });
