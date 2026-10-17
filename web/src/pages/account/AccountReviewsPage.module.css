@@ -1,0 +1,86 @@
+.list {
+  display: grid;
+  gap: 12px;
+}
+
+.card {
+  display: grid;
+  gap: 8px;
+  min-inline-size: 0;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--card);
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.reviewTitle {
+  font-weight: 700;
+}
+
+.body {
+  font-size: 14px;
+  line-height: 1.9;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.confirm {
+  display: grid;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: var(--redl);
+  color: var(--red2);
+  font-size: 14px;
+}
+
+.editor {
+  display: grid;
+  gap: 4px;
+}
+
+.rating {
+  display: flex;
+  gap: 2px;
+  margin-block-end: 12px;
+  border: 0;
+}
+
+.legend {
+  margin-block-end: 6px;
+  color: var(--ink3);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.star {
+  display: grid;
+  place-items: center;
+  inline-size: 44px;
+  block-size: 44px;
+  color: var(--line2);
+  font-size: 28px;
+  cursor: pointer;
+}
+
+.star input {
+  position: absolute;
+  opacity: 0;
+}
+
+.star:has(input:focus-visible) {
+  outline: 2px solid var(--ink);
+  border-radius: 10px;
+}
+
+.starOn {
+  color: var(--gold);
+}

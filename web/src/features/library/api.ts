@@ -36,4 +36,22 @@ export const libraryApi = {
   /** Only books marked owned elsewhere can be removed; purchases can't. */
   unmarkOwned: (bookId: number) =>
     customerRequest<undefined>(`${BASE}/${bookId}`, { method: 'DELETE' }),
+  /** 100% always means Finished, whatever status is sent (API §7b). */
+  updateProgress: (bookId: number, status: ReadingStatus, progressPercent: number) =>
+    customerRequest<LibraryItem>(`${BASE}/${bookId}/progress`, {
+      method: 'PUT',
+      body: { status, progressPercent },
+    }),
+};
+
+export const READING_STATUS_LABELS: Readonly<Record<ReadingStatus, string>> = {
+  NotStarted: 'لم أبدأ بعد',
+  Reading: 'أقرأ الآن',
+  Finished: 'أنهيته',
+};
+
+export const OWNERSHIP_LABELS: Readonly<Record<Ownership, string>> = {
+  Purchased: 'اشتريته من كتاب أفندي',
+  OnTheWay: 'في الطريق إليك',
+  AddedManually: 'أضفته بنفسي',
 };

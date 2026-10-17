@@ -1,0 +1,242 @@
+.stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.stats div {
+  display: grid;
+  gap: 4px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--card);
+}
+
+.stats dt {
+  color: var(--gray);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.stats dd {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.stats small {
+  color: var(--gray);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* «أقرأ الآن» (spec 5.9, AI frame left out: no AI here). */
+.now {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border-radius: 20px;
+  background: var(--ink);
+  color: #fff;
+}
+
+.nowLabel {
+  color: var(--gold2);
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.nowTitle {
+  margin-block: 2px 8px;
+  font-family: var(--font-serif);
+  font-size: 19px;
+}
+
+.nowBar,
+.bar {
+  overflow: hidden;
+  block-size: 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.nowBar span,
+.bar span {
+  display: block;
+  block-size: 100%;
+  background: linear-gradient(90deg, var(--gold), var(--red));
+}
+
+.now p:last-child {
+  margin-block-start: 4px;
+  color: var(--on-ink);
+}
+
+/* The wooden shelf: covers stand on a plank. */
+.shelf {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px 14px;
+  padding: 18px 14px 0;
+  border-radius: 20px;
+  background:
+    linear-gradient(to top, #6b4a2b 0 10px, transparent 10px) bottom / 100% 100% no-repeat,
+    var(--paper2);
+}
+
+.book {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  min-inline-size: 0;
+  padding-block-end: 18px;
+}
+
+.coverLink {
+  position: relative;
+  display: block;
+}
+
+.cover {
+  box-shadow: var(--sh2);
+}
+
+.bar {
+  position: absolute;
+  inset-inline: 8px;
+  inset-block-end: 8px;
+  background: rgba(20, 18, 16, 0.55);
+}
+
+.meta {
+  display: grid;
+  gap: 2px;
+  min-inline-size: 0;
+}
+
+.title {
+  overflow: hidden;
+  font-family: var(--font-serif);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.4;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.author,
+.ownership {
+  color: var(--gray);
+  font-size: 12px;
+}
+
+.state {
+  justify-self: start;
+  padding: 1px 8px;
+  border-radius: var(--r-pill);
+  background: var(--card);
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+.Reading {
+  background: var(--goldl);
+  color: #8a6a26;
+}
+
+.Finished {
+  background: #e3f1ea;
+  color: var(--green);
+}
+
+.actions,
+.editorActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.editor {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 14px;
+  background: var(--card);
+  box-shadow: var(--sh1);
+}
+
+.statuses {
+  display: grid;
+  gap: 4px;
+  border: 0;
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-block-size: 40px;
+  padding-inline: 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.status input {
+  accent-color: var(--ink);
+}
+
+.statusOn {
+  border-color: var(--ink);
+  font-weight: 700;
+}
+
+.range {
+  display: grid;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.range input {
+  inline-size: 100%;
+  min-block-size: 32px;
+  accent-color: var(--red);
+}
+
+@media (pointer: coarse) {
+  .status {
+    min-block-size: 44px;
+  }
+}
+
+@media (min-width: 640px) {
+  .shelf {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .stats {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .shelf {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 26px 20px;
+    padding: 24px 22px 0;
+  }
+
+  .now {
+    grid-template-columns: 88px minmax(0, 1fr);
+  }
+}
+
+@media (min-width: 1280px) {
+  .shelf {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}

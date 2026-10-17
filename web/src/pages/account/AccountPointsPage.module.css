@@ -1,0 +1,116 @@
+.hero {
+  display: grid;
+  gap: 4px;
+  padding: 22px 20px;
+  border-radius: 22px;
+  background:
+    linear-gradient(135deg, rgba(20, 18, 16, 0.92), rgba(46, 42, 37, 0.92)),
+    var(--star) 0 0 / 64px,
+    var(--ink);
+  color: #fff;
+}
+
+.tier {
+  color: var(--gold2);
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.balance {
+  font-size: 44px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.balance span {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--on-ink);
+}
+
+.worth,
+.next {
+  color: var(--on-ink);
+  font-size: 14px;
+}
+
+.next {
+  margin-block-start: 6px;
+  color: var(--gold2);
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.facts div {
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--card);
+}
+
+.facts dt {
+  color: var(--gray);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.facts dd {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.history {
+  display: grid;
+  transition: opacity 0.2s;
+}
+
+.stale {
+  opacity: 0.6;
+}
+
+.entry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-block: 12px;
+  border-block-end: 1px solid var(--line);
+}
+
+.entry:last-child {
+  border-block-end: 0;
+}
+
+.what {
+  display: grid;
+  gap: 2px;
+  min-inline-size: 0;
+  font-size: 14px;
+}
+
+.order {
+  justify-self: start;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.note,
+.date {
+  color: var(--gray);
+  font-size: 12px;
+}
+
+.points {
+  color: var(--green);
+  font-size: 17px;
+  white-space: nowrap;
+}
+
+.minus {
+  color: var(--red2);
+}
