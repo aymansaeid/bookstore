@@ -1,0 +1,229 @@
+/* Spec 5.5 vertical timeline: gold→red line, numbered markers on the right (RTL). */
+.timeline {
+  position: relative;
+  display: grid;
+  gap: 14px;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  inset-block: 22px;
+  inset-inline-start: 17px;
+  inline-size: 2px;
+  background: linear-gradient(to bottom, var(--gold), var(--red));
+}
+
+.stage {
+  position: relative;
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  align-items: start;
+  gap: 10px;
+}
+
+.marker {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  inline-size: 36px;
+  block-size: 36px;
+  margin-block-start: 18px;
+  border: 2px solid var(--gold);
+  border-radius: 50%;
+  background: var(--card);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.finished .marker {
+  border-color: var(--green);
+  background: var(--green);
+  color: #fff;
+}
+
+.current .marker {
+  border-color: var(--red);
+  background: var(--red);
+  color: #fff;
+  box-shadow: 0 0 0 6px rgba(227, 30, 36, 0.16);
+}
+
+.card {
+  display: grid;
+  grid-template-columns: 80px minmax(0, 1fr);
+  gap: 12px 14px;
+  min-inline-size: 0;
+  padding: 14px;
+  border: 1.5px solid transparent;
+  border-radius: 20px;
+  background: var(--paper);
+}
+
+.current .card {
+  border-color: var(--ink);
+  background: var(--card);
+  box-shadow: var(--sh1);
+}
+
+.cover {
+  display: block;
+}
+
+.body {
+  display: grid;
+  align-content: start;
+  gap: 4px;
+  min-inline-size: 0;
+}
+
+.kicker {
+  color: #a8802f;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.kicker b {
+  color: var(--red);
+}
+
+.title {
+  font-family: var(--font-serif);
+  font-size: 19px;
+  line-height: 1.4;
+}
+
+.title a:hover {
+  text-decoration: underline;
+}
+
+.author {
+  color: var(--gray);
+  font-size: 12.5px;
+}
+
+.reason {
+  margin-block-start: 4px;
+  color: var(--ink3);
+  font-size: 13.5px;
+  line-height: 1.85;
+}
+
+.why {
+  color: var(--red2);
+  font-weight: 700;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-block-start: 4px;
+}
+
+.tags li {
+  padding: 2px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  background: var(--card);
+  font-size: 12px;
+}
+
+/* Below the text on phones; a column on the left from 768px. */
+.action {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  padding-block-start: 10px;
+  border-block-start: 1px solid var(--line);
+}
+
+.price {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.old {
+  color: var(--gray);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.done,
+.owned {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.done {
+  color: var(--green);
+}
+
+.owned {
+  color: var(--ink3);
+}
+
+.out {
+  padding: 2px 10px;
+  border-radius: var(--r-pill);
+  background: var(--redl);
+  color: var(--red2);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.textLink {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 44px;
+  font-size: 13.5px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (min-width: 768px) {
+  .timeline::before {
+    inset-inline-start: 21px;
+  }
+
+  .stage {
+    grid-template-columns: 44px minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .marker {
+    inline-size: 44px;
+    block-size: 44px;
+    margin-block-start: 40px;
+    font-size: 16px;
+  }
+
+  .card {
+    grid-template-columns: 120px minmax(0, 1fr) 170px;
+    gap: 18px;
+    padding: 18px;
+  }
+
+  .title {
+    font-size: 23px;
+  }
+
+  .action {
+    grid-column: auto;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    padding-block-start: 0;
+    border-block-start: 0;
+  }
+}

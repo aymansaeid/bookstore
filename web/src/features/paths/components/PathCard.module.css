@@ -1,0 +1,186 @@
+/* Spec 5.1 path cards: paper card, or ink for «الأكثر اختياراً». */
+.card {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto auto 1fr auto auto;
+  gap: 10px;
+  min-inline-size: 0;
+  padding: 20px 18px;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: var(--card);
+  transition:
+    box-shadow 0.2s,
+    transform 0.2s;
+}
+
+.dark {
+  --focus-ring: var(--gold2);
+  overflow: hidden;
+  border-color: var(--ink);
+  background: var(--ink);
+  color: #fff;
+}
+
+.dark::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--star) 0 0 / 72px;
+  opacity: 0.06;
+  pointer-events: none;
+}
+
+.card > * {
+  position: relative;
+}
+
+@media (hover: hover) {
+  .card:hover {
+    box-shadow: var(--sh2);
+    transform: translateY(-2px);
+  }
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.chip {
+  padding: 3px 10px;
+  border-radius: var(--r-pill);
+  background: var(--paper2);
+  color: var(--ink3);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.dark .chip {
+  background: var(--ink3);
+  color: var(--gold2);
+}
+
+.duration {
+  color: var(--gray);
+  font-size: 12.5px;
+}
+
+.dark .duration,
+.dark .description,
+.dark .discount {
+  color: var(--on-ink-muted);
+}
+
+/* Not positioned, so the stretched link below covers the whole card. */
+.card .title {
+  position: static;
+}
+
+.title {
+  font-family: var(--font-serif);
+  font-size: 24px;
+  line-height: 1.35;
+}
+
+/* Stretched link: the whole card opens the path. */
+.link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: inherit;
+}
+
+.card:has(.link:focus-visible) {
+  outline: 2px solid var(--focus-ring, var(--ink));
+  outline-offset: 3px;
+}
+
+.link:focus-visible {
+  outline: none;
+}
+
+.description {
+  color: var(--gray);
+  font-size: 13.5px;
+  line-height: 1.8;
+}
+
+/* Covers on a dotted line, numbered underneath. */
+.covers {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  padding-block-end: 16px;
+}
+
+.covers::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 11px;
+  border-block-start: 1.5px dashed var(--line2);
+}
+
+.dark .covers::after {
+  border-color: var(--ink-line2);
+}
+
+.cover {
+  position: relative;
+  display: grid;
+  justify-items: center;
+}
+
+.cover > :first-child {
+  inline-size: 100%;
+}
+
+.number {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  inline-size: 24px;
+  block-size: 24px;
+  margin-block-start: -12px;
+  border: 2px solid var(--card);
+  border-radius: 50%;
+  background: var(--ink);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  translate: 0 16px;
+}
+
+.dark .number {
+  border-color: var(--ink);
+  background: var(--red);
+}
+
+.foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-block-start: 14px;
+  border-block-start: 1px solid var(--line);
+}
+
+.dark .foot {
+  border-color: var(--ink-line2);
+}
+
+.price {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.discount {
+  color: var(--gray);
+  font-size: 12.5px;
+}

@@ -1,0 +1,172 @@
+/* /paths: dark hero (spec 5.5), then the cards. */
+.hero {
+  --focus-ring: var(--gold2);
+  position: relative;
+  overflow: hidden;
+  padding-block: 40px 56px;
+  background:
+    radial-gradient(60% 80% at 80% 0%, rgba(201, 165, 92, 0.18), transparent 70%), var(--ink);
+  color: #fff;
+  text-align: center;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--star) 0 0 / 72px;
+  opacity: 0.05;
+}
+
+.hero > * {
+  position: relative;
+}
+
+.kicker {
+  display: inline-block;
+  padding: 4px 14px;
+  border: 1px solid var(--ink-line2);
+  border-radius: var(--r-pill);
+  background: var(--ink2);
+  color: var(--gold2);
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.heroTitle {
+  margin-block: 14px 10px;
+  font-family: var(--font-serif);
+  font-size: clamp(32px, 8vw, 64px);
+  line-height: 1.25;
+}
+
+.heroTitle span {
+  color: var(--gold2);
+}
+
+.lead {
+  max-inline-size: 640px;
+  margin-inline: auto;
+  color: var(--on-ink);
+  font-size: 15px;
+  line-height: 1.9;
+}
+
+.body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
+  padding-block: 0 48px;
+}
+
+/* Overlaps the hero, like the spec's cards. */
+.soon {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px 12px;
+  margin-block-start: -28px;
+  padding: 14px 16px;
+  border: 1px dashed var(--gold);
+  border-radius: 18px;
+  background: var(--card);
+  box-shadow: var(--sh1);
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.soon > a {
+  grid-column: 1 / -1;
+  justify-self: start;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.filter {
+  min-block-size: 44px;
+  padding-inline: 16px;
+  border: 1px solid var(--line2);
+  border-radius: var(--r-pill);
+  background: var(--card);
+  color: var(--ink3);
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.on {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: #fff;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+
+.item {
+  display: grid;
+  min-inline-size: 0;
+}
+
+.skeleton {
+  block-size: 380px;
+  border-radius: 24px;
+  background: linear-gradient(90deg, var(--paper2), var(--card), var(--paper2)) 0 0 / 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+}
+
+.state {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  padding: 40px 16px;
+  border: 1px dashed var(--line2);
+  border-radius: 20px;
+  color: var(--gray);
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .hero {
+    padding-block: 64px 84px;
+  }
+
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .soon {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    margin-block-start: -36px;
+  }
+
+  .soon > a {
+    grid-column: auto;
+  }
+}
+
+@media (min-width: 1100px) {
+  .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 22px;
+  }
+}

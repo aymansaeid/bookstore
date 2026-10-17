@@ -1,0 +1,143 @@
+/* «مسارك» card and the dark total card (spec 5.5). */
+.enroll {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  padding: 20px 18px;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: var(--card);
+  box-shadow: var(--sh2);
+}
+
+.enrollTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-serif);
+  font-size: 21px;
+}
+
+.text {
+  font-size: 14px;
+  line-height: 1.85;
+}
+
+.muted {
+  color: var(--gray);
+  font-size: 12.5px;
+}
+
+.complete {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--green);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.bar {
+  overflow: hidden;
+  block-size: 8px;
+  border-radius: 4px;
+  background: var(--paper2);
+}
+
+.bar span {
+  display: block;
+  block-size: 100%;
+  background: linear-gradient(90deg, var(--gold), var(--red));
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.skeleton {
+  block-size: 96px;
+  border-radius: 14px;
+  background: var(--paper2);
+}
+
+.total {
+  --focus-ring: var(--gold2);
+  position: relative;
+  display: grid;
+  gap: 16px;
+  overflow: hidden;
+  padding: 22px 20px;
+  border-radius: 22px;
+  background: var(--ink);
+  color: #fff;
+}
+
+.total::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--star) 0 0 / 72px;
+  opacity: 0.05;
+  pointer-events: none;
+}
+
+.total > * {
+  position: relative;
+}
+
+.totalInfo {
+  display: grid;
+  gap: 4px;
+}
+
+.totalLabel {
+  color: var(--on-ink);
+  font-size: 14px;
+}
+
+.totalPrice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.totalOld {
+  color: var(--on-ink-faint);
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.saved {
+  justify-self: start;
+  padding: 3px 12px;
+  border-radius: var(--r-pill);
+  background: rgba(53, 196, 122, 0.14);
+  color: var(--online);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.totalActions {
+  display: grid;
+  gap: 8px;
+}
+
+.totalNote {
+  color: var(--on-ink-muted);
+  font-size: 12.5px;
+  line-height: 1.8;
+}
+
+@media (min-width: 768px) {
+  .total {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 300px);
+    align-items: center;
+    padding: 26px;
+  }
+}
