@@ -1,0 +1,105 @@
+.page {
+  display: grid;
+  gap: 20px;
+  padding-block: 20px 64px;
+}
+
+.nav ul {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-block-end: 4px;
+  scrollbar-width: none;
+}
+
+.navLink {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 44px;
+  padding-inline: 14px;
+  border: 1px solid var(--line2);
+  border-radius: var(--r-pill);
+  color: var(--ink3);
+  font-size: 13.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.active {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: #fff;
+}
+
+.article {
+  min-inline-size: 0;
+  padding: 20px 16px;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: var(--card);
+  box-shadow: var(--sh1);
+}
+
+.title {
+  margin-block-end: 6px;
+  font-family: var(--font-serif);
+  font-size: 28px;
+  line-height: 1.35;
+}
+
+.meta {
+  margin-block-end: 18px;
+  color: var(--gray);
+  font-size: 13px;
+}
+
+.state {
+  margin-block: 12px;
+  color: var(--gray);
+}
+
+.skeleton {
+  block-size: 50vh;
+  margin-block-start: 16px;
+  border-radius: 14px;
+  background: linear-gradient(90deg, var(--paper2), var(--goldl), var(--paper2)) 0 0 / 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (min-width: 1024px) {
+  .page {
+    grid-template-columns: 260px minmax(0, 1fr);
+    align-items: start;
+    gap: 32px;
+    padding-block: 40px 80px;
+  }
+
+  .nav {
+    position: sticky;
+    inset-block-start: 120px;
+  }
+
+  .nav ul {
+    flex-direction: column;
+    overflow: visible;
+  }
+
+  .navLink {
+    inline-size: 100%;
+    border-radius: 12px;
+  }
+
+  .article {
+    padding: 32px 40px;
+  }
+
+  .title {
+    font-size: 36px;
+  }
+}

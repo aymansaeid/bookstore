@@ -1,0 +1,61 @@
+.prose {
+  overflow-wrap: anywhere;
+  font-size: 15px;
+  line-height: 1.95;
+}
+
+.prose :where(h1, h2, h3, h4) {
+  margin-block: 22px 8px;
+  font-family: var(--font-serif);
+  line-height: 1.4;
+}
+
+.prose :where(h1) {
+  font-size: 24px;
+}
+
+.prose :where(h2) {
+  font-size: 20px;
+}
+
+.prose :where(h3, h4) {
+  font-size: 17px;
+}
+
+.prose :where(p, ul, ol, table, blockquote) {
+  margin-block-end: 12px;
+}
+
+.prose :where(ul, ol) {
+  padding-inline-start: 22px;
+  list-style: revert;
+}
+
+.prose :where(a) {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.prose :where(blockquote) {
+  padding-inline-start: 14px;
+  border-inline-start: 3px solid var(--gold);
+  color: var(--ink3);
+}
+
+.prose :where(table) {
+  display: block;
+  overflow-x: auto;
+  border-collapse: collapse;
+}
+
+.prose :where(td, th) {
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+}
+
+.prose :where(hr) {
+  margin-block: 20px;
+  border: 0;
+  border-block-start: 1px solid var(--line);
+}

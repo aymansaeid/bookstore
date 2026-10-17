@@ -1,0 +1,43 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 12px;
+  border-radius: var(--r-pill);
+  font-size: 12.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.badge::before {
+  content: '';
+  inline-size: 7px;
+  block-size: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.gray {
+  background: var(--paper2);
+  color: var(--ink3);
+}
+
+.gold {
+  background: var(--goldl);
+  color: #8a6a26;
+}
+
+.blue {
+  background: #e7eef8;
+  color: var(--blue);
+}
+
+.green {
+  background: #e3f1ea;
+  color: var(--green);
+}
+
+.red {
+  background: var(--redl);
+  color: var(--red2);
+}

@@ -1,16 +1,16 @@
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
-import { Link, useSearchParams } from 'react-router';
+import { useSearchParams } from 'react-router';
 
 import { paths } from '@/app/paths';
 import { useCartStore } from '@/features/cart/cartStore';
 import { useAttemptForOrder, useCheckoutStore } from '@/features/checkout/checkoutStore';
 import { CheckoutSteps } from '@/features/checkout/components/CheckoutSteps';
 import { ordersApi } from '@/features/orders/api';
-import type { PublicOrder } from '@/features/orders/types';
+import { OrderSummary } from '@/features/orders/components/OrderSummary';
+import { trackOrderUrl } from '@/features/orders/links';
 import { errorMessage } from '@/shared/api/errorMessages';
 import { cx } from '@/shared/lib/cx';
-import { countryName, formatCount, formatMoney } from '@/shared/lib/format';
 import { Button, ButtonLink } from '@/shared/ui/Button/Button';
 import { DocumentTitle } from '@/shared/ui/DocumentTitle';
 import { FormAlert, TextField } from '@/shared/ui/form/Field';
@@ -26,76 +26,6 @@ import styles from './CheckoutResult.module.css';
 const POLL_MS = 3000;
 const MAX_POLLS = 7;
 const CONFIRMED = new Set(['Paid', 'Shipped', 'Delivered']);
-
-const trackUrl = (orderNumber: string) =>
-  `${paths.trackOrder}?${new URLSearchParams({ order: orderNumber }).toString()}`;
-
-function OrderSummary({ order }: { order: PublicOrder }) {
-  const money = (amount: number) => formatMoney(amount, order.currency);
-  return (
-    <div className={styles.summary}>
-      <ul className={styles.lines}>
-        {order.lines.map((line) => {
-          const cover = line.coverThumbnailUrl ?? line.coverImageUrl;
-          return (
-            <li key={line.bookId} className={styles.line}>
-              <span className={styles.thumb}>
-                {cover && <img src={cover} alt="" width={44} height={64} loading="lazy" />}
-              </span>
-              <span className={styles.lineTitle}>
-                {line.bookSlug ? (
-                  <Link to={paths.book(line.bookSlug)}>{line.title}</Link>
-                ) : (
-                  line.title
-                )}
-                <span className={styles.muted}> × {formatCount(line.quantity)}</span>
-              </span>
-              <span className={styles.lineTotal}>{money(line.lineTotal)}</span>
-            </li>
-          );
-        })}
-      </ul>
-      <dl className={styles.totals}>
-        <div>
-          <dt>المجموع</dt>
-          <dd>{money(order.subtotal)}</dd>
-        </div>
-        {order.pathDiscountAmount > 0 && (
-          <div className={styles.saving}>
-            <dt>خصم المسار</dt>
-            <dd>−{money(order.pathDiscountAmount)}</dd>
-          </div>
-        )}
-        {order.discountAmount > 0 && (
-          <div className={styles.saving}>
-            <dt>كود الخصم</dt>
-            <dd>−{money(order.discountAmount)}</dd>
-          </div>
-        )}
-        <div>
-          <dt>الشحن</dt>
-          <dd>{order.shippingCost === 0 ? 'مجاني' : money(order.shippingCost)}</dd>
-        </div>
-        {order.giftWrap && (
-          <div>
-            <dt>تغليف الهدية</dt>
-            <dd>{money(order.giftWrapFee)}</dd>
-          </div>
-        )}
-        <div className={styles.total}>
-          <dt>الإجمالي</dt>
-          <dd>{money(order.total)}</dd>
-        </div>
-      </dl>
-      <p className={styles.muted}>
-        <Icon name={order.shippingMethodCode === 'pickup' ? 'pin' : 'truck'} size={16} />{' '}
-        {order.shippingMethodCode === 'pickup'
-          ? 'الاستلام من مكتبتنا في إسطنبول'
-          : `الشحن إلى ${order.shipToCity}، ${countryName(order.shipToCountryCode)}`}
-      </p>
-    </div>
-  );
-}
 
 function OrderStatusView({ orderNumber, email }: { orderNumber: string; email: string }) {
   const order = useQuery({
@@ -146,7 +76,7 @@ function OrderStatusView({ orderNumber, email }: { orderNumber: string; email: s
           >
             أعد المحاولة
           </Button>
-          <ButtonLink to={trackUrl(orderNumber)} variant="ghost">
+          <ButtonLink to={trackOrderUrl(orderNumber)} state={{ email }} variant="ghost">
             تتبّع الطلب
           </ButtonLink>
         </div>
@@ -178,7 +108,7 @@ function OrderStatusView({ orderNumber, email }: { orderNumber: string; email: s
           >
             تحقّق مجدداً
           </Button>
-          <ButtonLink to={trackUrl(data.orderNumber)} variant="ghost">
+          <ButtonLink to={trackOrderUrl(data.orderNumber)} state={{ email }} variant="ghost">
             تتبّع الطلب لاحقاً
           </ButtonLink>
         </div>
@@ -224,7 +154,7 @@ function OrderStatusView({ orderNumber, email }: { orderNumber: string; email: s
       </div>
       <OrderSummary order={data} />
       <div className={styles.actions}>
-        <ButtonLink to={trackUrl(data.orderNumber)} variant="ink">
+        <ButtonLink to={trackOrderUrl(data.orderNumber)} state={{ email }} variant="ink">
           <Icon name="truck" /> تتبّع الطلب
         </ButtonLink>
         <ButtonLink to={paths.search} variant="ghost">

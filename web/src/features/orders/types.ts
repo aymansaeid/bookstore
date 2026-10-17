@@ -38,3 +38,21 @@ export interface PublicOrder {
   canBeCancelled: boolean;
   readingPathId: number | null;
 }
+
+/** API §6 POST /api/orders/documents: the exact texts the buyer accepted. */
+export interface OrderDocument {
+  type: 'PreInformationForm' | 'DistanceSalesContract';
+  language: string;
+  version: string;
+  title: string;
+  /** Safe server-rendered fragment. */
+  html: string;
+  contentSha256: string;
+  createdAtUtc: string;
+}
+
+/** What /track and /returns look an order up with. */
+export interface OrderLookup {
+  orderNumber: string;
+  email: string;
+}

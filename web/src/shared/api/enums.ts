@@ -74,3 +74,37 @@ export const formatLabel = (value: string): string => text(FORMAT, value);
 export const levelLabel = (value: string): string => text(LEVEL, value);
 export const badgeLabel = (value: string): string => text(BADGE, value);
 export const tierLabel = (value: string): string => text(TIER, value);
+
+// API guide §9 (returns) and §6 (customer cancellation)
+export type ReturnReason = 'ChangedMind' | 'ArrivedDamaged' | 'WrongItem' | 'Other';
+export const RETURN_REASONS: readonly ReturnReason[] = [
+  'ChangedMind',
+  'ArrivedDamaged',
+  'WrongItem',
+  'Other',
+];
+const RETURN_REASON: Readonly<Record<ReturnReason, string>> = {
+  ChangedMind: 'غيّرت رأيي',
+  ArrivedDamaged: 'وصل الكتاب تالفاً',
+  WrongItem: 'وصلني كتاب غير الذي طلبته',
+  Other: 'سبب آخر',
+};
+export const returnReasonLabel = (value: string): string => text(RETURN_REASON, value);
+
+export type CancelReason =
+  'ChangedMind' | 'OrderedByMistake' | 'FoundBetterPrice' | 'DeliveryTooSlow' | 'Other';
+export const CANCEL_REASONS: readonly CancelReason[] = [
+  'ChangedMind',
+  'OrderedByMistake',
+  'FoundBetterPrice',
+  'DeliveryTooSlow',
+  'Other',
+];
+const CANCEL_REASON: Readonly<Record<CancelReason, string>> = {
+  ChangedMind: 'غيّرت رأيي',
+  OrderedByMistake: 'طلبت بالخطأ',
+  FoundBetterPrice: 'وجدت سعراً أفضل',
+  DeliveryTooSlow: 'التوصيل بطيء',
+  Other: 'سبب آخر',
+};
+export const cancelReasonLabel = (value: string): string => text(CANCEL_REASON, value);

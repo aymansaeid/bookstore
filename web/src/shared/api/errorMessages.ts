@@ -40,6 +40,9 @@ const MESSAGES: Readonly<Record<string, string>> = {
   'Return.AlreadyRequested': 'قُدّم طلب إرجاع لهذا الطلب من قبل.',
   'Return.OrderNotReturnable': 'لا يمكن إرجاع هذا الطلب.',
   'Return.InvalidItems': 'الكميات المختارة أكبر من الكميات المشتراة.',
+  'Return.InvalidStatus': 'تغيّرت حالة طلب الإرجاع. أعد تحميل الصفحة.',
+  'Return.NoReturnForOrder': 'لا يوجد طلب إرجاع لهذا الطلب.',
+  'Return.NotFound': 'لم نعثر على طلب الإرجاع.',
   'StockNotification.AlreadyInStock': 'الكتاب متوفر الآن، يمكنك إضافته إلى السلة.',
   'Library.NotInLibrary': 'هذا الكتاب ليس في مكتبتك.',
 };

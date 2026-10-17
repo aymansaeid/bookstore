@@ -1,0 +1,174 @@
+.card {
+  display: grid;
+  gap: 12px;
+  inline-size: 100%;
+  padding: 20px 16px;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: var(--card);
+  box-shadow: var(--sh1);
+}
+
+.cardHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.cardTitle {
+  font-family: var(--font-serif);
+  font-size: 22px;
+}
+
+.subTitle {
+  margin-block-end: 4px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.muted {
+  color: var(--gray);
+  font-size: 13px;
+}
+
+.next {
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.returnLines {
+  display: grid;
+  gap: 6px;
+  padding-block: 10px;
+  border-block: 1px solid var(--line);
+}
+
+.returnLines li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.lineTitle {
+  font-family: var(--font-serif);
+  font-size: 15px;
+}
+
+.refund {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+}
+
+.refund b {
+  font-size: 22px;
+}
+
+.instructions,
+.rejection {
+  padding: 12px 14px;
+  border-radius: 14px;
+  font-size: 14px;
+  line-height: 1.8;
+  white-space: pre-line;
+}
+
+.instructions {
+  background: var(--goldl);
+}
+
+.rejection {
+  background: var(--redl);
+  color: var(--red2);
+}
+
+.confirm {
+  display: grid;
+  gap: 8px;
+  padding: 12px 14px;
+  border: 1px dashed var(--line2);
+  border-radius: 14px;
+  font-size: 14px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.withdraw {
+  justify-self: start;
+}
+
+.group {
+  display: grid;
+  gap: 8px;
+  border: 0;
+}
+
+.legend {
+  margin-block-end: 6px;
+  color: var(--ink3);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.pickLines {
+  display: grid;
+  gap: 8px;
+}
+
+.pickLine {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 14px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+
+.reasons {
+  display: grid;
+  gap: 2px;
+}
+
+.reason {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-block-size: 44px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.reason input {
+  inline-size: 18px;
+  block-size: 18px;
+  accent-color: var(--ink);
+}
+
+.submit {
+  inline-size: 100%;
+}
+
+@media (min-width: 640px) {
+  .card {
+    padding: 24px;
+  }
+
+  .reasons {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .submit {
+    inline-size: auto;
+    justify-self: start;
+  }
+}

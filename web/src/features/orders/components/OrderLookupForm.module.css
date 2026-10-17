@@ -1,0 +1,33 @@
+.form {
+  display: grid;
+  inline-size: 100%;
+  padding: 20px 16px;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: var(--card);
+  box-shadow: var(--sh1);
+}
+
+.fields {
+  display: grid;
+  column-gap: 14px;
+}
+
+.submit {
+  inline-size: 100%;
+}
+
+@media (min-width: 640px) {
+  .form {
+    padding: 24px;
+  }
+
+  .fields {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .submit {
+    inline-size: auto;
+    justify-self: start;
+  }
+}
