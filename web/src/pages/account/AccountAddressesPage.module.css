@@ -1,0 +1,82 @@
+.grid {
+  display: grid;
+  gap: 12px;
+}
+
+.wide {
+  grid-column: 1 / -1;
+}
+
+.card {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  min-inline-size: 0;
+  padding: 18px 16px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--card);
+  box-shadow: var(--sh1);
+}
+
+.default {
+  border-color: var(--gold);
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.label {
+  font-family: var(--font-serif);
+  font-size: 19px;
+}
+
+.badge {
+  padding: 2px 10px;
+  border-radius: var(--r-pill);
+  background: var(--goldl);
+  color: #8a6a26;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.lines {
+  display: grid;
+  gap: 2px;
+  color: var(--ink3);
+  font-size: 14px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+.phone {
+  justify-self: start;
+  color: var(--gray);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.confirm {
+  display: grid;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: var(--redl);
+  color: var(--red2);
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

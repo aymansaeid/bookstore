@@ -1,0 +1,111 @@
+.card {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px 14px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--card);
+}
+
+.card:has(a:focus-visible) {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+@media (hover: hover) {
+  .card:hover {
+    border-color: var(--line2);
+    box-shadow: var(--sh1);
+  }
+}
+
+/* Covers overlap towards the start (spine on the right, spec §8.5). */
+.covers {
+  display: flex;
+  align-items: center;
+}
+
+.cover {
+  overflow: hidden;
+  inline-size: 40px;
+  aspect-ratio: 2 / 2.95;
+  border: 2px solid var(--card);
+  border-start-start-radius: 3px;
+  border-end-start-radius: 3px;
+  border-start-end-radius: 6px;
+  border-end-end-radius: 6px;
+  background: var(--ink2);
+  box-shadow: var(--sh1);
+}
+
+.cover + .cover {
+  margin-inline-start: -16px;
+}
+
+.cover img {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+
+.more {
+  margin-inline-start: 6px;
+  color: var(--gray);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.info {
+  display: grid;
+  gap: 2px;
+  min-inline-size: 0;
+}
+
+/* The whole card is clickable through the order number's link. */
+.number {
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.number::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+
+.number:focus-visible {
+  outline: none;
+}
+
+.meta {
+  color: var(--gray);
+  font-size: 12.5px;
+}
+
+.side {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.total {
+  font-size: 16px;
+}
+
+@media (min-width: 640px) {
+  .card {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  .side {
+    grid-column: auto;
+    flex-direction: column;
+    align-items: flex-end;
+  }
+}

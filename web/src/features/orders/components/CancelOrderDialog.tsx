@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { type RefObject, useState } from 'react';
 
 import { ordersApi } from '@/features/orders/api';
@@ -20,13 +20,20 @@ interface CancelOrderDialogProps {
   dialogRef: RefObject<HTMLDialogElement | null>;
   lookup: OrderLookup;
   order: PublicOrder;
-  /** The track query to update with the cancelled order. */
-  queryKey: readonly unknown[];
+  /** Receives the cancelled order, so the page can show it. */
+  onCancelled: (order: PublicOrder) => void;
+  /** Shipped or paid a moment ago: the page should reload the order. */
+  onStale: () => void;
 }
 
 /** API §6: guests and customers cancel until shipping; paid orders are refunded. */
-export function CancelOrderDialog({ dialogRef, lookup, order, queryKey }: CancelOrderDialogProps) {
-  const queryClient = useQueryClient();
+export function CancelOrderDialog({
+  dialogRef,
+  lookup,
+  order,
+  onCancelled,
+  onStale,
+}: CancelOrderDialogProps) {
   const [reason, setReason] = useState<CancelReason | null>(null);
   const [comment, setComment] = useState('');
 
@@ -37,7 +44,7 @@ export function CancelOrderDialog({ dialogRef, lookup, order, queryKey }: Cancel
       return ordersApi.cancel(lookup, reason, text === '' ? null : text);
     },
     onSuccess: (updated) => {
-      queryClient.setQueryData(queryKey, updated);
+      onCancelled(updated);
       dialogRef.current?.close();
       toast.success(
         order.status === 'Paid'
@@ -51,7 +58,7 @@ export function CancelOrderDialog({ dialogRef, lookup, order, queryKey }: Cancel
         error instanceof ApiError &&
         (error.code === 'Order.AlreadyShipped' || error.code === 'Order.PaymentJustCompleted')
       ) {
-        void queryClient.invalidateQueries({ queryKey });
+        onStale();
       }
     },
   });

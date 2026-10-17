@@ -4,3 +4,26 @@
   min-block-size: 40vh;
   color: var(--gray);
 }
+
+/* minmax(0, 1fr): the chip row must scroll inside, never widen the page. */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+  padding-block: 20px 64px;
+}
+
+.content {
+  display: grid;
+  align-content: start;
+  gap: 20px;
+  min-inline-size: 0;
+}
+
+@media (min-width: 1024px) {
+  .layout {
+    grid-template-columns: 280px minmax(0, 1fr);
+    gap: 32px;
+    padding-block: 32px 80px;
+  }
+}

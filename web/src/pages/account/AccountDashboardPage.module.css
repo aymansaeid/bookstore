@@ -1,0 +1,66 @@
+.stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.stat {
+  display: grid;
+  align-content: space-between;
+  gap: 6px;
+  min-block-size: 104px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--card);
+  box-shadow: var(--sh1);
+}
+
+@media (hover: hover) {
+  .stat:hover {
+    border-color: var(--line2);
+  }
+}
+
+.value {
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.statLabel {
+  color: var(--gray);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.dark {
+  border-color: var(--ink);
+  background: var(--ink) var(--star) 0 0 / 64px;
+  background-blend-mode: soft-light;
+  color: #fff;
+}
+
+.dark .value {
+  color: var(--gold2);
+}
+
+.dark .statLabel {
+  color: var(--on-ink);
+}
+
+.orders {
+  display: grid;
+  gap: 10px;
+}
+
+@media (min-width: 1024px) {
+  .stats {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .value {
+    font-size: 36px;
+  }
+}

@@ -31,19 +31,6 @@
   gap: 18px;
 }
 
-.orderHead {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.orderTitle {
-  font-family: var(--font-serif);
-  font-size: 22px;
-}
-
 .orderLine {
   display: flex;
   flex-wrap: wrap;
@@ -65,36 +52,6 @@
   color: var(--ink3);
   font-size: 14px;
   line-height: 1.8;
-}
-
-.tracking {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 12px;
-  padding: 12px 14px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: var(--card);
-}
-
-.trackingLabel {
-  color: var(--gray);
-  font-size: 13px;
-}
-
-.trackingNumber {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 15px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  overflow-wrap: anywhere;
-}
-
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
 }
 
 .another {

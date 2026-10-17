@@ -1,0 +1,164 @@
+.sidebar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+  min-inline-size: 0;
+}
+
+.profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  inline-size: 52px;
+  block-size: 52px;
+  border: 2px solid var(--gold);
+  border-radius: 50%;
+  outline: 3px solid var(--goldl);
+  background: var(--ink);
+  color: var(--gold2);
+  font-family: var(--font-ruqaa);
+  font-size: 24px;
+  line-height: 1;
+}
+
+.who {
+  min-inline-size: 0;
+}
+
+.name {
+  overflow: hidden;
+  font-family: var(--font-serif);
+  font-size: 19px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tier {
+  display: inline-block;
+  margin-block-start: 2px;
+  padding: 1px 10px;
+  border-radius: var(--r-pill);
+  background: var(--goldl);
+  color: #8a6a26;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* Phones: one scrolling row of chips. */
+.list {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  margin-inline: -16px;
+  padding: 2px 16px 6px;
+  scrollbar-width: none;
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-block-size: 44px;
+  padding-inline: 14px;
+  border: 1px solid var(--line2);
+  border-radius: var(--r-pill);
+  background: var(--card);
+  color: var(--ink3);
+  font-size: 13.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.active {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: #fff;
+}
+
+.count {
+  display: grid;
+  place-items: center;
+  min-inline-size: 20px;
+  block-size: 20px;
+  padding-inline: 5px;
+  border-radius: 10px;
+  background: var(--red);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.logoutItem {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .list {
+    margin-inline: -24px;
+    padding-inline: 24px;
+  }
+}
+
+/* Desktop: the spec's sidebar card. */
+@media (min-width: 1024px) {
+  .sidebar {
+    position: sticky;
+    inset-block-start: 110px;
+    align-self: start;
+    padding: 20px 14px;
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    background: var(--card);
+    box-shadow: var(--sh1);
+  }
+
+  .profile {
+    padding-inline: 6px;
+    padding-block-end: 14px;
+    border-block-end: 1px solid var(--line);
+  }
+
+  .list {
+    flex-direction: column;
+    gap: 2px;
+    overflow: visible;
+    margin: 0;
+    padding: 0;
+  }
+
+  .link {
+    inline-size: 100%;
+    border-color: transparent;
+    border-radius: 12px;
+    background: transparent;
+  }
+
+  .link:hover {
+    background: var(--paper2);
+  }
+
+  .active,
+  .active:hover {
+    background: var(--ink);
+    color: #fff;
+  }
+
+  .label {
+    flex: 1;
+    text-align: start;
+  }
+
+  .logoutItem {
+    display: block;
+    margin-block-start: 6px;
+    padding-block-start: 6px;
+    border-block-start: 1px solid var(--line);
+  }
+}

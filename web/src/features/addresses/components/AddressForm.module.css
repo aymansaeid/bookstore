@@ -1,0 +1,53 @@
+.form {
+  display: grid;
+  gap: 4px;
+  padding: 20px 16px;
+  border: 1.5px solid var(--ink);
+  border-radius: 22px;
+  background: var(--card);
+  box-shadow: var(--sh1);
+}
+
+.title {
+  margin-block-end: 12px;
+  font-family: var(--font-serif);
+  font-size: 21px;
+}
+
+.fields {
+  display: grid;
+  column-gap: 14px;
+}
+
+.full {
+  grid-column: 1 / -1;
+}
+
+.full:has(select) {
+  display: grid;
+  gap: 7px;
+  margin-block-end: 16px;
+}
+
+.label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink3);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-block-start: 8px;
+}
+
+@media (min-width: 640px) {
+  .form {
+    padding: 24px;
+  }
+
+  .fields {
+    grid-template-columns: 1fr 1fr;
+  }
+}

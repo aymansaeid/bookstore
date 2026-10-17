@@ -10,6 +10,7 @@ export const meKeys = {
   summary: (customerId: number) => ['me', 'summary', customerId] as const,
   unreadCountAll: ['me', 'unread-count'] as const,
   unreadCount: (customerId: number) => ['me', 'unread-count', customerId] as const,
+  orders: (customerId: number) => ['me', 'orders', customerId] as const,
 };
 
 export function useCustomerId(): number | null {
@@ -38,5 +39,15 @@ export function useUnreadNotificationsCount() {
     enabled: customerId !== null,
     staleTime: 30_000,
     refetchInterval: 60_000,
+  });
+}
+
+export function useMyOrders() {
+  const customerId = useCustomerId();
+  return useQuery({
+    queryKey: meKeys.orders(customerId ?? 0),
+    queryFn: () => accountApi.orders(),
+    enabled: customerId !== null,
+    staleTime: 30_000,
   });
 }

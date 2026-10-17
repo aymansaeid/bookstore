@@ -32,6 +32,9 @@ const MESSAGES: Readonly<Record<string, string>> = {
   'Customer.EmailNotVerified': 'فعّل حسابك من الرابط المرسل إلى بريدك أولاً.',
   'Customer.AccountUnavailable': 'هذا الحساب غير متاح.',
   'Customer.InvalidToken': 'الرابط غير صالح أو انتهت صلاحيته.',
+  'Customer.CurrentPasswordIncorrect': 'كلمة المرور الحالية غير صحيحة.',
+  'Customer.AddressLimitReached': 'وصلت إلى الحد الأقصى: ١٠ عناوين. احذف عنواناً لإضافة آخر.',
+  'Customer.AddressNotFound': 'لم يعد هذا العنوان موجوداً.',
   'Auth.InvalidCredentials': 'البريد الإلكتروني أو كلمة المرور غير صحيحة.',
 
   'Review.NotEligible': 'يمكن فقط لمن اشترى الكتاب كتابة مراجعة.',

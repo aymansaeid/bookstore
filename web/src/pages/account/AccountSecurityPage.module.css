@@ -1,0 +1,38 @@
+.twoCols {
+  display: grid;
+  column-gap: 14px;
+}
+
+.submit {
+  justify-self: start;
+}
+
+.danger {
+  display: grid;
+  gap: 12px;
+  padding: 20px 16px;
+  border: 1px solid rgba(227, 30, 36, 0.35);
+  border-radius: 22px;
+  background: #fff8f8;
+}
+
+.dangerText {
+  color: var(--red2);
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.error {
+  color: var(--red2);
+  font-size: 12.5px;
+}
+
+@media (min-width: 640px) {
+  .twoCols {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .danger {
+    padding: 24px;
+  }
+}
