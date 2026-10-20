@@ -1,0 +1,64 @@
+.page {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-block-size: 100dvh;
+  padding: 24px 16px;
+  background: var(--ink);
+}
+
+.page::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--star) 0 0 / 72px;
+  opacity: 0.06;
+}
+
+.card {
+  position: relative;
+  display: grid;
+  gap: 6px;
+  inline-size: min(100%, 420px);
+  padding: 28px 22px;
+  border-radius: 24px;
+  background: var(--card);
+  box-shadow: var(--sh2);
+}
+
+.logo {
+  block-size: 52px;
+  margin-block-end: 12px;
+}
+
+.title {
+  font-family: var(--font-serif);
+  font-size: 28px;
+}
+
+.subtitle {
+  margin-block-end: 14px;
+  color: var(--gray);
+}
+
+.submit {
+  inline-size: 100%;
+  margin-block-start: 6px;
+}
+
+.note {
+  margin-block-start: 12px;
+  color: var(--gray);
+  font-size: 12.5px;
+  line-height: 1.8;
+}
+
+.back {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 44px;
+  font-size: 13.5px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
