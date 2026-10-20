@@ -35,6 +35,7 @@ const MESSAGES: Readonly<Record<string, string>> = {
   'Customer.CurrentPasswordIncorrect': 'كلمة المرور الحالية غير صحيحة.',
   'Customer.AddressLimitReached': 'وصلت إلى الحد الأقصى: ١٠ عناوين. احذف عنواناً لإضافة آخر.',
   'Customer.AddressNotFound': 'لم يعد هذا العنوان موجوداً.',
+  'Customer.UnknownInterests': 'أحد الاهتمامات لم يعد متاحاً. حدّث الصفحة واختر من جديد.',
   'Auth.InvalidCredentials': 'البريد الإلكتروني أو كلمة المرور غير صحيحة.',
 
   'Review.NotEligible': 'يمكن فقط لمن اشترى الكتاب كتابة مراجعة.',

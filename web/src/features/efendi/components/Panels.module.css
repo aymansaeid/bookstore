@@ -1,0 +1,213 @@
+/* Side panels of «اسأل أفندي» (spec 5.2). */
+.panel {
+  display: grid;
+  gap: 10px;
+  min-inline-size: 0;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.title {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.more {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 44px;
+  color: var(--red2);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.card,
+.profile {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--card);
+}
+
+.text {
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.group {
+  display: grid;
+  gap: 8px;
+  border: 0;
+}
+
+.label {
+  color: var(--gray);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.hint {
+  font-weight: 500;
+}
+
+.levels {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.level,
+.chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-block-size: 44px;
+  border: 1px solid var(--line2);
+  border-radius: 12px;
+  background: var(--card);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.level input,
+.chip input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.level:has(input:focus-visible),
+.chip:has(input:focus-visible) {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.on {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: #fff;
+}
+
+.range {
+  inline-size: 100%;
+  min-block-size: 32px;
+  accent-color: var(--red);
+}
+
+.budget {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip {
+  min-block-size: 40px;
+  padding-inline: 12px;
+  border-radius: var(--r-pill);
+  font-weight: 500;
+}
+
+.chip:has(input:disabled) {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.chipOn {
+  border-color: var(--gold);
+  background: var(--goldl);
+  color: #7a5c1e;
+  font-weight: 700;
+}
+
+.skeleton {
+  block-size: 180px;
+  border-radius: 20px;
+  background: var(--paper2);
+}
+
+.mini {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+}
+
+.card .mini + .mini {
+  padding-block-start: 12px;
+  border-block-start: 1px solid var(--line);
+}
+
+.miniBody {
+  display: grid;
+  gap: 2px;
+  min-inline-size: 0;
+}
+
+.miniTitle {
+  overflow: hidden;
+  font-family: var(--font-serif);
+  font-size: 15px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+a.miniTitle:hover {
+  text-decoration: underline;
+}
+
+.miniSub {
+  color: var(--gray);
+  font-size: 12px;
+}
+
+.cart {
+  --focus-ring: var(--gold2);
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  border-radius: 22px;
+  background: var(--ink);
+  color: #fff;
+}
+
+.cartTitle {
+  color: var(--gold2);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.cartSub {
+  color: var(--on-ink-muted);
+  font-size: 12px;
+}
+
+.cartTotal {
+  display: flex;
+  justify-content: space-between;
+  color: var(--on-ink);
+  font-size: 14px;
+}
+
+.cartTotal b {
+  color: #fff;
+  font-size: 18px;
+}
+
+.cartButton {
+  inline-size: 100%;
+}

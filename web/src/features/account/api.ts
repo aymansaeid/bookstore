@@ -1,7 +1,7 @@
 import { customerRequest } from '@/features/auth/session';
 import type { Customer } from '@/features/auth/types';
 import type { PublicOrder } from '@/features/orders/types';
-import type { LoyaltyTier } from '@/shared/api/enums';
+import type { LoyaltyTier, ReaderLevel } from '@/shared/api/enums';
 
 /** API guide §7e: the four «لوحتي» cards and the header badges in one call. */
 export interface CustomerSummary {
@@ -20,6 +20,15 @@ export interface ProfileUpdate {
   acceptsMarketingEmails: boolean;
 }
 
+/** API §7b «ما يعرفه أفندي عنك». Full replacement; up to 10 interests. */
+export interface ReadingProfileUpdate {
+  readingLevel: ReaderLevel | null;
+  monthlyBudget: number | null;
+  interestCategoryIds: number[];
+}
+
+export const MAX_INTERESTS = 10;
+
 export const accountApi = {
   summary: (signal?: AbortSignal) =>
     customerRequest<CustomerSummary>('/api/customers/me/summary', { signal }),
@@ -32,6 +41,10 @@ export const accountApi = {
   /** API §7: returns the updated profile. */
   updateProfile: (body: ProfileUpdate) =>
     customerRequest<Customer>('/api/customers/me', { method: 'PUT', body }),
+
+  /** Returns the updated profile. Unknown category ids → Customer.UnknownInterests. */
+  updateReadingProfile: (body: ReadingProfileUpdate) =>
+    customerRequest<Customer>('/api/customers/me/reading-profile', { method: 'PUT', body }),
 
   /** 204. Signs out every device, this one included (API §7). */
   changePassword: (currentPassword: string, newPassword: string) =>

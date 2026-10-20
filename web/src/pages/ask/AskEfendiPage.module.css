@@ -1,0 +1,123 @@
+/* «اسأل أفندي» (spec 5.2): history | chat | context from 1200px; the chat alone on phones. */
+.page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  padding-block: 12px 16px;
+}
+
+.history {
+  display: none;
+}
+
+.newChat {
+  inline-size: 100%;
+}
+
+.historyTitle {
+  color: var(--gray);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.historyEmpty {
+  color: var(--gray);
+  font-size: 13.5px;
+  line-height: 1.8;
+}
+
+.soon {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 8px;
+  padding: 14px;
+  border: 1px dashed var(--gold);
+  border-radius: 16px;
+  background: var(--card);
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.loading {
+  min-block-size: calc(100dvh - 190px);
+  border-radius: 24px;
+  background: var(--paper2);
+}
+
+/* Phones: the context sits above the chat, collapsed. */
+.context {
+  order: -1;
+  display: grid;
+  gap: 12px;
+  min-inline-size: 0;
+}
+
+.contextToggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-block-size: 48px;
+  padding-inline: 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--card);
+  font-size: 13.5px;
+  font-weight: 600;
+  text-align: start;
+}
+
+.chevron {
+  flex: none;
+  transform: rotate(90deg);
+  transition: transform 0.2s;
+}
+
+.open .chevron {
+  transform: rotate(-90deg);
+}
+
+.contextBody {
+  display: none;
+  gap: 18px;
+}
+
+.open .contextBody {
+  display: grid;
+}
+
+@media (min-width: 1200px) {
+  .page {
+    grid-template-columns: 240px minmax(0, 1fr) 300px;
+    align-items: start;
+    gap: 20px;
+    padding-block: 20px 24px;
+  }
+
+  .history,
+  .context {
+    position: sticky;
+    inset-block-start: 96px;
+    order: 0;
+  }
+
+  .history {
+    display: grid;
+    gap: 14px;
+  }
+
+  /* Taller than the screen with many interests: scroll inside. */
+  .context {
+    max-block-size: calc(100dvh - 120px);
+    overflow-y: auto;
+    padding-inline-end: 2px;
+  }
+
+  .contextToggle {
+    display: none;
+  }
+
+  .contextBody {
+    display: grid;
+  }
+}
