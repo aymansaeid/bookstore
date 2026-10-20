@@ -17,6 +17,7 @@ interface BookListProps {
   layout?: 'row' | 'grid' | 'gridNarrow';
   skeletonCount?: number;
   emptyText?: string;
+  matches?: ReadonlyMap<number, number | null>;
 }
 
 const ROW_SIZES = '(max-width: 767px) 160px, 220px';
@@ -29,6 +30,7 @@ export function BookList({
   layout = 'row',
   skeletonCount = 6,
   emptyText = 'لا توجد كتب هنا بعد.',
+  matches,
 }: BookListProps) {
   if (isError && !books) {
     return (
@@ -67,6 +69,7 @@ export function BookList({
         <li key={book.id} className={styles.item}>
           <ProductCard
             book={book}
+            match={matches?.get(book.id) ?? null}
             imageSizes={layout === 'row' ? ROW_SIZES : undefined}
             priority={index < 2}
           />

@@ -1,0 +1,330 @@
+/* Spec 5.1 §1: dark hero, two columns on desktop, one on phones (§8.3). */
+.hero {
+  --focus-ring: var(--gold2);
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(70% 90% at 15% 20%, rgba(227, 30, 36, 0.22), transparent 60%),
+    radial-gradient(50% 60% at 90% 100%, rgba(201, 165, 92, 0.12), transparent 70%), var(--ink);
+  color: #fff;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--star) 0 0 / 72px;
+  opacity: 0.05;
+  pointer-events: none;
+}
+
+.inner {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 32px;
+  padding-block: 28px 32px;
+}
+
+.copy {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
+  min-inline-size: 0;
+}
+
+.badge {
+  justify-self: start;
+  padding: 5px 14px;
+  border: 1px solid var(--ink-line2);
+  border-radius: var(--r-pill);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--gold2);
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.title {
+  font-family: var(--font-serif);
+  font-size: clamp(34px, 9vw, 66px);
+  line-height: 1.25;
+}
+
+.title em {
+  display: block;
+  color: var(--gold2);
+  font-family: var(--font-ruqaa);
+  font-style: normal;
+}
+
+.lead {
+  max-inline-size: 560px;
+  color: var(--on-ink);
+  font-size: 15.5px;
+  line-height: 1.95;
+}
+
+/* «اسأل أفندي» box: glass with a gradient frame. */
+.ask {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid transparent;
+  border-radius: 22px;
+  background:
+    linear-gradient(var(--ink2), var(--ink2)) padding-box,
+    linear-gradient(120deg, var(--red), var(--gold), var(--ink-line2)) border-box;
+}
+
+.askRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.askAvatar {
+  flex: none;
+}
+
+.askInput {
+  flex: 1;
+  min-inline-size: 0;
+  min-block-size: 44px;
+  padding-inline: 8px;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  font: inherit;
+  font-size: 16px;
+}
+
+.askInput::placeholder {
+  color: var(--on-ink-muted);
+}
+
+.askInput:focus {
+  outline: none;
+}
+
+.ask:focus-within {
+  box-shadow: 0 0 0 3px rgba(230, 205, 143, 0.25);
+}
+
+.tool,
+.send {
+  display: grid;
+  flex: none;
+  place-items: center;
+  inline-size: 44px;
+  block-size: 44px;
+  border-radius: 14px;
+}
+
+.tool {
+  color: var(--on-ink);
+}
+
+@media (hover: hover) {
+  .tool:hover {
+    background: rgba(255, 255, 255, 0.06);
+  }
+}
+
+.send {
+  background: var(--red);
+  color: #fff;
+  box-shadow: 0 10px 24px -10px rgba(227, 30, 36, 0.8);
+}
+
+/* Send points the reading direction (spec §8.5). */
+.send svg {
+  transform: scaleX(-1);
+}
+
+.suggestions {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-block-start: 10px;
+  border-block-start: 1px solid var(--ink-line);
+  scrollbar-width: none;
+}
+
+.suggestion {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  min-block-size: 40px;
+  padding-inline: 14px;
+  border: 1px solid var(--ink-line2);
+  border-radius: var(--r-pill);
+  color: var(--on-ink);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+@media (hover: hover) {
+  .suggestion:hover {
+    border-color: var(--gold);
+    color: #fff;
+  }
+}
+
+.figures {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.figures div {
+  display: grid;
+  gap: 2px;
+}
+
+.figures dd {
+  color: #fff;
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.figures dt {
+  color: var(--on-ink-muted);
+  font-size: 12.5px;
+}
+
+/* Small phones: the header search already has the camera and microphone. */
+@media (max-width: 479px) {
+  .tool {
+    display: none;
+  }
+}
+
+/* The stage only appears with room for it (§8.3: «يُصغَّر أو يُخفى»). */
+.stage {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .figures {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .figures div + div {
+    padding-inline-start: 16px;
+    border-inline-start: 1px solid var(--ink-line2);
+  }
+}
+
+@media (min-width: 1024px) {
+  .inner {
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+    align-items: center;
+    gap: 40px;
+    padding-block: 64px 72px;
+  }
+
+  .stage {
+    position: relative;
+    display: block;
+    block-size: 460px;
+  }
+
+  .spines {
+    position: absolute;
+    inset-inline-end: 4%;
+    inset-block-end: 28px;
+    display: flex;
+    gap: 3px;
+  }
+
+  .spines span {
+    display: grid;
+    align-items: end;
+    justify-items: center;
+    inline-size: 34px;
+    block-size: 250px;
+    padding-block-end: 12px;
+    border-radius: 3px 3px 0 0;
+    background:
+      linear-gradient(
+        to bottom,
+        transparent 18px,
+        var(--gold) 18px 20px,
+        transparent 20px 24px,
+        var(--gold) 24px 25px,
+        transparent 25px
+      ),
+      linear-gradient(90deg, #0d3b2c, #155c43 45%, #0d3b2c);
+    color: var(--gold2);
+    font-size: 12px;
+    box-shadow: inset -3px 0 6px rgba(0, 0, 0, 0.35);
+  }
+
+  .covers {
+    position: absolute;
+    inset-inline-start: 6%;
+    inset-block-end: 26px;
+    display: flex;
+    align-items: flex-end;
+  }
+
+  .front,
+  .back {
+    display: block;
+    inline-size: 210px;
+  }
+
+  .front {
+    position: relative;
+    z-index: 2;
+    rotate: 3deg;
+  }
+
+  .back {
+    inline-size: 180px;
+    margin-inline-start: -40px;
+    rotate: -4deg;
+    opacity: 0.92;
+  }
+
+  .plank {
+    position: absolute;
+    inset-inline: 0;
+    inset-block-end: 6px;
+    block-size: 22px;
+    border-radius: 6px;
+    background: linear-gradient(to bottom, #8a6236, #5b3d20);
+    box-shadow: 0 18px 30px -12px rgba(0, 0, 0, 0.7);
+  }
+
+  .float {
+    position: absolute;
+    z-index: 3;
+    inset-block-start: 24px;
+    inset-inline-end: 0;
+    display: grid;
+    gap: 2px;
+    max-inline-size: 260px;
+    padding: 14px 16px;
+    border-radius: 18px;
+    background: var(--card);
+    color: var(--ink);
+    box-shadow: var(--sh2);
+  }
+
+  .floatLabel {
+    color: var(--gray);
+    font-size: 12px;
+  }
+
+  .floatTitle {
+    font-family: var(--font-serif);
+    font-size: 18px;
+  }
+
+  .floatPrice {
+    color: var(--red2);
+    font-weight: 700;
+  }
+}

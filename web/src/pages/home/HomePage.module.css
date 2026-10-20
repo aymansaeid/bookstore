@@ -1,9 +1,0 @@
-.section {
-  margin-block-start: 40px;
-}
-
-@media (min-width: 1024px) {
-  .section {
-    margin-block-start: 86px;
-  }
-}

@@ -1,0 +1,209 @@
+/* Spec 5.1 §5: dark green banner with a shelf of spines. */
+.wrap {
+  margin-block-start: 40px;
+}
+
+.banner {
+  --focus-ring: var(--gold2);
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 24px;
+  overflow: hidden;
+  padding: 24px 20px;
+  border-radius: 28px;
+  background:
+    radial-gradient(70% 90% at 90% 10%, rgba(30, 123, 82, 0.35), transparent 70%),
+    linear-gradient(135deg, #0b2a20, #0f3a2c);
+  color: #fff;
+}
+
+.banner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--star) 0 0 / 72px;
+  opacity: 0.06;
+  pointer-events: none;
+}
+
+.banner > * {
+  position: relative;
+}
+
+.copy {
+  display: grid;
+  gap: 10px;
+  min-inline-size: 0;
+}
+
+.kicker {
+  justify-self: start;
+  padding: 4px 12px;
+  border: 1px solid rgba(230, 205, 143, 0.35);
+  border-radius: var(--r-pill);
+  color: var(--gold2);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.title {
+  font-family: var(--font-serif);
+  font-size: clamp(30px, 7vw, 52px);
+  line-height: 1.25;
+}
+
+.title a:hover {
+  text-decoration: underline;
+}
+
+.subtitle {
+  color: var(--gold2);
+  font-family: var(--font-serif);
+  font-size: 19px;
+}
+
+.description {
+  display: -webkit-box;
+  overflow: hidden;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 14.5px;
+  line-height: 1.9;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 28px;
+  margin-block: 4px;
+}
+
+.facts dd {
+  color: var(--gold2);
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.facts dt {
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 12px;
+}
+
+.buy {
+  display: grid;
+  gap: 12px;
+}
+
+.price {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 32px;
+  font-weight: 700;
+}
+
+.old {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.out {
+  align-self: center;
+  color: var(--gold2);
+  font-weight: 700;
+}
+
+/* The shelf: spines scroll sideways on phones (§8.3). */
+.shelf {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  min-inline-size: 0;
+  padding-block-end: 18px;
+}
+
+.spines {
+  display: flex;
+  flex: 1;
+  gap: 3px;
+  min-inline-size: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.spines span {
+  display: grid;
+  flex: none;
+  align-items: end;
+  justify-items: center;
+  inline-size: 26px;
+  block-size: 170px;
+  padding-block-end: 10px;
+  border-radius: 3px 3px 0 0;
+  background:
+    linear-gradient(
+      to bottom,
+      transparent 14px,
+      var(--gold) 14px 16px,
+      transparent 16px 20px,
+      var(--gold) 20px 21px,
+      transparent 21px
+    ),
+    linear-gradient(90deg, #0d3b2c, #17694c 45%, #0d3b2c);
+  color: var(--gold2);
+  font-size: 11px;
+  box-shadow: inset -3px 0 6px rgba(0, 0, 0, 0.35);
+}
+
+.cover {
+  flex: none;
+  inline-size: 110px;
+}
+
+.plank {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 0;
+  block-size: 18px;
+  border-radius: 5px;
+  background: linear-gradient(to bottom, #8a6236, #5b3d20);
+  box-shadow: 0 14px 24px -10px rgba(0, 0, 0, 0.7);
+}
+
+@media (min-width: 1024px) {
+  .wrap {
+    margin-block-start: 86px;
+  }
+
+  .banner {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+    align-items: center;
+    gap: 40px;
+    padding: 48px 56px;
+  }
+
+  .buy {
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 24px;
+  }
+
+  .spines span {
+    inline-size: 32px;
+    block-size: 240px;
+  }
+
+  .cover {
+    inline-size: 160px;
+  }
+}

@@ -1,0 +1,468 @@
+/* Home sections below the hero (spec 5.1 §2–§9). */
+.section {
+  margin-block-start: 40px;
+}
+
+.stale {
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+/* §2 publisher strip */
+.strip {
+  border-block-end: 1px solid var(--line);
+  background: var(--card);
+}
+
+.stripInner {
+  display: grid;
+  gap: 16px;
+  padding-block: 18px;
+}
+
+.publisher {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.seal {
+  display: grid;
+  flex: none;
+  place-items: center;
+  align-content: center;
+  inline-size: 64px;
+  block-size: 64px;
+  border: 1.5px solid var(--gold);
+  border-radius: 50%;
+  box-shadow:
+    inset 0 0 0 4px var(--card),
+    inset 0 0 0 5px var(--goldl);
+  font-family: var(--font-serif);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.seal small {
+  color: #a8802f;
+  font-family: var(--font-ui);
+  font-size: 10px;
+}
+
+.publisherTitle {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.publisherSub {
+  color: var(--gray);
+  font-size: 13px;
+}
+
+.perks {
+  display: grid;
+  gap: 12px;
+}
+
+.perks li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.perks b {
+  display: block;
+  font-size: 14.5px;
+}
+
+.perks span {
+  color: var(--gray);
+  font-size: 12.5px;
+}
+
+.perkIcon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  inline-size: 42px;
+  block-size: 42px;
+  border-radius: 12px;
+  background: var(--redl);
+  color: var(--red);
+}
+
+/* §3 reasons above the picks */
+.reasons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-block: -6px 14px;
+}
+
+.reason {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 40px;
+  padding-inline: 14px;
+  border: 1px solid var(--line2);
+  border-radius: var(--r-pill);
+  background: var(--card);
+  font-size: 13px;
+}
+
+a.reason:hover {
+  border-color: var(--ink);
+}
+
+/* §4 paths: a sideways row on phones, three columns from 1024px */
+.pathsRow {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: min(86%, 340px);
+  gap: 14px;
+  margin-inline: -16px;
+  padding: 4px 16px 12px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: 16px;
+  scrollbar-width: none;
+}
+
+.pathItem {
+  display: grid;
+  scroll-snap-align: start;
+}
+
+.pathSkeleton {
+  block-size: 380px;
+  border-radius: 24px;
+  background: var(--paper2);
+}
+
+/* §6 category tiles */
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.tile {
+  position: relative;
+  display: grid;
+  align-content: end;
+  gap: 2px;
+  overflow: hidden;
+  min-block-size: 132px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--card);
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+}
+
+@media (hover: hover) {
+  .tile:hover {
+    box-shadow: var(--sh1);
+    transform: translateY(-2px);
+  }
+}
+
+.tileRed {
+  border-color: var(--red);
+  background: var(--red);
+  color: #fff;
+}
+
+.letter {
+  position: absolute;
+  inset-block-start: -18px;
+  inset-inline-end: 10px;
+  color: var(--goldl);
+  font-family: var(--font-ruqaa);
+  font-size: 110px;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.tileRed .letter {
+  color: rgba(255, 255, 255, 0.16);
+}
+
+.tileName {
+  position: relative;
+  font-family: var(--font-serif);
+  font-size: 19px;
+}
+
+.tileCount {
+  position: relative;
+  color: var(--gray);
+  font-size: 12.5px;
+}
+
+.tileRed .tileCount {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.tileSkeleton {
+  min-block-size: 132px;
+  border-radius: 20px;
+  background: var(--paper2);
+}
+
+/* §7 «بائع كتب عالِم» */
+.teaser {
+  display: grid;
+  gap: 24px;
+}
+
+.teaserCopy {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+}
+
+.teaserKicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: var(--r-pill);
+  background: var(--redl);
+  color: var(--red2);
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.teaserTitle {
+  font-family: var(--font-serif);
+  font-size: clamp(28px, 6vw, 44px);
+  line-height: 1.3;
+}
+
+.teaserText {
+  max-inline-size: 560px;
+  color: var(--gray);
+  font-size: 15px;
+  line-height: 1.9;
+}
+
+.features {
+  display: grid;
+  gap: 12px;
+}
+
+.features li {
+  display: grid;
+  gap: 6px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--card);
+}
+
+.features b {
+  font-size: 16px;
+}
+
+.features small {
+  margin-inline-start: 6px;
+  padding: 1px 8px;
+  border-radius: var(--r-pill);
+  background: var(--paper2);
+  color: var(--gray);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.features p {
+  color: var(--gray);
+  font-size: 13.5px;
+  line-height: 1.8;
+}
+
+.featureIcon {
+  display: grid;
+  place-items: center;
+  inline-size: 42px;
+  block-size: 42px;
+  margin-block-end: 6px;
+  border-radius: 12px;
+  background: var(--ink);
+  color: #fff;
+}
+
+/* §8 tabs */
+.tabs {
+  display: flex;
+  gap: 4px;
+  max-inline-size: 100%;
+  padding: 4px;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  background: var(--card);
+  scrollbar-width: none;
+}
+
+.tab {
+  flex: none;
+  min-block-size: 40px;
+  padding-inline: 16px;
+  border-radius: var(--r-pill);
+  color: var(--gray);
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.tabOn {
+  background: var(--ink);
+  color: #fff;
+}
+
+.moreRow {
+  display: flex;
+  justify-content: center;
+  margin-block-start: 12px;
+}
+
+/* §9 muhaqqiqs: sideways on phones, five columns from 1024px */
+.people {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 200px;
+  gap: 12px;
+  margin-inline: -16px;
+  padding: 4px 16px 12px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: 16px;
+  scrollbar-width: none;
+}
+
+.people li {
+  display: grid;
+  scroll-snap-align: start;
+}
+
+.person {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 6px;
+  padding: 20px 14px;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: var(--card);
+  text-align: center;
+}
+
+@media (hover: hover) {
+  .person:hover {
+    box-shadow: var(--sh1);
+  }
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  inline-size: 72px;
+  block-size: 72px;
+  margin-block-end: 4px;
+  border-radius: 50%;
+  background: var(--ink);
+  box-shadow:
+    0 0 0 3px var(--card),
+    0 0 0 5px var(--gold);
+  color: var(--gold2);
+  font-family: var(--font-ruqaa);
+  font-size: 32px;
+}
+
+.personName {
+  font-family: var(--font-serif);
+  font-size: 17px;
+}
+
+.personWorks {
+  color: var(--gray);
+  font-size: 12.5px;
+}
+
+.personTags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+}
+
+.personTags span {
+  padding: 1px 8px;
+  border-radius: var(--r-pill);
+  background: var(--paper2);
+  color: var(--ink3);
+  font-size: 11.5px;
+}
+
+@media (min-width: 640px) {
+  .tiles {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .features {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 768px) {
+  .stripInner {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+  }
+
+  .perks {
+    grid-template-columns: repeat(3, auto);
+    gap: 28px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .section {
+    margin-block-start: 86px;
+  }
+
+  .pathsRow {
+    grid-auto-flow: row;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-inline: 0;
+    padding: 0;
+    overflow: visible;
+  }
+
+  .tiles {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .tile {
+    min-block-size: 190px;
+  }
+
+  .teaser {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: center;
+    gap: 48px;
+  }
+
+  .people {
+    grid-auto-flow: row;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    margin-inline: 0;
+    padding: 0;
+    overflow: visible;
+  }
+}
