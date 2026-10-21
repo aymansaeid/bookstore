@@ -11,6 +11,7 @@ import { cx } from '@/shared/lib/cx';
 import { booksPhrase, formatCount, formatMoney } from '@/shared/lib/format';
 import { ButtonLink, Button } from '@/shared/ui/Button/Button';
 import { StatusBadge } from '@/shared/ui/StatusBadge/StatusBadge';
+import { arabicFold as fold } from '@/shared/lib/arabicFold';
 
 import local from './AdminBooksPage.module.css';
 
@@ -24,15 +25,7 @@ const FILTERS: { id: Filter; label: string; test: (book: AdminBook) => boolean }
   { id: 'out', label: 'نفدت', test: (book) => book.availableToSell === 0 },
 ];
 
-/** Arabic search ignores diacritics and hamza forms, like the server's slugs. */
-const fold = (text: string) =>
-  text
-    .normalize('NFKD')
-    .replace(/[\u064B-\u0670\u065F\u0640]/g, '')
-    .replace(/[أإآ]/g, 'ا')
-    .replace(/ى/g, 'ي')
-    .replace(/ة/g, 'ه')
-    .toLowerCase();
+
 
 /** Books (API §10): every book, hidden ones too, with exact stock. Filtered here. */
 export default function AdminBooksPage() {

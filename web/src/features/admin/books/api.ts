@@ -90,7 +90,9 @@ export const BOOK_LIMITS = {
   maxHighlights: 12,
   maxHighlightLength: 200,
   maxEditionLabel: 100,
-  maxVolumes: 500,
+   maxVolumes: 500,
+  maxEditions: 20,
+  maxRelated: 12,
 } as const;
 
 const BASE = '/api/admin/books';
@@ -123,6 +125,13 @@ export const adminBooksApi = {
     }),
   setMerchandising: (id: number, body: MerchandisingInput) =>
     adminRequest<AdminBook>(`${one(id)}/merchandising`, { method: 'PUT', body }),
+
+    /** The OTHER editions of the same work; [] takes this book out of its group. */
+  setEditions: (id: number, bookIds: number[]) =>
+    adminRequest<AdminBook>(`${one(id)}/editions`, { method: 'PUT', body: { bookIds } }),
+  /** «يُكمل مكتبتك» on the book page, in this order. */
+  setRelated: (id: number, bookIds: number[]) =>
+    adminRequest<AdminBook>(`${one(id)}/related`, { method: 'PUT', body: { bookIds } }),
 
   /** multipart: file (JPEG, PNG or WebP, max 5 MB) + altText. The first image becomes the cover. */
   uploadImage: (id: number, file: File, altText: string) => {

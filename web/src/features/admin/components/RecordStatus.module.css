@@ -1,0 +1,20 @@
+.wrap {
+  display: grid;
+  gap: 14px;
+  padding-block-start: 16px;
+  border-block-start: 1px solid var(--line);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 12px;
+}
+
+.text {
+  display: grid;
+  flex: 1 1 220px;
+  gap: 4px;
+}

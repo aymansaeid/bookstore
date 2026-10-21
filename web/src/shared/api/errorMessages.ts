@@ -53,6 +53,33 @@ const MESSAGES: Readonly<Record<string, string>> = {
   'Return.IncompleteInspection': 'حدّد حالة كل كتاب مرتجع قبل إكمال الإرجاع.',
   'StockNotification.AlreadyInStock': 'الكتاب متوفر الآن، يمكنك إضافته إلى السلة.',
   'Library.NotInLibrary': 'هذا الكتاب ليس في مكتبتك.',
+
+    'Book.NotFound': 'لم نعثر على هذا الكتاب.',
+  'Book.DuplicateIsbn': 'يوجد كتاب آخر بهذا الرقم ISBN.',
+  'Book.DuplicateSlug': 'يوجد كتاب آخر بهذا الرابط. غيّر الرابط أو العنوان.',
+  'Book.InvalidSlug': 'لا يصلح هذا الرابط. استخدم حروفاً أو أرقاماً.',
+  'Book.InvalidImage': 'تعذّرت قراءة الصورة. استخدم JPEG أو PNG أو WebP حتى ٥ ميغابايت.',
+  'Book.ImageNotFound': 'لم تعد هذه الصورة موجودة. حدّث الصفحة.',
+  'Book.TooManyImages': 'وصلت إلى الحد الأقصى: ٨ صور. احذف صورة لرفع أخرى.',
+  'Book.InvalidReorderList': 'تغيّرت صور الكتاب. حدّث الصفحة وأعد الترتيب.',
+  'Book.OldPriceNotHigher': 'السعر القديم يجب أن يكون أعلى من السعر الحالي.',
+  'Book.StockBelowReserved': 'لا يمكن أن يقل المخزون عن الكمية المحجوزة لطلبات قيد الدفع.',
+  'Book.UnknownMuhaqqiqs': 'أحد المحققين لم يعد موجوداً. حدّث الصفحة.',
+  'Book.UnknownBooks': 'أحد الكتب المختارة لم يعد موجوداً. حدّث الصفحة.',
+  'Book.AlreadyInAnotherEditionGroup':
+    'أحد الكتب المختارة طبعةٌ لعمل آخر. افتح ذلك الكتاب وأزله من طبعاته أولاً.',
+  'Book.CannotRelateToItself': 'لا يمكن ربط الكتاب بنفسه.',
+  'Catalog.InvalidSlug': 'لا يصلح هذا الرابط. استخدم حروفاً أو أرقاماً.',
+  'Category.NotFound': 'لم نعثر على هذا القسم. حدّث الصفحة.',
+  'Category.DuplicateSlug': 'يوجد قسم آخر بهذا الرابط.',
+  'Category.ParentMustBeTopLevel': 'القسم الأب يجب أن يكون قسماً رئيسياً.',
+  'Category.CannotBeOwnParent': 'لا يكون القسم أباً لنفسه.',
+  'Category.HasSubcategories': 'لهذا القسم أقسام فرعية. انقلها أو احذفها أولاً.',
+  'Category.InUse': 'في هذا القسم كتب. انقلها إلى قسم آخر، أو أخفِ القسم بدلاً من حذفه.',
+  'Muhaqqiq.NotFound': 'لم نعثر على هذا المحقق. حدّث الصفحة.',
+  'Muhaqqiq.DuplicateSlug': 'يوجد محقق آخر بهذا الرابط.',
+  'Muhaqqiq.InUse': 'لهذا المحقق أعمال في المتجر. أزله من كتبه أولاً، أو أخفِه بدلاً من حذفه.',
+  'Inventory.BookNotFound': 'لم نعثر على هذا الكتاب.',
 };
 
 const BY_STATUS: Readonly<Record<number, string>> = {

@@ -53,6 +53,8 @@ export function useBookMutation<TVars>(
       }
       void queryClient.invalidateQueries({ queryKey: adminBookKeys.list });
       void queryClient.invalidateQueries({ queryKey: ['admin', 'dashboard'] });
+            // Stock ledger, reconciliation and waiting list.
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'inventory'] });
       // The storefront's own caches for this book and the catalog.
       void queryClient.invalidateQueries({ queryKey: ['book'] });
       void queryClient.invalidateQueries({ queryKey: ['catalog'] });

@@ -4,6 +4,11 @@
   gap: 4px;
 }
 
+.stack {
+  display: grid;
+  gap: 20px;
+}
+
 .grid,
 .grid3,
 .grid4 {

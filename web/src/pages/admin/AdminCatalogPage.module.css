@@ -1,0 +1,102 @@
+/* Categories and muhaqqiqs: the list, with the editor beside it from 1100px. */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+
+.list {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  min-inline-size: 0;
+}
+
+.editor {
+  scroll-margin-block-start: 80px;
+}
+
+.editorHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.hint {
+  display: none;
+}
+
+.name {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-inline-size: 0;
+}
+
+.child {
+  padding-inline-start: 22px;
+}
+
+.letter {
+  display: grid;
+  flex: none;
+  place-items: center;
+  inline-size: 32px;
+  block-size: 32px;
+  border-radius: 10px;
+  background: var(--ink);
+  color: var(--gold2);
+  font-family: var(--font-serif);
+  font-size: 16px;
+}
+
+.noLetter {
+  background: var(--paper2);
+  color: var(--gray);
+}
+
+.nameText {
+  display: grid;
+  min-inline-size: 0;
+  text-align: start;
+}
+
+.open {
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.selected td {
+  background: var(--paper);
+}
+
+.badges {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: flex-end;
+}
+
+@media (min-width: 1100px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr) 400px;
+    align-items: start;
+  }
+
+  .editor,
+  .hint {
+    position: sticky;
+    inset-block-start: 84px;
+    order: 2;
+    max-block-size: calc(100dvh - 100px);
+    overflow-y: auto;
+  }
+
+  .hint {
+    display: grid;
+  }
+}

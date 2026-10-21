@@ -1,0 +1,37 @@
+.sections {
+  display: grid;
+  gap: 16px;
+}
+
+.title {
+  display: grid;
+  min-inline-size: 0;
+  text-align: start;
+}
+
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+}
+
+.ok,
+.bad {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.ok {
+  color: var(--green);
+}
+
+.bad,
+.out {
+  color: var(--red2);
+}
+
+.low {
+  color: #8a6a26;
+}

@@ -5,6 +5,7 @@ import { paths } from '@/app/paths';
 import { adminBooksApi } from '@/features/admin/books/api';
 import { BookDetailsForm } from '@/features/admin/books/components/BookDetailsForm';
 import { BookImages } from '@/features/admin/books/components/BookImages';
+import { BookLinksForm } from '@/features/admin/books/components/BookLinksForm';
 import { BookMerchandisingForm } from '@/features/admin/books/components/BookMerchandisingForm';
 import { BookStockCard } from '@/features/admin/books/components/BookStockCard';
 import { BookTaxonomyForm } from '@/features/admin/books/components/BookTaxonomyForm';
@@ -18,6 +19,8 @@ import {
 } from '@/features/admin/books/schema';
 import styles from '@/features/admin/components/admin.module.css';
 import { AdminPageHeader } from '@/features/admin/components/AdminPageHeader';
+import { StockLedger } from '@/features/admin/inventory/components/StockLedger';
+import { WaitingListNote } from '@/features/admin/inventory/components/WaitingListNote';
 import NotFoundPage from '@/pages/not-found/NotFoundPage';
 import { ApiError, isApiError } from '@/shared/api/ApiError';
 import { errorMessage } from '@/shared/api/errorMessages';
@@ -158,6 +161,13 @@ function EditBook({ id }: { id: number }) {
               book={book}
             />
           </section>
+
+          <section className={styles.card} aria-labelledby="ledger-title">
+            <h2 id="ledger-title" className={styles.cardTitle}>
+              دفتر حركة المخزون
+            </h2>
+            <StockLedger bookId={book.id} />
+          </section>
         </div>
 
         <div className={page.side}>
@@ -169,6 +179,7 @@ function EditBook({ id }: { id: number }) {
               key={`${String(book.stockQuantity)}|${String(book.lowStockThreshold)}`}
               book={book}
             />
+            <WaitingListNote bookId={book.id} />
           </section>
 
           <section className={styles.card} aria-labelledby="taxonomy-title">
@@ -177,6 +188,16 @@ function EditBook({ id }: { id: number }) {
             </h2>
             <BookTaxonomyForm
               key={`${String(book.categoryId)}|${book.muhaqqiqIds.join()}`}
+              book={book}
+            />
+          </section>
+
+          <section className={styles.card} aria-labelledby="links-title">
+            <h2 id="links-title" className={styles.cardTitle}>
+              الطبعات والكتب المرتبطة
+            </h2>
+            <BookLinksForm
+              key={`${String(book.editionGroupId)}|${book.relatedBookIds.join()}`}
               book={book}
             />
           </section>
