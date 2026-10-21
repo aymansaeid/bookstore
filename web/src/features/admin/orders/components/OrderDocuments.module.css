@@ -1,0 +1,86 @@
+.dialog {
+  inline-size: min(calc(100vw - 24px), 860px);
+  max-inline-size: none;
+  max-block-size: min(calc(100dvh - 24px), 900px);
+  margin: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 22px;
+  background: var(--card);
+  box-shadow: var(--sh2);
+}
+
+.dialog::backdrop {
+  background: rgba(20, 18, 16, 0.55);
+}
+
+.body {
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.title {
+  font-family: var(--font-serif);
+  font-size: 22px;
+}
+
+.close {
+  display: grid;
+  place-items: center;
+  inline-size: 44px;
+  block-size: 44px;
+  border-radius: 12px;
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tab {
+  min-block-size: 40px;
+  padding-inline: 14px;
+  border: 1px solid var(--line2);
+  border-radius: var(--r-pill);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.tabOn {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: #fff;
+}
+
+.meta {
+  color: var(--gray);
+  font-size: 12.5px;
+}
+
+.hash {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.frame {
+  display: block;
+  inline-size: 100%;
+  block-size: min(62dvh, 720px);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fff;
+}
+
+.state {
+  padding: 24px 0;
+  color: var(--gray);
+  text-align: center;
+}

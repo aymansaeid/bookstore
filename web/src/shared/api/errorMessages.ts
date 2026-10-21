@@ -27,6 +27,9 @@ const MESSAGES: Readonly<Record<string, string>> = {
   'Order.AlreadyShipped': 'شُحن الطلب بالفعل، ويمكنك طلب الإرجاع بعد استلامه.',
   'Order.PaymentJustCompleted': 'اكتمل الدفع للتو. حدّث الصفحة وحاول مجدداً.',
   'Order.InvalidStatus': 'تغيّرت حالة الطلب. أعد تحميل الصفحة.',
+  'Order.NotFound': 'لم نعثر على هذا الطلب.',
+  'Order.NoPaymentReference':
+    'لا يوجد مرجع دفع لهذا الطلب، فلا يمكن استرداده تلقائياً. استرده يدوياً من مزوّد الدفع.',
 
   'Customer.InvalidCredentials': 'البريد الإلكتروني أو كلمة المرور غير صحيحة.',
   'Customer.EmailNotVerified': 'فعّل حسابك من الرابط المرسل إلى بريدك أولاً.',
@@ -47,6 +50,7 @@ const MESSAGES: Readonly<Record<string, string>> = {
   'Return.InvalidStatus': 'تغيّرت حالة طلب الإرجاع. أعد تحميل الصفحة.',
   'Return.NoReturnForOrder': 'لا يوجد طلب إرجاع لهذا الطلب.',
   'Return.NotFound': 'لم نعثر على طلب الإرجاع.',
+  'Return.IncompleteInspection': 'حدّد حالة كل كتاب مرتجع قبل إكمال الإرجاع.',
   'StockNotification.AlreadyInStock': 'الكتاب متوفر الآن، يمكنك إضافته إلى السلة.',
   'Library.NotInLibrary': 'هذا الكتاب ليس في مكتبتك.',
 };

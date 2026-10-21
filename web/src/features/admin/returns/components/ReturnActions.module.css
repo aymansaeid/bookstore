@@ -1,0 +1,55 @@
+.line {
+  display: grid;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--card);
+}
+
+.lineTitle {
+  padding-inline: 4px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.choices {
+  display: grid;
+  gap: 6px;
+}
+
+.choice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-block-size: 44px;
+  padding-inline: 12px;
+  border: 1px solid var(--line2);
+  border-radius: 12px;
+  font-size: 13.5px;
+  cursor: pointer;
+}
+
+.choice input {
+  accent-color: var(--ink);
+}
+
+.on {
+  border-color: var(--ink);
+  font-weight: 700;
+}
+
+.confirm {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--redl);
+  color: var(--red2);
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+@media (min-width: 640px) {
+  .choices {
+    grid-template-columns: 1fr 1fr;
+  }
+}

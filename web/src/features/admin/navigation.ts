@@ -9,7 +9,7 @@ export interface AdminNavItem {
   end?: boolean;
   /** Not built yet: shown, marked «قريباً». */
   soon?: boolean;
-  badge?: 'awaitingShipment';
+  badge?: 'awaitingShipment' | 'pendingReturns';
 }
 
 /** Spec 5.10 sidebar: four groups. */
@@ -25,7 +25,7 @@ export const ADMIN_NAV: readonly { title: string; items: AdminNavItem[] }[] = [
     title: 'المتجر',
     items: [
       { label: 'الطلبات', to: paths.admin.orders, icon: 'box', badge: 'awaitingShipment' },
-      { label: 'الإرجاعات', to: paths.admin.returns, icon: 'arrowr' },
+      { label: 'الإرجاعات', to: paths.admin.returns, icon: 'arrowr', badge: 'pendingReturns' },
       { label: 'الكتب والطبعات', to: paths.admin.books, icon: 'book' },
       { label: 'المخزون والتوريد', to: paths.admin.inventory, icon: 'sliders' },
       { label: 'الأقسام', to: paths.admin.categories, icon: 'menu' },

@@ -1,0 +1,306 @@
+/* Shared building blocks of the admin screens (spec 5.10). */
+.pageHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 14px;
+  margin-block-end: 18px;
+}
+
+.pageHeaderText {
+  display: grid;
+  gap: 4px;
+  min-inline-size: 0;
+}
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  justify-self: start;
+  min-block-size: 36px;
+  color: var(--gray);
+  font-size: 13px;
+}
+
+.back:hover {
+  color: var(--ink);
+}
+
+.pageTitle {
+  font-family: var(--font-serif);
+  font-size: 28px;
+  line-height: 1.3;
+}
+
+.pageMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  color: var(--gray);
+  font-size: 13px;
+}
+
+.pageActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.card {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  min-inline-size: 0;
+  padding: 18px 16px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--card);
+}
+
+.cardTitle {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.muted {
+  color: var(--gray);
+  font-size: 13px;
+}
+
+.empty {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 40px 16px;
+  border: 1px dashed var(--line2);
+  border-radius: 20px;
+  color: var(--gray);
+  text-align: center;
+}
+
+.skeleton {
+  block-size: 320px;
+  border-radius: 20px;
+  background: var(--paper2);
+}
+
+.stale {
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+/* Filter chips */
+.filters {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-block-end: 2px;
+  scrollbar-width: none;
+}
+
+.filter {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  min-block-size: 40px;
+  padding-inline: 14px;
+  border: 1px solid var(--line2);
+  border-radius: var(--r-pill);
+  background: var(--card);
+  color: var(--ink3);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.filterOn {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: #fff;
+}
+
+.toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  margin-block-end: 14px;
+}
+
+.search {
+  display: flex;
+  gap: 8px;
+}
+
+.search input {
+  flex: 1;
+  min-inline-size: 0;
+  min-block-size: 44px;
+  padding-inline: 14px;
+  border: 1px solid var(--line2);
+  border-radius: 14px;
+  background: var(--card);
+  font: inherit;
+  font-size: 16px;
+}
+
+.search input:focus {
+  border-color: var(--ink);
+  outline: none;
+}
+
+/* Tables become stacked cards on phones (spec §8.3). */
+.table {
+  inline-size: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+
+.table th {
+  padding: 10px 12px;
+  border-block-end: 1px solid var(--line);
+  color: var(--gray);
+  font-size: 12.5px;
+  font-weight: 600;
+  text-align: start;
+  white-space: nowrap;
+}
+
+.table td {
+  padding: 12px;
+  border-block-end: 1px solid var(--line);
+  vertical-align: middle;
+}
+
+.table tbody tr:last-child td {
+  border-block-end: 0;
+}
+
+.rowLink {
+  font-weight: 700;
+}
+
+.rowLink:hover {
+  text-decoration: underline;
+}
+
+.sub {
+  display: block;
+  color: var(--gray);
+  font-size: 12px;
+}
+
+.num {
+  white-space: nowrap;
+}
+
+@media (max-width: 767px) {
+  .table thead {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .table,
+  .table tbody,
+  .table tr,
+  .table td {
+    display: block;
+  }
+
+  .table tr {
+    padding: 12px 14px;
+    border-block-end: 1px solid var(--line);
+  }
+
+  .table tbody tr:last-child {
+    border-block-end: 0;
+  }
+
+  .table td {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 4px 0;
+    border: 0;
+    text-align: end;
+  }
+
+  .table td::before {
+    content: attr(data-label);
+    color: var(--gray);
+    font-size: 12px;
+    text-align: start;
+  }
+}
+
+/* Definition lists: label / value */
+.facts {
+  display: grid;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.facts div {
+  display: grid;
+  grid-template-columns: minmax(0, 140px) minmax(0, 1fr);
+  gap: 12px;
+}
+
+.facts dt {
+  color: var(--gray);
+  font-size: 13px;
+}
+
+.facts dd {
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+/* Codes and emails read left-to-right but still line up with the other values. */
+.facts dd[dir='ltr'] {
+  text-align: end;
+}
+
+.code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12.5px;
+}
+
+/* Action forms */
+.actionForm {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 16px;
+  background: var(--paper);
+}
+
+.actionTitle {
+  font-size: 14.5px;
+  font-weight: 700;
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.danger {
+  background: var(--redl);
+}
+
+@media (min-width: 768px) {
+  .card {
+    padding: 22px;
+  }
+
+  .toolbar {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 380px);
+    align-items: center;
+  }
+}

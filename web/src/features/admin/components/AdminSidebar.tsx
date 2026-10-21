@@ -7,13 +7,21 @@ import { Logo } from '@/shared/ui/Logo/Logo';
 
 import { ADMIN_NAV } from '../navigation';
 import { useDashboard } from '../queries';
+import { usePendingReturnsCount } from '../returns/queries';
 
 import styles from './AdminSidebar.module.css';
 
-/** Spec 5.10: the dark sidebar. The orders badge counts paid orders awaiting shipment. */
+/** Spec 5.10: the dark sidebar. Badges: paid orders to ship, returns waiting for a decision. */
 export function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {
   const dashboard = useDashboard(30);
-  const awaiting = dashboard.data?.ordersAwaitingShipment ?? 0;
+  const pendingReturns = usePendingReturnsCount();
+  const counts = {
+    awaitingShipment: {
+      value: dashboard.data?.ordersAwaitingShipment ?? 0,
+      label: 'طلبات بانتظار الشحن',
+    },
+    pendingReturns: { value: pendingReturns.data ?? 0, label: 'إرجاعات بانتظار القرار' },
+  };
 
   return (
     <nav className={styles.nav} aria-label="قائمة الإدارة">
@@ -37,10 +45,10 @@ export function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {
                   <Icon name={item.icon} size={18} />
                   <span className={styles.label}>{item.label}</span>
                   {item.soon && <span className={styles.soonTag}>قريباً</span>}
-                  {item.badge === 'awaitingShipment' && awaiting > 0 && (
+                  {item.badge && counts[item.badge].value > 0 && (
                     <span className={styles.badge}>
-                      {formatBadgeCount(awaiting)}
-                      <span className="sr-only"> طلبات بانتظار الشحن</span>
+                      {formatBadgeCount(counts[item.badge].value)}
+                      <span className="sr-only"> {counts[item.badge].label}</span>
                     </span>
                   )}
                 </NavLink>

@@ -1,0 +1,96 @@
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+
+.main,
+.side {
+  display: grid;
+  align-content: start;
+  gap: 16px;
+  min-inline-size: 0;
+}
+
+.totals {
+  display: grid;
+  gap: 6px;
+  padding-block-start: 12px;
+  border-block-start: 1px solid var(--line);
+  font-size: 14px;
+}
+
+.totals div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.totals dt {
+  color: var(--gray);
+}
+
+.grand {
+  padding-block-start: 8px;
+  border-block-start: 1px solid var(--line);
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.grand dt {
+  color: var(--ink);
+}
+
+.address {
+  display: grid;
+  gap: 2px;
+  font-size: 14px;
+  font-style: normal;
+  line-height: 1.8;
+}
+
+.address a {
+  justify-self: start;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.gift {
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px;
+  border: 1px dashed var(--gold);
+  border-radius: 14px;
+  background: var(--goldl);
+}
+
+.giftMessage {
+  font-family: var(--font-serif);
+  font-size: 16px;
+  white-space: pre-line;
+}
+
+.timeline {
+  display: grid;
+  gap: 8px;
+  padding-block-start: 12px;
+  border-block-start: 1px solid var(--line);
+}
+
+.timeline li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+}
+
+.timeline span {
+  color: var(--gray);
+}
+
+@media (min-width: 1100px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr) 380px;
+    align-items: start;
+  }
+}
