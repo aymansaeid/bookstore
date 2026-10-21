@@ -1,0 +1,146 @@
+/* Admin book editor (API §10). Two-column grids from 768px; one on phones. */
+.form {
+  display: grid;
+  gap: 4px;
+}
+
+.grid,
+.grid3,
+.grid4 {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  column-gap: 14px;
+}
+
+.fieldset {
+  display: grid;
+  gap: 6px;
+  margin-block-end: 6px;
+  border: 0;
+}
+
+.legend {
+  margin-block-end: 8px;
+  color: var(--ink3);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.fixed {
+  display: grid;
+  gap: 8px;
+  margin-block-end: 16px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--paper);
+  font-size: 13.5px;
+}
+
+.fixed div {
+  display: grid;
+  grid-template-columns: 80px minmax(0, 1fr);
+  gap: 10px;
+}
+
+.fixed dt {
+  color: var(--gray);
+}
+
+.fixed dd {
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.note {
+  flex: 1 1 260px;
+  color: var(--gray);
+  font-size: 12.5px;
+  line-height: 1.8;
+}
+
+.checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin-block-end: 12px;
+}
+
+.list {
+  display: grid;
+  gap: 6px;
+  margin-block-end: 10px;
+}
+
+.listItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-block-size: 44px;
+  padding: 4px 4px 4px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--card);
+}
+
+.listText {
+  flex: 1;
+  min-inline-size: 0;
+  font-size: 14px;
+}
+
+.iconButton {
+  display: grid;
+  flex: none;
+  place-items: center;
+  inline-size: 40px;
+  block-size: 40px;
+  border-radius: 10px;
+  color: var(--ink3);
+  font-size: 16px;
+}
+
+.iconButton:disabled {
+  opacity: 0.35;
+}
+
+@media (hover: hover) {
+  .iconButton:not(:disabled):hover {
+    background: var(--paper2);
+  }
+}
+
+.addRow {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.addRow > :first-child {
+  flex: 1;
+  min-inline-size: 0;
+}
+
+.addRow button {
+  margin-block-end: 16px;
+}
+
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .grid3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .grid4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}

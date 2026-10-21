@@ -152,3 +152,38 @@ export function TextAreaField({
     </div>
   );
 }
+
+/** Native select, same look as TextField. Works with react-hook-form's register(). */
+export function SelectField({
+  label,
+  error,
+  hint,
+  id,
+  className,
+  children,
+  ...select
+}: ComponentProps<'select'> & {
+  label: string;
+  error?: string | undefined;
+  hint?: string | undefined;
+}) {
+  const autoId = useId();
+  const inputId = id ?? autoId;
+  return (
+    <div className={cx(styles.field, className)}>
+      <label htmlFor={inputId} className={styles.label}>
+        {label}
+      </label>
+      <select
+        id={inputId}
+        className={cx(styles.input, error && styles.invalid)}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={describedBy(inputId, hint, error)}
+        {...select}
+      >
+        {children}
+      </select>
+      <Messages id={inputId} hint={hint} error={error} />
+    </div>
+  );
+}

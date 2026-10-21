@@ -1,0 +1,36 @@
+.book {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-inline-size: 0;
+}
+
+.thumb {
+  display: block;
+  flex: none;
+  inline-size: 40px;
+  block-size: 58px;
+  overflow: hidden;
+  border-radius: 6px;
+  background: var(--paper2);
+}
+
+.thumb img {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+
+.bookText {
+  display: grid;
+  min-inline-size: 0;
+  text-align: start;
+}
+
+.low {
+  color: #8a6a26;
+}
+
+.out {
+  color: var(--red2);
+}
