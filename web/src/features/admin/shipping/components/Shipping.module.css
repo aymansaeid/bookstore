@@ -1,0 +1,178 @@
+/* Shipping zone editor (API §10 /admin/shipping-zones). */
+.picker {
+  display: grid;
+  gap: 8px;
+  margin-block-end: 16px;
+  border: 0;
+}
+
+.legend,
+.searchLabel {
+  margin-block-end: 2px;
+  color: var(--ink3);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-block-size: 220px;
+  overflow-y: auto;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding-inline: 12px 4px;
+  border: 1px solid var(--line2);
+  border-radius: var(--r-pill);
+  background: var(--card);
+  font-size: 13px;
+}
+
+.chipCode {
+  color: var(--gray);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11.5px;
+}
+
+.chipRemove {
+  display: grid;
+  place-items: center;
+  inline-size: 32px;
+  block-size: 32px;
+  border-radius: 50%;
+  color: var(--ink3);
+  font-size: 15px;
+}
+
+@media (hover: hover) {
+  .chipRemove:hover {
+    background: var(--paper2);
+  }
+}
+
+.search {
+  inline-size: 100%;
+  min-block-size: 46px;
+  padding-inline: 14px;
+  border: 1px solid var(--line2);
+  border-radius: 14px;
+  background: var(--card);
+  font: inherit;
+  font-size: 15px;
+}
+
+.search:focus {
+  border-color: var(--ink);
+  outline: none;
+}
+
+.suggestions {
+  display: grid;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--card);
+}
+
+.suggestion {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  inline-size: 100%;
+  min-block-size: 44px;
+  padding-inline: 14px;
+  border-block-end: 1px solid var(--line);
+  font-size: 14px;
+  text-align: start;
+}
+
+.suggestions li:last-child .suggestion {
+  border-block-end: 0;
+}
+
+.suggestion:disabled {
+  color: var(--gray);
+}
+
+@media (hover: hover) {
+  .suggestion:not(:disabled):hover {
+    background: var(--paper);
+  }
+}
+
+.why {
+  color: var(--gray);
+  font-size: 12.5px;
+}
+
+.suggestion .why {
+  margin-inline-start: auto;
+}
+
+.presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.preset {
+  min-block-size: 36px;
+  padding-inline: 12px;
+  border: 1px dashed var(--line2);
+  border-radius: var(--r-pill);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.error {
+  color: var(--red2);
+  font-size: 13px;
+}
+
+/* Delivery options */
+.options {
+  display: grid;
+  gap: 12px;
+}
+
+.option {
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px 4px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--paper);
+}
+
+.optionHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.optionTitle {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* Zone list */
+.countries {
+  display: block;
+  max-inline-size: 420px;
+  overflow: hidden;
+  color: var(--gray);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.add {
+  justify-self: start;
+  margin-block: 4px 12px;
+}
