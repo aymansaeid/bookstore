@@ -9,7 +9,7 @@ export interface AdminNavItem {
   end?: boolean;
   /** Not built yet: shown, marked «قريباً». */
   soon?: boolean;
-  badge?: 'awaitingShipment' | 'pendingReturns';
+  badge?: 'awaitingShipment' | 'pendingReturns' | 'pendingReviews';
 }
 
 /** Spec 5.10 sidebar: four groups. */
@@ -37,8 +37,8 @@ export const ADMIN_NAV: readonly { title: string; items: AdminNavItem[] }[] = [
   {
     title: 'العملاء',
     items: [
-      { label: 'العملاء', to: paths.admin.customers, icon: 'user' },
-      { label: 'المراجعات', to: paths.admin.reviews, icon: 'check' },
+     { label: 'العملاء', to: paths.admin.customers, icon: 'user', soon: true },
+      { label: 'المراجعات', to: paths.admin.reviews, icon: 'check', badge: 'pendingReviews' },
     ],
   },
   {

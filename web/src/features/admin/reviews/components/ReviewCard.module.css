@@ -1,0 +1,39 @@
+.head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.who {
+  display: grid;
+  gap: 4px;
+  min-inline-size: 0;
+}
+
+.author {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.title {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+.body {
+  font-size: 15px;
+  line-height: 1.9;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.note {
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: var(--paper);
+  color: var(--ink3);
+  font-size: 13px;
+  line-height: 1.8;
+}

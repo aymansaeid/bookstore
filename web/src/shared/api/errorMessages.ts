@@ -91,6 +91,7 @@ const MESSAGES: Readonly<Record<string, string>> = {
   'Coupon.DuplicateCode': 'يوجد كوبون آخر بهذا الكود.',
   'Coupon.MaxBelowRedeemed': 'حد الاستخدام أقل من عدد مرات استخدام الكوبون حتى الآن.',
   'Coupon.CannotDeleteUsed': 'استُخدم هذا الكوبون ويبقى للتقارير. أوقفه بدلاً من حذفه.',
+    'Review.NotFound': 'لم نعثر على هذه المراجعة. حدّث الصفحة.',
     'ShippingZone.NotFound': 'لم نعثر على منطقة الشحن هذه. حدّث الصفحة.',
   'ShippingZone.DuplicateName': 'توجد منطقة شحن أخرى بهذا الاسم.',
   'ShippingZone.CountriesAlreadyAssigned': 'بعض الدول تابعة لمنطقة أخرى. أزلها من هناك أولاً.',

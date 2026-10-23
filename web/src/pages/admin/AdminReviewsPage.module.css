@@ -1,0 +1,25 @@
+.list {
+  display: grid;
+  gap: 12px;
+  margin-block-end: 16px;
+}
+
+.bookFilter {
+  min-inline-size: 0;
+}
+
+.select {
+  inline-size: 100%;
+  min-block-size: 44px;
+  padding-inline: 14px;
+  border: 1px solid var(--line2);
+  border-radius: var(--r-pill);
+  background: var(--card);
+  font: inherit;
+  font-size: 14px;
+}
+
+.select:focus {
+  border-color: var(--ink);
+  outline: none;
+}

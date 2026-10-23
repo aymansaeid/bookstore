@@ -8,6 +8,7 @@ import { Logo } from '@/shared/ui/Logo/Logo';
 import { ADMIN_NAV } from '../navigation';
 import { useDashboard } from '../queries';
 import { usePendingReturnsCount } from '../returns/queries';
+import { usePendingReviewsCount } from '../reviews/queries';
 
 import styles from './AdminSidebar.module.css';
 
@@ -15,12 +16,14 @@ import styles from './AdminSidebar.module.css';
 export function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {
   const dashboard = useDashboard(30);
   const pendingReturns = usePendingReturnsCount();
+  const pendingReviews = usePendingReviewsCount();
   const counts = {
     awaitingShipment: {
       value: dashboard.data?.ordersAwaitingShipment ?? 0,
       label: 'طلبات بانتظار الشحن',
     },
     pendingReturns: { value: pendingReturns.data ?? 0, label: 'إرجاعات بانتظار القرار' },
+    pendingReviews: { value: pendingReviews.data ?? 0, label: 'مراجعات بانتظار النشر' },
   };
 
   return (
