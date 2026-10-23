@@ -79,6 +79,8 @@ export const paths = {
     categories: '/admin/categories',
     muhaqqiqs: '/admin/muhaqqiqs',
     readingPaths: '/admin/reading-paths',
+    newReadingPath: '/admin/reading-paths/new',
+    readingPath: (id: number) => `/admin/reading-paths/${seg(id)}`,
     coupons: '/admin/coupons',
     shipping: '/admin/shipping',
     reviews: '/admin/reviews',

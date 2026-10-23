@@ -149,6 +149,14 @@ const adminRoutes: RouteObject[] = [
     path: 'reading-paths',
     lazy: lazyComponent(() => import('@/pages/admin/AdminReadingPathsPage')),
   },
+  {
+    path: 'reading-paths/new',
+    lazy: lazyComponent(() => import('@/pages/admin/AdminReadingPathEditorPage')),
+  },
+  {
+    path: 'reading-paths/:id',
+    lazy: lazyComponent(() => import('@/pages/admin/AdminReadingPathEditorPage')),
+  },
   { path: 'coupons', lazy: lazyComponent(() => import('@/pages/admin/AdminCouponsPage')) },
   { path: 'shipping', lazy: lazyComponent(() => import('@/pages/admin/AdminShippingPage')) },
   { path: 'reviews', lazy: lazyComponent(() => import('@/pages/admin/AdminReviewsPage')) },

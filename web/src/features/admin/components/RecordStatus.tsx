@@ -5,8 +5,27 @@ import { Button } from '@/shared/ui/Button/Button';
 import styles from './admin.module.css';
 import local from './RecordStatus.module.css';
 
+export interface RecordStatusLabels {
+  on: string;
+  off: string;
+  hide: string;
+  show: string;
+  /** What being switched off means, shown while it is off. */
+  offEffect: string;
+}
+
+/** Catalog wording; coupons pass their own («مفعّل / موقوف»). */
+const STORE_LABELS: RecordStatusLabels = {
+  on: 'ظاهر في المتجر',
+  off: 'مخفي عن المتجر',
+  hide: 'إخفاء',
+  show: 'إظهار',
+  offEffect: 'لا يراه الزوار حتى تُظهره، ويبقى كل ما ارتبط به كما هو.',
+};
+
 interface RecordStatusProps {
   isActive: boolean;
+  labels?: RecordStatusLabels;
   /** What hiding does, shown while the record is visible. */
   hideEffect: string;
   onToggle: (next: boolean) => void;
@@ -23,6 +42,7 @@ interface RecordStatusProps {
  */
 export function RecordStatus({
   isActive,
+  labels = STORE_LABELS,
   hideEffect,
   onToggle,
   toggling,
@@ -36,10 +56,8 @@ export function RecordStatus({
     <div className={local.wrap}>
       <div className={local.row}>
         <div className={local.text}>
-          <p className={styles.actionTitle}>{isActive ? 'ظاهر في المتجر' : 'مخفي عن المتجر'}</p>
-          <p className={styles.muted}>
-            {isActive ? hideEffect : 'لا يراه الزوار حتى تُظهره، ويبقى كل ما ارتبط به كما هو.'}
-          </p>
+          <p className={styles.actionTitle}>{isActive ? labels.on : labels.off}</p>
+          <p className={styles.muted}>{isActive ? hideEffect : labels.offEffect}</p>
         </div>
         <Button
           variant={isActive ? 'ghost' : 'red'}
@@ -49,7 +67,7 @@ export function RecordStatus({
             onToggle(!isActive);
           }}
         >
-          {isActive ? 'إخفاء' : 'إظهار'}
+          {isActive ? labels.hide : labels.show}
         </Button>
       </div>
 

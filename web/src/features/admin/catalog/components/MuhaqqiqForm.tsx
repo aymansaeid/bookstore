@@ -96,7 +96,7 @@ export function MuhaqqiqForm({ muhaqqiq, onSaved, onDeleted }: MuhaqqiqFormProps
           <dl className={form.fixed}>
             <div>
               <dt>الرابط</dt>
-              <dd dir="auto">/muhaqqiqs/{muhaqqiq.slug}</dd>
+              <dd dir="auto">/muhaqqiq/{muhaqqiq.slug}</dd>
             </div>
           </dl>
         )}

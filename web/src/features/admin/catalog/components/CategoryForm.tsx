@@ -105,7 +105,7 @@ export function CategoryForm({ category, all, onSaved, onDeleted }: CategoryForm
           <dl className={form.fixed}>
             <div>
               <dt>الرابط</dt>
-              <dd dir="auto">/categories/{category.slug}</dd>
+              <dd dir="auto">/category/{category.slug}</dd>
             </div>
           </dl>
         )}

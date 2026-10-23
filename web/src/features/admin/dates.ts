@@ -11,6 +11,12 @@ const isoDay = new Intl.DateTimeFormat('en-CA', {
 /** Today in Istanbul as YYYY-MM-DD. Impure: call it in handlers or query functions. */
 export const storeToday = (): string => isoDay.format(new Date());
 
+/** The Istanbul calendar day of an instant, as YYYY-MM-DD. */
+export const storeDayOf = (iso: string): string => isoDay.format(new Date(iso));
+
+/** The last second of an Istanbul day. Turkey has kept UTC+3 all year since 2016. */
+export const endOfStoreDay = (day: string): string => `${day}T23:59:59+03:00`;
+
 /** YYYY-MM-DD plus `days` (negative goes back). Pure calendar arithmetic in UTC. */
 export function addDays(day: string, days: number): string {
   const date = new Date(`${day}T00:00:00Z`);

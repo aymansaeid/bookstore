@@ -80,6 +80,17 @@ const MESSAGES: Readonly<Record<string, string>> = {
   'Muhaqqiq.DuplicateSlug': 'يوجد محقق آخر بهذا الرابط.',
   'Muhaqqiq.InUse': 'لهذا المحقق أعمال في المتجر. أزله من كتبه أولاً، أو أخفِه بدلاً من حذفه.',
   'Inventory.BookNotFound': 'لم نعثر على هذا الكتاب.',
+
+    'ReadingPath.NotFound': 'لم نعثر على هذا المسار. حدّث الصفحة.',
+  'ReadingPath.DuplicateSlug': 'يوجد مسار آخر بهذا الرابط.',
+  'ReadingPath.InvalidSlug': 'لا يصلح هذا الرابط. استخدم حروفاً أو أرقاماً.',
+  'ReadingPath.UnknownBooks': 'أحد كتب المسار لم يعد موجوداً. حدّث الصفحة.',
+  'ReadingPath.HasEnrollments': 'يتبع هذا المسارَ قرّاء. أخفِه بدلاً من حذفه.',
+  'ReadingPath.Invalid': 'تحقّق من المراحل: من ٢ إلى ١٠ كتب، بلا تكرار، ولكل مرحلة سبب.',
+  'Coupon.NotFound': 'لم نعثر على هذا الكوبون. حدّث الصفحة.',
+  'Coupon.DuplicateCode': 'يوجد كوبون آخر بهذا الكود.',
+  'Coupon.MaxBelowRedeemed': 'حد الاستخدام أقل من عدد مرات استخدام الكوبون حتى الآن.',
+  'Coupon.CannotDeleteUsed': 'استُخدم هذا الكوبون ويبقى للتقارير. أوقفه بدلاً من حذفه.',
 };
 
 const BY_STATUS: Readonly<Record<number, string>> = {
