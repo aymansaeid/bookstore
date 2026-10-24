@@ -1,0 +1,64 @@
+.sections {
+  display: grid;
+  gap: 16px;
+}
+
+.checks {
+  display: grid;
+  gap: 12px;
+}
+
+.checkHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.checkHead > div {
+  display: grid;
+  gap: 4px;
+  min-inline-size: 0;
+}
+
+.technical,
+.error {
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+
+.technical {
+  background: var(--paper);
+  color: var(--ink3);
+}
+
+.error {
+  background: var(--redl);
+  color: var(--red2);
+}
+
+.tool {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 12px;
+  padding-block: 12px;
+  border-block-start: 1px solid var(--line);
+}
+
+.tool > div {
+  display: grid;
+  flex: 1 1 260px;
+  gap: 4px;
+}
+
+@media (min-width: 1100px) {
+  .checks {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

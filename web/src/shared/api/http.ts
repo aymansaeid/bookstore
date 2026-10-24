@@ -16,6 +16,7 @@ export interface RequestOptions {
   accessToken?: string | null;
   headers?: Record<string, string>;
   signal?: AbortSignal;
+    responseType?: 'json' | 'blob';
 }
 
 /**
@@ -43,7 +44,9 @@ export function buildUrl(path: string, query?: Record<string, QueryValue>): stri
 export async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const { method = 'GET', body, formData, query, accessToken, signal } = options;
 
-  const headers = new Headers({ Accept: 'application/json', ...options.headers });
+  const blob = options.responseType === 'blob';
+
+  const headers = new Headers({ Accept: blob ? '*/*' : 'application/json', ...options.headers });
   if (accessToken) headers.set('Authorization', `Bearer ${accessToken}`);
 
   const init: RequestInit = {
@@ -71,6 +74,7 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
 
   if (!response.ok) throw await ApiError.fromResponse(response);
   if (response.status === 204) return undefined as T;
+    if (blob) return (await response.blob()) as T;
 
   const text = await response.text();
   return (text ? JSON.parse(text) : undefined) as T;

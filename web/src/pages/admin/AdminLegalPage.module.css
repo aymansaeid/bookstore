@@ -1,0 +1,45 @@
+.select {
+  inline-size: 100%;
+  min-block-size: 44px;
+  padding-inline: 14px;
+  border: 1px solid var(--line2);
+  border-radius: var(--r-pill);
+  background: var(--card);
+  font: inherit;
+  font-size: 14px;
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px 12px;
+}
+
+.head > div {
+  display: grid;
+  gap: 4px;
+  min-inline-size: 0;
+}
+
+.code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12.5px;
+}
+
+.open {
+  border: 0;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+}
+
+.selected td {
+  background: var(--paper);
+}
+
+.editor {
+  margin-block-start: 16px;
+  scroll-margin-block-start: 80px;
+}
