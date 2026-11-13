@@ -161,6 +161,7 @@ const adminRoutes: RouteObject[] = [
   { path: 'shipping', lazy: lazyComponent(() => import('@/pages/admin/AdminShippingPage')) },
   { path: 'reviews', lazy: lazyComponent(() => import('@/pages/admin/AdminReviewsPage')) },
   { path: 'customers', lazy: lazyComponent(() => import('@/pages/admin/AdminCustomersPage')) },
+  { path: 'customers/:id', lazy: lazyComponent(() => import('@/pages/admin/AdminCustomerPage'))},
   { path: 'legal', lazy: lazyComponent(() => import('@/pages/admin/AdminLegalPage')) },
   { path: 'reports', lazy: lazyComponent(() => import('@/pages/admin/AdminReportsPage')) },
   { path: 'audit-log', lazy: lazyComponent(() => import('@/pages/admin/AdminAuditLogPage')) },

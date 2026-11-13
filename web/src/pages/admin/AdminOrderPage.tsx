@@ -260,6 +260,14 @@ export default function AdminOrderPage() {
                   <a href={`mailto:${order.customerEmail}`} dir="ltr">
                     {order.customerEmail}
                   </a>
+
+                   <Link
+                    to={`${paths.admin.customers}?search=${encodeURIComponent(order.orderNumber)}`}
+                    className={styles.sub}
+                  >
+                    حساب العميل
+                  </Link>
+                  
                 </dd>
               </div>
               <div>

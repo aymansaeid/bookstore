@@ -85,6 +85,7 @@ export const paths = {
     shipping: '/admin/shipping',
     reviews: '/admin/reviews',
     customers: '/admin/customers',
+    customer: (id: number) => `/admin/customers/${seg(id)}`,
     legal: '/admin/legal',
     reports: '/admin/reports',
     auditLog: '/admin/audit-log',

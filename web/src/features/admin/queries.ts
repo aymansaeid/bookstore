@@ -10,6 +10,7 @@ export const adminKeys = {
   me: ['admin', 'me'] as const,
   dashboard: (days: number, period: 'current' | 'previous') =>
     ['admin', 'dashboard', days, period] as const,
+  kpis: (days: number) => ['admin', 'dashboard', 'kpis', days] as const,
 };
 
 export function useAdminProfile() {
@@ -35,6 +36,17 @@ export function useDashboard(days: number, period: 'current' | 'previous' = 'cur
       const range = rangeOf(days)[period];
       return adminApi.dashboard(range.from, range.to, signal);
     },
+    enabled: status === 'signedIn',
+    staleTime: 60_000,
+  });
+}
+
+/** The KPI cards (API §10c), same days as the dashboard range. Under 'dashboard' so order actions refresh it too. */
+export function useKpis(days: number) {
+  const { status } = useAdminSession();
+  return useQuery({
+    queryKey: adminKeys.kpis(days),
+    queryFn: ({ signal }) => adminApi.kpis(days, signal),
     enabled: status === 'signedIn',
     staleTime: 60_000,
   });

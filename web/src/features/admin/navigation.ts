@@ -37,7 +37,7 @@ export const ADMIN_NAV: readonly { title: string; items: AdminNavItem[] }[] = [
   {
     title: 'العملاء',
     items: [
-     { label: 'العملاء', to: paths.admin.customers, icon: 'user', soon: true },
+      { label: 'العملاء', to: paths.admin.customers, icon: 'user' },
       { label: 'المراجعات', to: paths.admin.reviews, icon: 'check', badge: 'pendingReviews' },
     ],
   },

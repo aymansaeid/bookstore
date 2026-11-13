@@ -1,0 +1,129 @@
+/* Header cards (list) and figures (profile) */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-block-end: 16px;
+}
+
+.card {
+  display: grid;
+  align-content: start;
+  gap: 4px;
+  min-inline-size: 0;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--card);
+}
+
+.cardLabel {
+  color: var(--gray);
+  font-size: 12.5px;
+}
+
+.cardValue {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.cardSub {
+  color: var(--gray);
+  font-size: 12px;
+}
+
+.sortRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-block-end: 14px;
+  color: var(--gray);
+  font-size: 13px;
+}
+
+.select {
+  min-inline-size: 0;
+  min-block-size: 44px;
+  padding-inline: 14px;
+  border: 1px solid var(--line2);
+  border-radius: var(--r-pill);
+  background: var(--card);
+  color: var(--ink);
+  font: inherit;
+  font-size: 14px;
+}
+
+.select:focus {
+  border-color: var(--ink);
+  outline: none;
+}
+
+/* Profile */
+.identity {
+  display: grid;
+  gap: 4px;
+}
+
+.email {
+  color: var(--gray);
+  font-size: 14px;
+  justify-self: start;
+}
+
+.addresses {
+  display: grid;
+  gap: 12px;
+}
+
+.address {
+  display: grid;
+  gap: 2px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  font-size: 14px;
+  font-style: normal;
+  line-height: 1.8;
+}
+
+.addressHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip {
+  padding: 4px 12px;
+  border-radius: var(--r-pill);
+  background: var(--paper2);
+  font-size: 13px;
+}
+
+.more {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 44px;
+  font-size: 13.5px;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (min-width: 768px) {
+  .cards {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+
+  .addresses {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

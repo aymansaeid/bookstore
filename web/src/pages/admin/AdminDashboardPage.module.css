@@ -100,6 +100,21 @@
   color: var(--on-ink);
 }
 
+.kpiSub {
+  color: var(--gray);
+  font-size: 12.5px;
+}
+
+.kpiDark .kpiSub {
+  color: var(--on-ink);
+}
+
+.kpiSkeleton {
+  block-size: 180px;
+  border-radius: 20px;
+  background: var(--paper2);
+}
+
 .kpiValue {
   font-size: 24px;
   font-weight: 700;
@@ -307,7 +322,7 @@
 
 @media (min-width: 1280px) {
   .kpis {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .row {

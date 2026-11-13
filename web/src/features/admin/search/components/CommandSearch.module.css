@@ -1,0 +1,257 @@
+/* Topbar trigger: an icon on phones, a search pill from tablets up. */
+.trigger {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  inline-size: 44px;
+  min-block-size: 44px;
+  border: 1px solid var(--line2);
+  border-radius: 12px;
+  background: var(--card);
+  color: var(--ink3);
+}
+
+.triggerText,
+.kbd {
+  display: none;
+}
+
+.kbd,
+.hints kbd {
+  padding: 1px 6px;
+  border: 1px solid var(--line2);
+  border-radius: 6px;
+  background: var(--paper);
+  font-family: inherit;
+  font-size: 11.5px;
+}
+
+@media (min-width: 768px) {
+  .trigger {
+    flex: 1;
+    justify-content: flex-start;
+    inline-size: auto;
+    max-inline-size: 420px;
+    padding-inline: 14px;
+    border-radius: var(--r-pill);
+  }
+
+  .triggerText {
+    display: block;
+    overflow: hidden;
+    font-size: 13.5px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .kbd {
+    display: inline-block;
+    margin-inline-start: auto;
+  }
+}
+
+/* The box: full width near the top on phones, a centred panel on desktop. */
+.dialog {
+  inset-block-start: 12px;
+  margin: 0 auto;
+  inline-size: min(640px, calc(100vw - 24px));
+  max-inline-size: none;
+  max-block-size: calc(100dvh - 24px);
+  padding: 0;
+  border: 0;
+  border-radius: 20px;
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: var(--sh2);
+}
+
+.dialog[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+.dialog::backdrop {
+  background: rgba(20, 18, 16, 0.45);
+}
+
+.box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-block: 8px;
+  padding-inline: 16px 8px;
+  border-block-end: 1px solid var(--line);
+  color: var(--gray);
+}
+
+.box input {
+  flex: 1;
+  min-inline-size: 0;
+  min-block-size: 48px;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: 16px;
+}
+
+.box input:focus {
+  outline: none;
+}
+
+.close {
+  display: grid;
+  flex: none;
+  place-items: center;
+  inline-size: 44px;
+  block-size: 44px;
+  border-radius: 12px;
+  color: var(--ink3);
+}
+
+.results {
+  flex: 1;
+  min-block-size: 120px;
+  overflow-y: auto;
+  padding: 8px;
+  overscroll-behavior: contain;
+  transition: opacity 0.15s;
+}
+
+.stale {
+  opacity: 0.6;
+}
+
+.skeleton {
+  block-size: 200px;
+  margin: 8px;
+  border-radius: 14px;
+  background: var(--paper2);
+}
+
+.empty {
+  padding: 24px 12px;
+  color: var(--gray);
+  font-size: 14px;
+  text-align: center;
+}
+
+.group + .group {
+  margin-block-start: 8px;
+}
+
+.groupTitle {
+  padding: 8px 10px 4px;
+  color: var(--gray);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.items {
+  display: grid;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-block-size: 48px;
+  padding: 8px 10px;
+  border-radius: 12px;
+}
+
+.item:hover,
+.item:focus-visible {
+  background: var(--paper);
+  outline: none;
+}
+
+.item:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--ink);
+}
+
+.text {
+  display: grid;
+  flex: 1;
+  gap: 2px;
+  min-inline-size: 0;
+}
+
+.main {
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sub {
+  overflow: hidden;
+  color: var(--gray);
+  font-size: 12.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.end {
+  flex: none;
+}
+
+.thumb {
+  flex: none;
+  inline-size: 32px;
+  block-size: 44px;
+  border-radius: 4px;
+  background: var(--paper2);
+  object-fit: cover;
+}
+
+.count {
+  display: inline-grid;
+  place-items: center;
+  min-inline-size: 28px;
+  block-size: 28px;
+  padding-inline: 8px;
+  border-radius: var(--r-pill);
+  background: var(--ink);
+  color: #fff;
+  font-size: 13px;
+}
+
+.countZero {
+  background: var(--paper2);
+  color: var(--gray);
+}
+
+.countUrgent {
+  background: var(--red);
+}
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 16px;
+  border-block-start: 1px solid var(--line);
+  font-size: 12px;
+}
+
+.hints {
+  display: none;
+  color: var(--gray);
+}
+
+@media (min-width: 768px) {
+  .dialog {
+    inset-block-start: 10vh;
+    max-block-size: 76vh;
+  }
+
+  .hints {
+    display: inline;
+  }
+}

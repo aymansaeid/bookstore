@@ -2,78 +2,102 @@ import { useState } from 'react';
 import { Link } from 'react-router';
 
 import { paths } from '@/app/paths';
-import type { Dashboard } from '@/features/admin/api';
+import type { KpiCard, Kpis } from '@/features/admin/api';
 import { RevenueChart } from '@/features/admin/components/RevenueChart';
 import { Sparkline } from '@/features/admin/components/Sparkline';
-import { useDashboard } from '@/features/admin/queries';
+import { useDashboard, useKpis } from '@/features/admin/queries';
 import { orderStatusInfo } from '@/shared/api/enums';
 import { errorMessage } from '@/shared/api/errorMessages';
 import { cx } from '@/shared/lib/cx';
 import { countryName, formatCount, formatMoney, formatPlainDate } from '@/shared/lib/format';
+import { AiTag } from '@/shared/ui/AiTag/AiTag';
 import { Button } from '@/shared/ui/Button/Button';
 import { DocumentTitle } from '@/shared/ui/DocumentTitle';
 import { StatusBadge } from '@/shared/ui/StatusBadge/StatusBadge';
 
 import styles from './AdminDashboardPage.module.css';
 
+/** /kpis takes 7 to 90 days (API §10c); longer ranges live in the reports. */
 const RANGES = [
   { days: 7, label: '٧ أيام' },
   { days: 30, label: '٣٠ يوماً' },
   { days: 90, label: '٩٠ يوماً' },
-  { days: 365, label: 'سنة' },
 ] as const;
 
-const percent = new Intl.NumberFormat('ar-EG', { style: 'percent', maximumFractionDigits: 0 });
+const percent = new Intl.NumberFormat('ar-EG', { style: 'percent', maximumFractionDigits: 1 });
+const asPercent = (value: number) => percent.format(value / 100);
 
-/** Change against the same-length period just before; null when it can't be said. */
-function Delta({ now, before }: { now: number; before: number | undefined }) {
-  if (before === undefined) return null;
-  if (before === 0) {
-    return now === 0 ? null : (
+/**
+ * Change against the same-length period just before (API §10c). No arrow when
+ * the server can't say (previous was 0). `lowerIsBetter` turns a rise red.
+ */
+function Delta({ card, lowerIsBetter = false }: { card: KpiCard; lowerIsBetter?: boolean }) {
+  const change = card.changePercent;
+  if (change === null) {
+    return card.value === 0 ? null : (
       <span className={styles.deltaNeutral}>جديد مقارنة بالفترة السابقة</span>
     );
   }
-  const change = (now - before) / before;
-  if (Math.abs(change) < 0.005) return <span className={styles.deltaNeutral}>دون تغيير</span>;
+  if (Math.abs(change) < 0.5) return <span className={styles.deltaNeutral}>دون تغيير</span>;
   const up = change > 0;
   return (
-    <span className={up ? styles.deltaUp : styles.deltaDown}>
-      <span aria-hidden="true">{up ? '▲' : '▼'}</span> {percent.format(Math.abs(change))}
+    <span className={up !== lowerIsBetter ? styles.deltaUp : styles.deltaDown}>
+      <span aria-hidden="true">{up ? '▲' : '▼'}</span> {asPercent(Math.abs(change))}
       <span className="sr-only">{up ? ' زيادة' : ' انخفاض'}</span> عن الفترة السابقة
     </span>
   );
 }
 
-function Kpis({ data, previous }: { data: Dashboard; previous: Dashboard | undefined }) {
-  const revenues = data.dailyRevenue.map((day) => day.revenue);
-  const orders = data.dailyRevenue.map((day) => day.orders);
+const values = (card: KpiCard) => card.series.map((point) => point.value);
+
+function Kpis({ kpis, awaitingShipment }: { kpis: Kpis; awaitingShipment: number | undefined }) {
+  const today = kpis.revenue.series.at(-1)?.value ?? 0;
   return (
     <ul className={styles.kpis}>
       <li className={styles.kpi}>
         <p className={styles.kpiLabel}>المبيعات</p>
-        <p className={styles.kpiValue}>{formatMoney(data.revenue, data.currency)}</p>
-        <Delta now={data.revenue} before={previous?.revenue} />
-        <Sparkline values={revenues} />
+        <p className={styles.kpiValue}>{formatMoney(kpis.revenue.value, kpis.currency)}</p>
+        <p className={styles.kpiSub}>اليوم: {formatMoney(today, kpis.currency)}</p>
+        <Delta card={kpis.revenue} />
+        <Sparkline values={values(kpis.revenue)} />
       </li>
       <li className={styles.kpi}>
-        <p className={styles.kpiLabel}>الطلبات المدفوعة</p>
-        <p className={styles.kpiValue}>{formatCount(data.paidOrders)}</p>
-        <Delta now={data.paidOrders} before={previous?.paidOrders} />
-        <Sparkline values={orders} />
+        <p className={styles.kpiLabel}>الطلبات</p>
+        <p className={styles.kpiValue}>{formatCount(kpis.orders.value)}</p>
+        <Delta card={kpis.orders} />
+        <Sparkline values={values(kpis.orders)} />
       </li>
       <li className={styles.kpi}>
         <p className={styles.kpiLabel}>متوسط السلة</p>
-        <p className={styles.kpiValue}>{formatMoney(data.averageOrderValue, data.currency)}</p>
-        <Delta now={data.averageOrderValue} before={previous?.averageOrderValue} />
+        <p className={styles.kpiValue}>
+          {formatMoney(kpis.averageOrderValue.value, kpis.currency)}
+        </p>
+        <Delta card={kpis.averageOrderValue} />
+        <Sparkline values={values(kpis.averageOrderValue)} />
       </li>
       <li className={styles.kpi}>
-        <p className={styles.kpiLabel}>النسخ المبيعة</p>
-        <p className={styles.kpiValue}>{formatCount(data.unitsSold)}</p>
-        <Delta now={data.unitsSold} before={previous?.unitsSold} />
+        <p className={styles.kpiLabel}>معدّل الإرجاع</p>
+        <p className={styles.kpiValue}>{asPercent(kpis.returnRate.value)}</p>
+        {kpis.refundedAmount > 0 && (
+          <p className={styles.kpiSub}>
+            استُرد {formatMoney(kpis.refundedAmount, kpis.currency)} في الفترة
+          </p>
+        )}
+        <Delta card={kpis.returnRate} lowerIsBetter />
+        <Sparkline values={values(kpis.returnRate)} />
+      </li>
+      <li className={styles.kpi}>
+        <p className={styles.kpiLabel}>مبيعات عبر أفندي</p>
+        <p className={styles.kpiValue}>
+          {kpis.salesViaEfendiPercent === null ? '—' : asPercent(kpis.salesViaEfendiPercent)}
+        </p>
+        <AiTag>يبدأ مع أفندي</AiTag>
       </li>
       <li className={cx(styles.kpi, styles.kpiDark)}>
         <p className={styles.kpiLabel}>بانتظار الشحن الآن</p>
-        <p className={styles.kpiValue}>{formatCount(data.ordersAwaitingShipment)}</p>
+        <p className={styles.kpiValue}>
+          {awaitingShipment === undefined ? '—' : formatCount(awaitingShipment)}
+        </p>
         <Link to={`${paths.admin.orders}?status=Paid`} className={styles.kpiLink}>
           جهّزها للشحن <span aria-hidden="true">←</span>
         </Link>
@@ -86,7 +110,7 @@ function Kpis({ data, previous }: { data: Dashboard; previous: Dashboard | undef
 export default function AdminDashboardPage() {
   const [days, setDays] = useState<number>(30);
   const dashboard = useDashboard(days);
-  const previous = useDashboard(days, 'previous');
+  const kpis = useKpis(days);
   const data = dashboard.data;
   const maxCountry = Math.max(...(data?.topCountries.map((country) => country.revenue) ?? [0]), 1);
   const statuses = Object.entries(data?.ordersByStatus ?? {}).filter(([, count]) => count > 0);
@@ -136,8 +160,16 @@ export default function AdminDashboardPage() {
       ) : !data ? (
         <div className={styles.skeleton} aria-busy="true" aria-label="جارٍ تحميل اللوحة" />
       ) : (
-        <div className={cx(styles.body, dashboard.isFetching && styles.stale)}>
-          <Kpis data={data} previous={previous.data} />
+              <div className={cx(styles.body, (dashboard.isFetching || kpis.isFetching) && styles.stale)}>
+          {kpis.data ? (
+            <Kpis kpis={kpis.data} awaitingShipment={data.ordersAwaitingShipment} />
+          ) : kpis.isError ? (
+            <p className={styles.muted} role="alert">
+              {errorMessage(kpis.error)}
+            </p>
+          ) : (
+            <div className={styles.kpiSkeleton} aria-busy="true" aria-label="جارٍ تحميل المؤشرات" />
+          )}
 
           <div className={styles.row}>
             <section className={cx(styles.card, styles.revenue)} aria-labelledby="revenue-title">

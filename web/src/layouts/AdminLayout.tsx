@@ -15,6 +15,7 @@ import {
 import { cx } from '@/shared/lib/cx';
 import { Icon } from '@/shared/ui/Icon/Icon';
 import { Toaster } from '@/shared/ui/toast/Toaster';
+import { CommandSearch } from '@/features/admin/search/components/CommandSearch';
 
 import styles from './AdminLayout.module.css';
 
@@ -109,9 +110,13 @@ export default function AdminLayout() {
           >
             <Icon name="menu" size={22} />
           </button>
+          
+          <CommandSearch />
+
           <a href={paths.home} className={styles.store} target="_blank" rel="noreferrer">
             عرض المتجر <span aria-hidden="true">↗</span>
           </a>
+
           <div className={styles.me}>
             <span className={styles.avatar} aria-hidden="true">
               {email.charAt(0).toUpperCase()}
