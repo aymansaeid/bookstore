@@ -185,6 +185,8 @@ public static class DependencyInjection
 
         services.AddScoped<IAdminCustomerQueries, AdminCustomerQueries>();
 
+        services.AddScoped<IAdminInsightQueries, AdminInsightQueries>();
+
         return services;
     }
 }
