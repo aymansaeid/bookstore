@@ -183,6 +183,8 @@ public static class DependencyInjection
 
         services.AddScoped<ILoyaltyRepository, LoyaltyRepository>();
 
+        services.AddScoped<IAdminCustomerQueries, AdminCustomerQueries>();
+
         return services;
     }
 }

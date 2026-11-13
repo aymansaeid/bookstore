@@ -68,4 +68,20 @@ public sealed class LoyaltyTransaction : AggregateRoot<int>
             Note = note,
             CreatedAtUtc = DateTimeOffset.UtcNow
         };
+
+    /// Manual change by an admin. The note is shown to the customer in their
+    /// points history. Adjustments never count toward tiers (only Earned and
+    /// ReturnClawback do), so a goodwill gift can't promote anyone.
+    public static LoyaltyTransaction Adjustment(int customerId, int points, string note, string referenceKey)
+    {
+        if (points == 0)
+            throw new ArgumentOutOfRangeException(nameof(points), "An adjustment must change the balance.");
+        if (string.IsNullOrWhiteSpace(note))
+            throw new ArgumentException("An adjustment needs a note the customer can read.", nameof(note));
+        if (note.Trim().Length > MaxNoteLength)
+            throw new ArgumentException($"Note can be at most {MaxNoteLength} characters.", nameof(note));
+
+        return New(customerId, LoyaltyTransactionType.Adjustment, points, referenceKey, null, note.Trim());
+    }
+
 }
