@@ -6,7 +6,7 @@ import { paths } from '@/app/paths';
 import { cx } from '@/shared/lib/cx';
 import { Icon } from '@/shared/ui/Icon/Icon';
 import { Spark } from '@/shared/ui/Spark/Spark';
-
+import { useTranslation } from 'react-i18next';
 import styles from './HeaderSearch.module.css';
 
 /**
@@ -15,6 +15,7 @@ import styles from './HeaderSearch.module.css';
  * photo and voice search will live (step 17).
  */
 export function HeaderSearch({ className }: { className?: string }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { pathname, search } = useLocation();
   const inputId = useId();
@@ -34,35 +35,39 @@ export function HeaderSearch({ className }: { className?: string }) {
       }}
     >
       <Icon name="search" className={styles.searchIcon} />
-      <label htmlFor={inputId} className="sr-only">
-        ابحث في المكتبة
-      </label>
-      <input
+        <label htmlFor={inputId} className="sr-only">
+          {t('search.label')}
+        </label>
+        <input
         key={currentQuery}
         id={inputId}
         name="q"
         type="search"
         className={styles.input}
-        defaultValue={currentQuery}
-        placeholder="ابحث عن كتاب، محقق… أو اسأل أفندي بلغتك"
-        autoComplete="off"
+       defaultValue={currentQuery}
+          placeholder={t('search.placeholder')}
+          autoComplete="off"
         enterKeyHint="search"
         maxLength={200}
       />
       <Link
-        to={`${paths.askEfendi}?mode=photo`}
-        className={styles.tool}
-        aria-label="ابحث بصورة الغلاف"
-      >
-        <Icon name="cam" />
-      </Link>
-      <Link to={`${paths.askEfendi}?mode=voice`} className={styles.tool} aria-label="ابحث بصوتك">
-        <Icon name="mic" />
-      </Link>
-      <button type="submit" className={styles.submit}>
-        <Spark size={13} />
-        <em className={styles.submitLabel}>بحث ذكي</em>
-      </button>
+          to={`${paths.askEfendi}?mode=photo`}
+          className={styles.tool}
+          aria-label={t('search.photo')}
+        >
+          <Icon name="cam" />
+        </Link>
+        <Link
+          to={`${paths.askEfendi}?mode=voice`}
+          className={styles.tool}
+          aria-label={t('search.voice')}
+        >
+          <Icon name="mic" />
+        </Link>
+        <button type="submit" className={styles.submit}>
+          <Spark size={13} />
+          <em className={styles.submitLabel}>{t('search.submit')}</em>
+        </button>
     </form>
   );
 }

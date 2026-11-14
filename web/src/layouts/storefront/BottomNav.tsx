@@ -11,25 +11,26 @@ import type { IconName } from '@/shared/ui/Icon/icons';
 
 import styles from './BottomNav.module.css';
 import { useHeaderCounts } from './useHeaderCounts';
+import { useTranslation } from 'react-i18next';
 
 interface Tab {
   id: Exclude<BottomNavId, 'ask'>;
-  label: string;
   to: string;
   icon: IconName;
 }
 
 const start: Tab[] = [
-  { id: 'home', label: 'الرئيسية', to: paths.home, icon: 'home' },
-  { id: 'library', label: 'المكتبة', to: paths.search, icon: 'book' },
+  { id: 'home', to: paths.home, icon: 'home' },
+  { id: 'library', to: paths.search, icon: 'book' },
 ];
 const end: Tab[] = [
-  { id: 'cart', label: 'السلة', to: paths.cart, icon: 'cart' },
-  { id: 'account', label: 'حسابي', to: paths.account.root, icon: 'user' },
+  { id: 'cart', to: paths.cart, icon: 'cart' },
+  { id: 'account', to: paths.account.root, icon: 'user' },
 ];
 
 /** Mobile bottom navigation (spec §5.11, §8.3). Hidden from 768px. */
 export function BottomNav() {
+  const { t } = useTranslation();
   const { pathname } = useLocation();
   const active = activeBottomNavId(pathname);
   const { cart } = useHeaderCounts();
@@ -47,16 +48,16 @@ export function BottomNav() {
           <span className={styles.iconWrap}>
             <Icon name={tab.icon} size={22} />
             <CountBadge count={count} className={styles.badge} />
-          </span>
-          {tab.label}
+         </span>
+          {t(`bottomNav.${tab.id}`)}
           {count > 0 && <span className="sr-only">({formatCount(count)})</span>}
         </Link>
       </li>
     );
   };
 
-  return (
-    <nav className={styles.root} aria-label="التنقّل السفلي">
+ return (
+    <nav className={styles.root} aria-label={t('bottomNav.label')}>
       <ul className={styles.list}>
         {start.map(renderTab)}
         <li>
@@ -66,9 +67,9 @@ export function BottomNav() {
             aria-current={active === 'ask' ? 'page' : undefined}
           >
             <span className={styles.bubble}>
-              <EffendiAvatar size={44} />
+            <EffendiAvatar size={44} />
             </span>
-            أفندي
+            {t('bottomNav.efendi')}
           </Link>
         </li>
         {end.map(renderTab)}

@@ -1,6 +1,8 @@
 {
   "siteName": "Kitap Efendi",
   "loading": "Loading…",
+  "skipToContent": "Skip to content",
+  "withCount": "{{label}} ({{n}})",
   "language": {
     "label": "Language",
     "current": "Current language"
@@ -9,5 +11,114 @@
     "text": "Kitap Efendi is also available in English.",
     "switch": "Switch to English",
     "dismiss": "No, thanks"
+  },
+  "testMode": {
+    "label": "Test mode:",
+    "text": "Payments are simulated and nothing will be charged."
+  },
+  "announcement": {
+    "shippingFast": "Fast shipping across Turkey",
+    "shippingFree": "Free shipping in Turkey over ₺{{amount}}",
+    "worldwide": "Worldwide delivery",
+    "countries_one": "Delivery to {{n}} country",
+    "countries_other": "Delivery to {{n}} countries",
+    "new": "New:",
+    "promo": "Efendi suggests a <b>reading path</b> tailored to your level and interests",
+    "trackOrder": "Track order"
+  },
+  "nav": {
+    "home": "Home",
+    "library": "Library",
+    "encyclopedias": "Encyclopedias",
+    "paths": "Reading paths",
+    "ask": "Ask Efendi"
+  },
+  "header": {
+    "menu": "Menu",
+    "logoAlt": "Kitap Efendi, home page",
+    "mainNav": "Main navigation",
+    "notifications": "Notifications",
+    "wishlist": "Wishlist",
+    "cart": "Cart"
+  },
+  "search": {
+    "label": "Search the library",
+    "placeholder": "Search books, editors…",
+    "photo": "Search by cover photo",
+    "voice": "Search by voice",
+    "submit": "Smart search"
+  },
+  "account": {
+    "title": "My account",
+    "signIn": "Sign in",
+    "signOut": "Sign out",
+    "srLabel": "My account: {{name}}"
+  },
+  "tier": {
+    "Bronze": "Bronze member",
+    "Silver": "Silver member",
+    "Gold": "Gold member"
+  },
+  "drawer": {
+    "title": "Site menu",
+    "close": "Close menu",
+    "nav": "Site links",
+    "wishlist": "Wishlist",
+    "trackOrder": "Track order"
+  },
+  "bottomNav": {
+    "label": "Bottom navigation",
+    "home": "Home",
+    "library": "Library",
+    "efendi": "Efendi",
+    "cart": "Cart",
+    "account": "Account"
+  },
+  "fab": {
+    "label": "Ask Efendi, your smart book assistant",
+    "title": "Ask Efendi",
+    "subtitle": "Your smart book assistant"
+  },
+  "newsletter": {
+    "tag": "Efendi's smart newsletter",
+    "titleLine1": "Every week: five books",
+    "titleLine2": "chosen just for you",
+    "lead": "Efendi learns from what you read and sends you the new Al-Risalah releases that actually matter to you.",
+    "email": "Your email address",
+    "subscribe": "Subscribe",
+    "soon": "Newsletter sign-up opens soon. Thank you for your interest.",
+    "note": "No spam. Unsubscribe at any time."
+  },
+  "footer": {
+    "about": "Kitap Efendi, the home of classical Islamic books in Istanbul. We carry Al-Risalah Publishers' editions and the great critically edited works, and put AI at the service of students of knowledge.",
+    "library": "Library",
+    "smartTools": "Smart tools",
+    "help": "Help",
+    "visit": "Visit us",
+    "categories": {
+      "hadith": "Hadith and its sciences",
+      "tafsir": "Tafsir and Quranic sciences",
+      "aqidah": "Creed (Aqidah)",
+      "history": "Biographies and history",
+      "arabic": "Arabic language"
+    },
+    "links": {
+      "ask": "Ask Efendi",
+      "paths": "Reading paths",
+      "photoSearch": "Search by photo",
+      "compareEditions": "Compare editions",
+      "smartLibrary": "My smart library",
+      "trackOrder": "Track order",
+      "returns": "Returns and exchanges",
+      "distanceSales": "Distance sales agreement",
+      "privacy": "Privacy policy",
+      "terms": "Terms of use"
+    },
+    "address": "Fatih, Istanbul",
+    "onYourPhone": "Right on your phone",
+    "noDownload": "No download needed",
+    "addToHome": "Add it to your home screen",
+    "copyright": "© {{year}} Kitap Efendi. All rights reserved.",
+    "payments": "Accepted payment methods"
   }
 }

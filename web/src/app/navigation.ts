@@ -5,7 +5,6 @@ export type BottomNavId = 'home' | 'library' | 'ask' | 'cart' | 'account';
 
 export interface NavItem {
   id: NavId;
-  label: string;
   to: string;
   /** Red "AI" chip (spec §4.1). */
   aiBadge?: boolean;
@@ -21,15 +20,11 @@ export const searchUrl = (query: string): string =>
 
 /** Spec §4.1 header links, in order. */
 export const primaryNav: readonly NavItem[] = [
-  { id: 'home', label: 'الرئيسية', to: paths.home },
-  { id: 'library', label: 'المكتبة', to: paths.search },
-  {
-    id: 'encyclopedias',
-    label: 'الموسوعات',
-    to: `${paths.search}?minVolumes=${ENCYCLOPEDIA_MIN_VOLUMES}`,
-  },
-  { id: 'paths', label: 'مسارات القراءة', to: paths.readingPaths, aiBadge: true },
-  { id: 'ask', label: 'اسأل أفندي', to: paths.askEfendi, spark: true },
+  { id: 'home', to: paths.home },
+  { id: 'library', to: paths.search },
+  { id: 'encyclopedias', to: `${paths.search}?minVolumes=${ENCYCLOPEDIA_MIN_VOLUMES}` },
+  { id: 'paths', to: paths.readingPaths, aiBadge: true },
+  { id: 'ask', to: paths.askEfendi, spark: true },
 ];
 
 const isUnder = (pathname: string, base: string) =>

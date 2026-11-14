@@ -4,7 +4,7 @@
  * Social links are hidden until real URLs are added here.
  */
 export const storeInfo = {
-  address: 'الفاتح، إسطنبول',
+  address: 'الفاتح، إسطنبول | Istanbul , Fatih',
   phone: { display: '0212 555 44 33', href: 'tel:+902125554433' },
   email: 'info@kitapefendi.com',
   domain: 'kitapefendi.com',

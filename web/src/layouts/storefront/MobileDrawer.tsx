@@ -10,17 +10,15 @@ import { Logo } from '@/shared/ui/Logo/Logo';
 import { LanguageSwitcher } from '@/shared/ui/LanguageSwitcher/LanguageSwitcher';
 import { PrimaryNav } from './PrimaryNav';
 import styles from './MobileDrawer.module.css';
-
+import { useTranslation } from 'react-i18next';
 interface MobileDrawerProps {
   dialogRef: RefObject<HTMLDialogElement | null>;
   active: NavId | null;
 }
 
-/**
- * ☰ side menu (spec §8.3). A native modal <dialog>: focus trap, Esc to close
- * and an inert page behind it, with no extra libraries.
- */
+
 export function MobileDrawer({ dialogRef, active }: MobileDrawerProps) {
+  const { t } = useTranslation();
   const location = useLocation();
   const { status } = useSession();
 
@@ -35,35 +33,40 @@ export function MobileDrawer({ dialogRef, active }: MobileDrawerProps) {
 
   return (
     <dialog ref={dialogRef} className={styles.drawer} aria-labelledby="drawer-title">
-      <div className={styles.head}>
+    <div className={styles.head}>
         <h2 id="drawer-title" className="sr-only">
-          قائمة الموقع
+          {t('drawer.title')}
         </h2>
         <Logo className={styles.logo} alt="" />
-        <button type="button" className={styles.close} aria-label="إغلاق القائمة" onClick={close}>
+        <button
+          type="button"
+          className={styles.close}
+          aria-label={t('drawer.close')}
+          onClick={close}
+        >
           <Icon name="x" size={22} />
         </button>
       </div>
 
-      <PrimaryNav active={active} label="روابط الموقع" variant="drawer" />
+      <PrimaryNav active={active} label={t('drawer.nav')} variant="drawer" />
 
       <ul className={styles.secondary}>
         <li>
           <Link to={paths.account.root} className={styles.link}>
             <Icon name="user" />
-            حسابي
+            {t('account.title')}
           </Link>
         </li>
         <li>
           <Link to={paths.account.wishlist} className={styles.link}>
             <Icon name="heart" />
-            المفضلة
+            {t('drawer.wishlist')}
           </Link>
         </li>
         <li>
           <Link to={paths.trackOrder} className={styles.link}>
             <Icon name="truck" />
-            تتبّع الطلب
+            {t('drawer.trackOrder')}
           </Link>
         </li>
         <li>
@@ -77,12 +80,12 @@ export function MobileDrawer({ dialogRef, active }: MobileDrawerProps) {
               }}
             >
               <Icon name="lock" />
-              تسجيل الخروج
+              {t('account.signOut')}
             </button>
           ) : (
             <Link to={paths.login} className={styles.link}>
               <Icon name="lock" />
-              تسجيل الدخول
+              {t('account.signIn')}
             </Link>
           )}
         </li>

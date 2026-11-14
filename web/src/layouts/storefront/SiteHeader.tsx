@@ -17,9 +17,8 @@ import { MobileDrawer } from './MobileDrawer';
 import { PrimaryNav } from './PrimaryNav';
 import styles from './SiteHeader.module.css';
 import { useHeaderCounts } from './useHeaderCounts';
+import { useTranslation } from 'react-i18next';
 
-const withCount = (label: string, count: number) =>
-  count > 0 ? `${label} (${formatCount(count)})` : label;
 
 /** API guide §7c: re-check the bell on every page navigation (not on first render). */
 function useRefreshUnreadOnNavigation(pathname: string) {
@@ -34,6 +33,9 @@ function useRefreshUnreadOnNavigation(pathname: string) {
 
 /** Spec §4.1 layer 2 (layer 1 is AnnouncementBar). Sticky, frosted. */
 export function SiteHeader() {
+  const { t } = useTranslation();
+  const withCount = (label: string, count: number) =>
+    count > 0 ? t('withCount', { label, n: formatCount(count) }) : label;
   const { pathname, search } = useLocation();
   const active = activeNavId(pathname, search);
   const counts = useHeaderCounts();
@@ -43,11 +45,11 @@ export function SiteHeader() {
   return (
     <header className={styles.root}>
       <div className={cx('wrap', styles.bar)}>
-        <button
-          type="button"
-          className={styles.menuButton}
-          aria-label="القائمة"
-          aria-haspopup="dialog"
+       <button
+            type="button"
+            className={styles.menuButton}
+            aria-label={t('header.menu')}
+            aria-haspopup="dialog"
           onClick={() => {
             drawerRef.current?.showModal();
           }}
@@ -55,28 +57,34 @@ export function SiteHeader() {
           <Icon name="menu" size={24} />
         </button>
 
-        <Link to={paths.home} className={styles.logo}>
-          <Logo className={styles.logoImg} alt="كتاب أفندي، الصفحة الرئيسية" priority />
-        </Link>
+    <Link to={paths.home} className={styles.logo}>
+            <Logo className={styles.logoImg} alt={t('header.logoAlt')} priority />
+          </Link>
 
-        <PrimaryNav active={active} label="التنقّل الرئيسي" className={styles.nav} />
+          <PrimaryNav active={active} label={t('header.mainNav')} className={styles.nav} />
 
         <HeaderSearch className={styles.search} />
 
         <div className={styles.actions}>
-          <Link
-            to={paths.account.notifications}
-            className={cx(styles.iconLink, styles.mobileOnly)}
-            aria-label={withCount('التنبيهات', counts.notifications)}
-          >
-            <Icon name="bell" />
-            <CountBadge count={counts.notifications} />
-          </Link>
-          <Link
-            to={paths.account.wishlist}
-            className={cx(styles.iconLink, styles.desktopOnly)}
-            aria-label={withCount('المفضلة', counts.wishlist)}
-          >
+         <Link
+              to={paths.account.notifications}
+              className={cx(styles.iconLink, styles.mobileOnly)}
+              aria-label={withCount(t('header.notifications'), counts.notifications)}
+            >
+              <Icon name="bell" />
+            </Link>
+            <Link
+              to={paths.account.wishlist}
+              className={cx(styles.iconLink, styles.desktopOnly)}
+              aria-label={withCount(t('header.wishlist'), counts.wishlist)}
+            >
+              <Icon name="heart" />
+            </Link>
+            <Link
+              to={paths.cart}
+              className={styles.iconLink}
+              aria-label={withCount(t('header.cart'), counts.cart)}
+            >
             <Icon name="heart" />
             <CountBadge count={counts.wishlist} />
           </Link>

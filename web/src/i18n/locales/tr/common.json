@@ -1,6 +1,8 @@
 {
   "siteName": "Kitap Efendi",
   "loading": "Yükleniyor…",
+  "skipToContent": "İçeriğe geç",
+  "withCount": "{{label}} ({{n}})",
   "language": {
     "label": "Dil",
     "current": "Geçerli dil"
@@ -9,5 +11,114 @@
     "text": "Kitap Efendi Türkçe olarak da kullanılabilir.",
     "switch": "Türkçe'ye geç",
     "dismiss": "Hayır, teşekkürler"
+  },
+  "testMode": {
+    "label": "Test modu:",
+    "text": "Ödemeler denemedir, hiçbir ücret alınmaz."
+  },
+  "announcement": {
+    "shippingFast": "Türkiye içi hızlı kargo",
+    "shippingFree": "Türkiye içi {{amount}} ₺ üzeri ücretsiz kargo",
+    "worldwide": "Dünyanın her yerine teslimat",
+    "countries_one": "{{n}} ülkeye teslimat",
+    "countries_other": "{{n}} ülkeye teslimat",
+    "new": "Yeni:",
+    "promo": "Efendi size seviyenize ve ilgi alanlarınıza göre bir <b>okuma yolu</b> öneriyor",
+    "trackOrder": "Sipariş takibi"
+  },
+  "nav": {
+    "home": "Ana sayfa",
+    "library": "Kütüphane",
+    "encyclopedias": "Ansiklopediler",
+    "paths": "Okuma yolları",
+    "ask": "Efendi'ye sor"
+  },
+  "header": {
+    "menu": "Menü",
+    "logoAlt": "Kitap Efendi, ana sayfa",
+    "mainNav": "Ana menü",
+    "notifications": "Bildirimler",
+    "wishlist": "Favoriler",
+    "cart": "Sepet"
+  },
+  "search": {
+    "label": "Kütüphanede ara",
+    "placeholder": "Kitap, muhakkik ara…",
+    "photo": "Kapak fotoğrafıyla ara",
+    "voice": "Sesle ara",
+    "submit": "Akıllı arama"
+  },
+  "account": {
+    "title": "Hesabım",
+    "signIn": "Giriş yap",
+    "signOut": "Çıkış yap",
+    "srLabel": "Hesabım: {{name}}"
+  },
+  "tier": {
+    "Bronze": "Bronz üye",
+    "Silver": "Gümüş üye",
+    "Gold": "Altın üye"
+  },
+  "drawer": {
+    "title": "Site menüsü",
+    "close": "Menüyü kapat",
+    "nav": "Site bağlantıları",
+    "wishlist": "Favoriler",
+    "trackOrder": "Sipariş takibi"
+  },
+  "bottomNav": {
+    "label": "Alt menü",
+    "home": "Ana sayfa",
+    "library": "Kütüphane",
+    "efendi": "Efendi",
+    "cart": "Sepet",
+    "account": "Hesabım"
+  },
+  "fab": {
+    "label": "Efendi'ye sor, akıllı kitap asistanınız",
+    "title": "Efendi'ye sor",
+    "subtitle": "Akıllı kitap asistanınız"
+  },
+  "newsletter": {
+    "tag": "Efendi'nin akıllı bülteni",
+    "titleLine1": "Her hafta: beş kitap,",
+    "titleLine2": "yalnızca sizin için seçilmiş",
+    "lead": "Efendi okuduklarınızdan öğrenir ve Müessesetü'r-Risâle'nin size gerçekten hitap eden yeni yayınlarını gönderir.",
+    "email": "E-posta adresiniz",
+    "subscribe": "Abone ol",
+    "soon": "Bülten aboneliği yakında açılıyor, ilginiz için teşekkürler.",
+    "note": "Rahatsız etmeyiz. Aboneliğinizi istediğiniz zaman iptal edebilirsiniz."
+  },
+  "footer": {
+    "about": "Kitap Efendi, İstanbul'da klasik İslami eserlerin evi. Müessesetü'r-Risâle Nâşirûn yayınlarını ve tahkikli temel eserleri sunuyor, yapay zekâyı ilim talebesinin hizmetine veriyoruz.",
+    "library": "Kütüphane",
+    "smartTools": "Akıllı araçlar",
+    "help": "Yardım",
+    "visit": "Bizi ziyaret edin",
+    "categories": {
+      "hadith": "Hadis ve hadis ilimleri",
+      "tafsir": "Tefsir ve Kur'an ilimleri",
+      "aqidah": "Akaid",
+      "history": "Biyografi ve tarih",
+      "arabic": "Arap dili"
+    },
+    "links": {
+      "ask": "Efendi'ye sor",
+      "paths": "Okuma yolları",
+      "photoSearch": "Fotoğrafla arama",
+      "compareEditions": "Baskıları karşılaştır",
+      "smartLibrary": "Akıllı kütüphanem",
+      "trackOrder": "Sipariş takibi",
+      "returns": "İade ve değişim",
+      "distanceSales": "Mesafeli satış sözleşmesi",
+      "privacy": "Gizlilik politikası",
+      "terms": "Kullanım koşulları"
+    },
+    "address": "Fatih, İstanbul",
+    "onYourPhone": "Doğrudan telefonunuzda",
+    "noDownload": "İndirme gerektirmez",
+    "addToHome": "Ana ekranınıza ekleyin",
+    "copyright": "© {{year}} Kitap Efendi. Tüm hakları saklıdır.",
+    "payments": "Kabul edilen ödeme yöntemleri"
   }
 }

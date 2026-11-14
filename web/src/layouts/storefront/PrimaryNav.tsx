@@ -3,7 +3,7 @@ import { Link } from 'react-router';
 import { type NavId, primaryNav } from '@/app/navigation';
 import { cx } from '@/shared/lib/cx';
 import { Spark } from '@/shared/ui/Spark/Spark';
-
+import { useTranslation } from 'react-i18next';
 import styles from './PrimaryNav.module.css';
 
 interface PrimaryNavProps {
@@ -14,6 +14,7 @@ interface PrimaryNavProps {
 }
 
 export function PrimaryNav({ active, label, variant = 'bar', className }: PrimaryNavProps) {
+  const { t } = useTranslation();
   return (
     <nav aria-label={label} className={cx(variant === 'drawer' && styles.drawer, className)}>
       <ul className={styles.list}>
@@ -26,8 +27,8 @@ export function PrimaryNav({ active, label, variant = 'bar', className }: Primar
                 className={cx(styles.link, isActive && styles.active)}
                 aria-current={isActive ? 'page' : undefined}
               >
-                {item.spark && <Spark size={14} />}
-                {item.label}
+              {item.spark && <Spark size={14} />}
+                {t(`nav.${item.id}`)}
                 {item.aiBadge && (
                   <span className={styles.ai} lang="en">
                     AI

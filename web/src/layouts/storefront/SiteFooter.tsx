@@ -11,46 +11,57 @@ import { LanguageSwitcher } from '@/shared/ui/LanguageSwitcher/LanguageSwitcher'
 import { FooterSection } from './FooterSection';
 import { NewsletterCta } from './NewsletterCta';
 import styles from './SiteFooter.module.css';
+import { useTranslation } from 'react-i18next';
+import type arCommon from '@/i18n/locales/ar/common.json';
+
+type FooterStrings = (typeof arCommon)['footer'];
+/** A translation key under footer.*: links.ask, categories.hadith… */
+type FooterLinkKey =
+  `links.${keyof FooterStrings['links']}` | `categories.${keyof FooterStrings['categories']}`;
 
 interface FooterLink {
-  label: string;
+  key: FooterLinkKey;
   to: string;
 }
 
-// Category links search by name for now; step 8 switches to category slugs from the API.
-const libraryLinks: FooterLink[] = [
-  'الحديث وعلومه',
-  'التفسير وعلوم القرآن',
-  'العقيدة',
-  'التراجم والتاريخ',
-  'اللغة العربية',
-].map((label) => ({ label, to: searchUrl(label) }));
+// Category links search by their Arabic name in every language (the catalog
+// data is Arabic); only the label is translated. Step 8 switches to slugs.
+const libraryLinks: FooterLink[] = (
+  [
+    { key: 'categories.hadith', query: 'الحديث وعلومه' },
+    { key: 'categories.tafsir', query: 'التفسير وعلوم القرآن' },
+    { key: 'categories.aqidah', query: 'العقيدة' },
+    { key: 'categories.history', query: 'التراجم والتاريخ' },
+    { key: 'categories.arabic', query: 'اللغة العربية' },
+  ] as const
+).map(({ key, query }) => ({ key, to: searchUrl(query) }));
 
 const smartTools: FooterLink[] = [
-  { label: 'اسأل أفندي', to: paths.askEfendi },
-  { label: 'مسارات القراءة', to: paths.readingPaths },
-  { label: 'البحث بالصورة', to: `${paths.askEfendi}?mode=photo` },
-  { label: 'مقارنة الطبعات', to: paths.askEfendi },
-  { label: 'مكتبتي الذكية', to: paths.account.library },
+  { key: 'links.ask', to: paths.askEfendi },
+  { key: 'links.paths', to: paths.readingPaths },
+  { key: 'links.photoSearch', to: `${paths.askEfendi}?mode=photo` },
+  { key: 'links.compareEditions', to: paths.askEfendi },
+  { key: 'links.smartLibrary', to: paths.account.library },
 ];
 
 const helpLinks: FooterLink[] = [
-  { label: 'تتبّع الطلب', to: paths.trackOrder },
-  { label: 'الإرجاع والاستبدال', to: paths.returns },
-  { label: 'عقد البيع عن بُعد', to: paths.legal(legalSlugs.distanceSales) },
-  { label: 'سياسة الخصوصية', to: paths.legal(legalSlugs.privacy) },
-  { label: 'شروط الاستخدام', to: paths.legal(legalSlugs.terms) },
+  { key: 'links.trackOrder', to: paths.trackOrder },
+  { key: 'links.returns', to: paths.returns },
+  { key: 'links.distanceSales', to: paths.legal(legalSlugs.distanceSales) },
+  { key: 'links.privacy', to: paths.legal(legalSlugs.privacy) },
+  { key: 'links.terms', to: paths.legal(legalSlugs.terms) },
 ];
 
 const paymentBadges = ['VISA', 'MASTERCARD', 'TROY', 'iyzico', 'PayPal'];
 
 function LinkList({ links }: { links: FooterLink[] }) {
+  const { t } = useTranslation(undefined, { keyPrefix: 'footer' });
   return (
     <ul>
       {links.map((link) => (
-        <li key={link.label}>
+        <li key={link.key}>
           <Link to={link.to} className={styles.link}>
-            {link.label}
+            {t(link.key)}
           </Link>
         </li>
       ))}
@@ -59,6 +70,7 @@ function LinkList({ links }: { links: FooterLink[] }) {
 }
 
 export function SiteFooter() {
+  const { t } = useTranslation(undefined, { keyPrefix: 'footer' });
   return (
     <>
       <div className={cx('wrap', styles.pre)}>
@@ -72,10 +84,7 @@ export function SiteFooter() {
               <span className={styles.logoCapsule}>
                 <Logo className={styles.logoImg} />
               </span>
-              <p className={styles.about}>
-                كتاب أفندي، بيت الكتاب التراثي في إسطنبول. نوفّر إصدارات مؤسسة الرسالة ناشرون وأمهات
-                الكتب المحققة، ونضع الذكاء الاصطناعي في خدمة طالب العلم.
-              </p>
+              <p className={styles.about}>{t('about')}</p>
               {storeInfo.social.length > 0 && (
                 <ul className={styles.social}>
                   {storeInfo.social.map((item) => (
@@ -89,18 +98,18 @@ export function SiteFooter() {
               )}
             </div>
 
-            <FooterSection title="المكتبة">
+            <FooterSection title={t('library')}>
               <LinkList links={libraryLinks} />
             </FooterSection>
-            <FooterSection title="أدوات ذكية">
+            <FooterSection title={t('smartTools')}>
               <LinkList links={smartTools} />
             </FooterSection>
-            <FooterSection title="المساعدة">
+            <FooterSection title={t('help')}>
               <LinkList links={helpLinks} />
             </FooterSection>
-            <FooterSection title="زورونا">
+            <FooterSection title={t('visit')}>
               <ul>
-                <li className={styles.plain}>{storeInfo.address}</li>
+                <li className={styles.plain}>{t('address')}</li>
                 <li>
                   <a
                     href={storeInfo.phone.href}
@@ -118,22 +127,22 @@ export function SiteFooter() {
               </ul>
               {/* Spec: web-only product, so no app-store badges. */}
               <ul className={styles.webBadges}>
-                <li className={styles.webBadge}>
-                  <small>على هاتفك مباشرة</small>
+             <li className={styles.webBadge}>
+                  <small>{t('onYourPhone')}</small>
                   <span dir="ltr">{storeInfo.domain}</span>
                 </li>
                 <li className={styles.webBadge}>
-                  <small>بدون تحميل</small>
-                  أضفه للشاشة الرئيسية
+                  <small>{t('noDownload')}</small>
+                  {t('addToHome')}
                 </li>
               </ul>
             </FooterSection>
           </div>
 
-       <div className={styles.bottom}>
-            <p>© {formatYear(new Date().getFullYear())} كتاب أفندي. جميع الحقوق محفوظة.</p>
-            <LanguageSwitcher variant="inline" />
-            <ul className={styles.pay} aria-label="طرق الدفع المقبولة" lang="en" dir="ltr">
+     <div className={styles.bottom}>
+              <p>{t('copyright', { year: formatYear(new Date().getFullYear()) })}</p>
+              <LanguageSwitcher variant="inline" />
+              <ul className={styles.pay} aria-label={t('payments')} lang="en" dir="ltr">
               {paymentBadges.map((name) => (
                 <li key={name}>{name}</li>
               ))}

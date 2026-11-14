@@ -12,7 +12,7 @@ import { Toaster } from '@/shared/ui/toast/Toaster';
 
 import { LanguageAlternates } from '@/layouts/storefront/LanguageAlternates';
 import { LanguageSuggestion } from '@/layouts/storefront/LanguageSuggestion';
-
+import { useTranslation } from 'react-i18next';
 import styles from './StorefrontLayout.module.css';
 
 function useShellOptions(): ShellHandle {
@@ -25,14 +25,15 @@ function useShellOptions(): ShellHandle {
 
 /** Storefront frame: announcement bar, header, page, footer, bottom nav / FAB. */
 export default function StorefrontLayout() {
+  const { t } = useTranslation();
   const { hideFooter = false, hideFab = false } = useShellOptions();
   const shipping = useShippingSummary();
 
   return (
-    <div className={styles.shell}>
-    <a href="#main-content" className={styles.skip}>
-        تخطَّ إلى المحتوى
-      </a>
+   <div className={styles.shell}>
+        <a href="#main-content" className={styles.skip}>
+          {t('skipToContent')}
+        </a>
       <LanguageAlternates />
       <LanguageSuggestion />
       <TestModeBanner />
