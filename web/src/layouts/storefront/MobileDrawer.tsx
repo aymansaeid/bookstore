@@ -7,7 +7,7 @@ import { logout, useSession } from '@/features/auth/session';
 import { cx } from '@/shared/lib/cx';
 import { Icon } from '@/shared/ui/Icon/Icon';
 import { Logo } from '@/shared/ui/Logo/Logo';
-
+import { LanguageSwitcher } from '@/shared/ui/LanguageSwitcher/LanguageSwitcher';
 import { PrimaryNav } from './PrimaryNav';
 import styles from './MobileDrawer.module.css';
 
@@ -86,10 +86,10 @@ export function MobileDrawer({ dialogRef, active }: MobileDrawerProps) {
             </Link>
           )}
         </li>
-      </ul>
+</ul>
 
+      <LanguageSwitcher variant="inline" className={styles.languages} />
       <p className={styles.meta}>
-        العربية ·{' '}
         <span lang="en" dir="ltr">
           TRY ₺
         </span>

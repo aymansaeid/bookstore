@@ -1,0 +1,13 @@
+{
+  "siteName": "Kitap Efendi",
+  "loading": "Loading…",
+  "language": {
+    "label": "Language",
+    "current": "Current language"
+  },
+  "suggestion": {
+    "text": "Kitap Efendi is also available in English.",
+    "switch": "Switch to English",
+    "dismiss": "No, thanks"
+  }
+}

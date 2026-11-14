@@ -1,28 +1,32 @@
-import { STORE_TIME_ZONE } from '@/app/locale';
+import { STORE_TIME_ZONE, UI_LANGUAGE, UI_LOCALE } from '@/app/locale';
 
 /**
- * Spec §8.5 and API guide §2: Eastern Arabic digits, ₺, Istanbul time.
- * Formatters are created once; Intl constructors are expensive.
+ * Spec §8.5 and API guide §2: numbers and dates in the page's language
+ * (Eastern Arabic digits in Arabic, Latin digits in English and Turkish), ₺,
+ * Istanbul time. The language is fixed per page load, so formatters are
+ * created once; Intl constructors are expensive.
  */
-const arabic = new Intl.NumberFormat('ar-EG');
-const arabicPlain = new Intl.NumberFormat('ar-EG', { useGrouping: false });
-const arabicAmount = new Intl.NumberFormat('ar-EG', {
+const arabic = new Intl.NumberFormat(UI_LOCALE);
+const arabicPlain = new Intl.NumberFormat(UI_LOCALE, { useGrouping: false });
+const arabicAmount = new Intl.NumberFormat(UI_LOCALE, {
   minimumFractionDigits: 0,
   maximumFractionDigits: 2,
 });
-const arabicDate = new Intl.DateTimeFormat('ar-EG', {
+const arabicDate = new Intl.DateTimeFormat(UI_LOCALE, {
   timeZone: STORE_TIME_ZONE,
   dateStyle: 'long',
 });
-const arabicDateTime = new Intl.DateTimeFormat('ar-EG', {
+const arabicDateTime = new Intl.DateTimeFormat(UI_LOCALE, {
   timeZone: STORE_TIME_ZONE,
   dateStyle: 'long',
   timeStyle: 'short',
 });
-const arabicPlainDate = new Intl.DateTimeFormat('ar-EG', { timeZone: 'UTC', dateStyle: 'long' });
-const regionNames = new Intl.DisplayNames(['ar'], { type: 'region' });
+const arabicPlainDate = new Intl.DateTimeFormat(UI_LOCALE, { timeZone: 'UTC', dateStyle: 'long' });
+const regionNames = new Intl.DisplayNames([UI_LANGUAGE], { type: 'region' });
 
 const NBSP = '\u00A0';
+
+// ... the rest of your file remains exactly the same
 
 export const formatCount = (value: number): string => arabic.format(value);
 
@@ -41,8 +45,12 @@ export const formatAmount = (amount: number): string => arabicAmount.format(amou
  * own currency display so a wrong symbol is never shown.
  */
 export function formatMoney(amount: number, currency = 'TRY'): string {
-  if (currency === 'TRY') return `${arabicAmount.format(amount)}${NBSP}₺`;
-  return new Intl.NumberFormat('ar-EG', { style: 'currency', currency }).format(amount);
+  if (currency === 'TRY') {
+    return UI_LANGUAGE === 'en'
+      ? `₺${arabicAmount.format(amount)}`
+      : `${arabicAmount.format(amount)}${NBSP}₺`;
+  }
+  return new Intl.NumberFormat(UI_LOCALE, { style: 'currency', currency }).format(amount);
 }
 
 /** ISO 8601 timestamp (UTC) → date in Istanbul. */

@@ -1,4 +1,4 @@
-import { STORE_COUNTRY } from '@/app/locale';
+import { STORE_COUNTRY, UI_LOCALE } from '@/app/locale';
 import { useCartStore } from '@/features/cart/cartStore';
 import { shippingOptionName } from '@/features/checkout/shipping';
 import type { Quote } from '@/features/checkout/types';
@@ -7,6 +7,7 @@ import { cx } from '@/shared/lib/cx';
 import { deliveryWindow } from '@/shared/lib/dates';
 import { countryName, formatMoney } from '@/shared/lib/format';
 import { Icon } from '@/shared/ui/Icon/Icon';
+
 
 import styles from './ShippingChoice.module.css';
 
@@ -28,7 +29,7 @@ export function CountrySelect({
         ? -1
         : b.code === STORE_COUNTRY
           ? 1
-          : a.name.localeCompare(b.name, 'ar'),
+         : a.name.localeCompare(b.name, UI_LOCALE),
     );
 
   return (

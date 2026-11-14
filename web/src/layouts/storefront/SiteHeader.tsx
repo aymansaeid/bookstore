@@ -10,7 +10,7 @@ import { formatCount } from '@/shared/lib/format';
 import { CountBadge } from '@/shared/ui/CountBadge/CountBadge';
 import { Icon } from '@/shared/ui/Icon/Icon';
 import { Logo } from '@/shared/ui/Logo/Logo';
-
+import { LanguageSwitcher } from '@/shared/ui/LanguageSwitcher/LanguageSwitcher';
 import { AccountPill } from './AccountPill';
 import { HeaderSearch } from './HeaderSearch';
 import { MobileDrawer } from './MobileDrawer';
@@ -86,8 +86,9 @@ export function SiteHeader() {
             aria-label={withCount('السلة', counts.cart)}
           >
             <Icon name="cart" />
-            <CountBadge count={counts.cart} />
+         <CountBadge count={counts.cart} />
           </Link>
+          <LanguageSwitcher variant="menu" className={styles.desktopOnly} />
           <AccountPill />
         </div>
       </div>

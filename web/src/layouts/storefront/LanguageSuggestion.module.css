@@ -1,0 +1,44 @@
+.bar {
+  background: var(--goldl);
+  border-block-end: 1px solid var(--line);
+  color: var(--ink);
+}
+
+.inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 12px;
+  padding-block: 4px;
+}
+
+.text {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.actions {
+  display: flex;
+  gap: 6px;
+}
+
+.switch,
+.dismiss {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 44px;
+  padding-inline: 14px;
+  border-radius: var(--r-pill);
+  font-size: 13.5px;
+  font-weight: 700;
+}
+
+.switch {
+  background: var(--ink);
+  color: #fff;
+}
+
+.dismiss {
+  color: var(--ink3);
+}

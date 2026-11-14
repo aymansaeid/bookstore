@@ -9,6 +9,10 @@ import { SiteFooter } from '@/layouts/storefront/SiteFooter';
 import { SiteHeader } from '@/layouts/storefront/SiteHeader';
 import { TestModeBanner } from '@/layouts/storefront/TestModeBanner';
 import { Toaster } from '@/shared/ui/toast/Toaster';
+
+import { LanguageAlternates } from '@/layouts/storefront/LanguageAlternates';
+import { LanguageSuggestion } from '@/layouts/storefront/LanguageSuggestion';
+
 import styles from './StorefrontLayout.module.css';
 
 function useShellOptions(): ShellHandle {
@@ -26,9 +30,11 @@ export default function StorefrontLayout() {
 
   return (
     <div className={styles.shell}>
-      <a href="#main-content" className={styles.skip}>
+    <a href="#main-content" className={styles.skip}>
         تخطَّ إلى المحتوى
       </a>
+      <LanguageAlternates />
+      <LanguageSuggestion />
       <TestModeBanner />
       <AnnouncementBar
         freeShippingThreshold={shipping.freeShippingThreshold}

@@ -59,4 +59,13 @@
    * literals are repeated in every module and in src/shared/lib/media.ts:
    * 640px, 768px, 1024px, 1280px, 1360px.
    */
+
+   
+}
+/* English and Turkish pages: Latin fonts first (with ğ ş ı İ), Arabic ones
+   still there for book titles and names quoted in Arabic. */
+:root:lang(en),
+:root:lang(tr) {
+  --font-ui: 'IBM Plex Sans', 'IBM Plex Sans Arabic', system-ui, sans-serif;
+  --font-serif: 'IBM Plex Serif', 'Amiri', serif;
 }

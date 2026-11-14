@@ -1,7 +1,7 @@
 import { useLocation } from 'react-router';
 
 import { DocumentTitle } from '@/shared/ui/DocumentTitle';
-
+import { formatCount } from '@/shared/lib/format';
 import styles from './RoutePlaceholder.module.css';
 
 interface RoutePlaceholderProps {
@@ -42,7 +42,7 @@ export function RoutePlaceholder({ title, source, step }: RoutePlaceholderProps)
         </div>
         <div>
           <dt>تُبنى في الخطوة</dt>
-          <dd>{step.toLocaleString('ar-EG')}</dd>
+          <dd>{formatCount(step)}</dd>
         </div>
         <div>
           <dt>المسار</dt>

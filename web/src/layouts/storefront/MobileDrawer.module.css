@@ -82,3 +82,12 @@
   inline-size: 100%;
   text-align: start;
 }
+
+.languages {
+  margin-block-start: auto;
+  padding: 12px 12px 0;
+}
+
+.languages + .meta {
+  margin-block-start: 0;
+}

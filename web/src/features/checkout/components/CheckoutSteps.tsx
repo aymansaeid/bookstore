@@ -1,5 +1,5 @@
 import { cx } from '@/shared/lib/cx';
-
+import { formatCount } from '@/shared/lib/format';
 import styles from './CheckoutSteps.module.css';
 
 const STEPS = [
@@ -25,9 +25,9 @@ export function CheckoutSteps({ current }: { current: CheckoutStep }) {
           )}
           aria-current={index === currentIndex ? 'step' : undefined}
         >
-          <span className={styles.number}>
-            {index < currentIndex ? '✓' : (index + 1).toLocaleString('ar-EG')}
-          </span>
+        <span className={styles.number}>
+  {index < currentIndex ? '✓' : formatCount(index + 1)}
+</span>
           {step.label}
         </li>
       ))}

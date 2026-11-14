@@ -8,5 +8,10 @@ export const env = {
    */
   mockPaymentsEnabled: import.meta.env.DEV || import.meta.env.VITE_ENABLE_MOCK_PAYMENTS === 'true',
   /** '' = same origin (dev proxy). No trailing slash. */
-  apiBaseUrl: (import.meta.env.VITE_API_BASE_URL ?? '').trim().replace(/\/+$/, ''),
+ apiBaseUrl: (import.meta.env.VITE_API_BASE_URL ?? '').trim().replace(/\/+$/, ''),
+  /**
+   * Comma-separated UI languages switched on, e.g. "ar,en,tr". Arabic is
+   * always on. A language goes live only when its translations are complete.
+   */
+  languages: (import.meta.env.VITE_LANGUAGES ?? 'ar').split(',').map((code) => code.trim()),
 } as const;

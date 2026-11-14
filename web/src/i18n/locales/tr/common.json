@@ -1,0 +1,13 @@
+{
+  "siteName": "Kitap Efendi",
+  "loading": "Yükleniyor…",
+  "language": {
+    "label": "Dil",
+    "current": "Geçerli dil"
+  },
+  "suggestion": {
+    "text": "Kitap Efendi Türkçe olarak da kullanılabilir.",
+    "switch": "Türkçe'ye geç",
+    "dismiss": "Hayır, teşekkürler"
+  }
+}

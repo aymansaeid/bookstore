@@ -7,7 +7,7 @@ import { storeInfo } from '@/app/storeInfo';
 import { cx } from '@/shared/lib/cx';
 import { formatYear } from '@/shared/lib/format';
 import { Logo } from '@/shared/ui/Logo/Logo';
-
+import { LanguageSwitcher } from '@/shared/ui/LanguageSwitcher/LanguageSwitcher';
 import { FooterSection } from './FooterSection';
 import { NewsletterCta } from './NewsletterCta';
 import styles from './SiteFooter.module.css';
@@ -130,8 +130,9 @@ export function SiteFooter() {
             </FooterSection>
           </div>
 
-          <div className={styles.bottom}>
+       <div className={styles.bottom}>
             <p>© {formatYear(new Date().getFullYear())} كتاب أفندي. جميع الحقوق محفوظة.</p>
+            <LanguageSwitcher variant="inline" />
             <ul className={styles.pay} aria-label="طرق الدفع المقبولة" lang="en" dir="ltr">
               {paymentBadges.map((name) => (
                 <li key={name}>{name}</li>

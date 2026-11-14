@@ -1,0 +1,91 @@
+.list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 44px;
+  padding-inline: 12px;
+  border-radius: var(--r-pill);
+  color: inherit;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.link:hover {
+  background: rgba(127, 120, 110, 0.12);
+}
+
+.current {
+  background: var(--ink);
+  color: #fff;
+}
+
+.current:hover {
+  background: var(--ink);
+}
+
+/* Header menu */
+.menu {
+  position: relative;
+}
+
+.summary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-inline-size: 44px;
+  min-block-size: 44px;
+  padding-inline: 10px;
+  border-radius: 12px;
+  color: var(--ink3);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  list-style: none;
+}
+
+.summary::-webkit-details-marker {
+  display: none;
+}
+
+.summary:hover {
+  color: var(--ink);
+}
+
+.caret {
+  font-size: 10px;
+}
+
+.menu[open] .caret {
+  transform: rotate(180deg);
+}
+
+.popover {
+  position: absolute;
+  inset-block-start: calc(100% + 6px);
+  inset-inline-end: 0;
+  z-index: 60;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  min-inline-size: 150px;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--card);
+  box-shadow: var(--sh2);
+}
+
+.popover .link {
+  justify-content: flex-start;
+  border-radius: 10px;
+}
+
+/* Footer and phone menu */
+.inline .list {
+  gap: 6px;
+}

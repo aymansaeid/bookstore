@@ -1,6 +1,6 @@
-import { STORE_TIME_ZONE } from '@/app/locale';
+import { STORE_TIME_ZONE, UI_LOCALE } from '@/app/locale';
 
-const dayFormat = new Intl.DateTimeFormat('ar-EG', {
+const dayFormat = new Intl.DateTimeFormat(UI_LOCALE, {
   timeZone: STORE_TIME_ZONE,
   weekday: 'long',
   day: 'numeric',

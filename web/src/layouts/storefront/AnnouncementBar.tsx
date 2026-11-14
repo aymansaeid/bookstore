@@ -4,7 +4,7 @@ import { paths } from '@/app/paths';
 import { cx } from '@/shared/lib/cx';
 import { countriesPhrase, formatAmount } from '@/shared/lib/format';
 import { Spark } from '@/shared/ui/Spark/Spark';
-
+import { LANGUAGE_NAMES, UI_LANGUAGE } from '@/app/locale';
 import styles from './AnnouncementBar.module.css';
 
 interface AnnouncementBarProps {
@@ -44,8 +44,8 @@ export function AnnouncementBar({
           </span>
         </Link>
 
-        <div className={styles.side}>
-          <span>العربية</span>
+      <div className={styles.side}>
+          <span>{LANGUAGE_NAMES[UI_LANGUAGE]}</span>
           <span lang="en" dir="ltr">
             TRY ₺
           </span>

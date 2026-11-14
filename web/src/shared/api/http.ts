@@ -1,6 +1,7 @@
 import { env } from '@/app/env';
 
 import { ApiError } from './ApiError';
+import { UI_LANGUAGE } from '@/app/locale';
 
 type QueryValue = string | number | boolean | readonly (string | number)[] | null | undefined;
 
@@ -46,8 +47,14 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
 
   const blob = options.responseType === 'blob';
 
-  const headers = new Headers({ Accept: blob ? '*/*' : 'application/json', ...options.headers });
-  if (accessToken) headers.set('Authorization', `Bearer ${accessToken}`);
+// The page's language, not the browser's: the API returns translated
+  // content and emails in it (the browser's own header is a preference list).
+  const headers = new Headers({
+    Accept: blob ? '*/*' : 'application/json',
+    'Accept-Language': UI_LANGUAGE,
+    ...options.headers,
+  });
+    if (accessToken) headers.set('Authorization', `Bearer ${accessToken}`);
 
   const init: RequestInit = {
     method,
