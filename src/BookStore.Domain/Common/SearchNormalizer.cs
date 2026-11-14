@@ -65,7 +65,13 @@ public static class SearchNormalizer
         '\u0671' => 'ا',      // alef wasla
         'ى' => 'ي',
         'ة' => 'ه',
-        'ı' => 'i',
+        'ı' => 'i',           // Turkish dotless i (İ decomposes to I + dot by itself)
+
+        // Transliteration ʿayn/hamza marks and apostrophes vanish inside a word:
+        // Zâdü'l-Meâd / Maʿad / Ma'ad all fold the same way.
+        '\u02BE' or '\u02BF' or '\u02BB' or '\u02BC' => '\0',   // ʾ ʿ ʻ ʼ (modifier letters)
+        '\'' or '\u2019' or '\u2018' or '`' or '\u00B4' => '\0', // ' ’ ‘ ` ´
+
         >= '\u0660' and <= '\u0669' => (char)('0' + (c - '\u0660')), // ٠-٩
         >= '\u06F0' and <= '\u06F9' => (char)('0' + (c - '\u06F0')), // ۰-۹
         _ => c

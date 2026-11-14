@@ -26,6 +26,41 @@ public sealed class Muhaqqiq : AggregateRoot<int>
     public int DisplayOrder { get; private set; }
     public bool IsActive { get; private set; }
 
+    private readonly List<MuhaqqiqTranslation> _translations = [];
+    public IReadOnlyCollection<MuhaqqiqTranslation> Translations => _translations.AsReadOnly();
+
+    public IReadOnlyList<Language> TranslatedLanguages =>
+        _translations.Select(t => t.Language).OrderBy(l => l).ToList();
+
+    public MuhaqqiqTranslation? TranslationFor(Language language) =>
+        language.IsTranslatable() ? _translations.FirstOrDefault(t => t.Language == language) : null;
+
+    public string NameIn(Language language) => TranslationRules.Prefer(TranslationFor(language)?.Name, Name)!;
+
+    public string? BioIn(Language language) => TranslationRules.Prefer(TranslationFor(language)?.Bio, Bio);
+
+    public IReadOnlyList<string> SpecialtiesIn(Language language) =>
+        TranslationRules.Prefer(TranslationFor(language)?.Specialties, _specialties);
+
+    public void SetTranslation(Language language, string name, string? bio, IEnumerable<string>? specialties)
+    {
+        TranslationRules.EnsureTranslatable(language);
+
+        var translation = TranslationFor(language);
+        if (translation is null)
+        {
+            translation = MuhaqqiqTranslation.Create(language);
+            translation.Update(name, bio, specialties);
+            _translations.Add(translation);
+        }
+        else
+        {
+            translation.Update(name, bio, specialties);
+        }
+    }
+
+    public bool RemoveTranslation(Language language) => _translations.RemoveAll(t => t.Language == language) > 0;
+
     private Muhaqqiq() { } // EF Core
 
     public static Muhaqqiq Create(

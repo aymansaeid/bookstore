@@ -15,6 +15,7 @@ using Microsoft.Extensions.Options;
 using Serilog;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
+using BookStore.Domain.Common;
 
 // Bootstrap logger: captures failures that happen before configuration is
 // even loaded (bad appsettings, failed options validation).
@@ -60,7 +61,8 @@ try
     builder.Services.AddOpenApi(o => o.AddDocumentTransformer<BearerSecuritySchemeTransformer>());
     builder.Services.AddProblemDetails();
     builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
-
+    builder.Services.AddHttpContextAccessor();
+    builder.Services.AddScoped<ILanguageContext, HttpLanguageContext>();
     builder.Services.AddOptions<LoyaltyOptions>()
     .Bind(builder.Configuration.GetSection(LoyaltyOptions.SectionName))
     .Validate(o => o.CurrencyPerPoint > 0, "Loyalty:CurrencyPerPoint must be positive.")
@@ -98,6 +100,26 @@ try
     // Outermost: sees the FINAL status of every request, including 500s the
     // exception handler produced, and logs each request exactly once.
     app.UseBookStoreRequestLogging();
+
+    // Tell browsers and caches which language a response is in, and that it
+    // depends on Accept-Language: an English page must never be served from a
+    // cached Arabic copy.
+    app.Use(async (context, next) =>
+    {
+        if (context.Request.Path.StartsWithSegments("/api"))
+        {
+            context.Response.OnStarting(() =>
+            {
+                var language = context.RequestServices.GetRequiredService<ILanguageContext>().Current;
+                context.Response.Headers.ContentLanguage = language.Code();
+                context.Response.Headers.Append("Vary", "Accept-Language");
+                return Task.CompletedTask;
+            });
+        }
+
+        await next();
+    });
+
 
     if (app.Environment.IsDevelopment())
     {

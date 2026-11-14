@@ -1,4 +1,5 @@
 ﻿using BookStore.Domain.Catalog;
+using BookStore.Domain.Common;
 
 namespace BookStore.Application.Catalog;
 
@@ -15,7 +16,7 @@ public sealed record PublicCategoryDto(
 
 public sealed record AdminCategoryDto(
     int Id, string Slug, string Name, string? Letter, string? Description,
-    int? ParentId, int DisplayOrder, bool IsActive, int BookCount);
+    int? ParentId, int DisplayOrder, bool IsActive, int BookCount, IReadOnlyList<string> Translations);
 
 public sealed record PublicMuhaqqiqDto(
     int Id, string Slug, string Name, string? Bio, IReadOnlyList<string> Specialties,
@@ -23,18 +24,18 @@ public sealed record PublicMuhaqqiqDto(
 
 public sealed record AdminMuhaqqiqDto(
     int Id, string Slug, string Name, string? Bio, IReadOnlyList<string> Specialties,
-    bool IsFeatured, int DisplayOrder, bool IsActive, int WorksCount);
+    bool IsFeatured, int DisplayOrder, bool IsActive, int WorksCount, IReadOnlyList<string> Translations  );
 
 public static class CatalogMappings
 {
     public static CategoryRefDto ToRef(this Category c) => new(c.Id, c.Slug.Value, c.Name);
 
     public static AdminCategoryDto ToAdminDto(this Category c, int bookCount) =>
-        new(c.Id, c.Slug.Value, c.Name, c.Letter, c.Description, c.ParentId, c.DisplayOrder, c.IsActive, bookCount);
+        new(c.Id, c.Slug.Value, c.Name, c.Letter, c.Description, c.ParentId, c.DisplayOrder, c.IsActive, bookCount, c.TranslatedLanguages.Codes());
 
     public static PublicMuhaqqiqDto ToPublicDto(this Muhaqqiq m, int worksCount) =>
         new(m.Id, m.Slug.Value, m.Name, m.Bio, m.Specialties.ToList(), m.IsFeatured, worksCount);
 
     public static AdminMuhaqqiqDto ToAdminDto(this Muhaqqiq m, int worksCount) =>
-        new(m.Id, m.Slug.Value, m.Name, m.Bio, m.Specialties.ToList(), m.IsFeatured, m.DisplayOrder, m.IsActive, worksCount);
+        new(m.Id, m.Slug.Value, m.Name, m.Bio, m.Specialties.ToList(), m.IsFeatured, m.DisplayOrder, m.IsActive, worksCount , m.TranslatedLanguages.Codes());
 }

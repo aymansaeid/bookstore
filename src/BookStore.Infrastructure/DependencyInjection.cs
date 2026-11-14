@@ -40,7 +40,9 @@ public static class DependencyInjection
 
         services.AddDbContext<BookStoreDbContext>((sp, options) =>
         {
-            options.UseSqlServer(configuration.GetConnectionString("BookStoreDb"));
+            options.UseSqlServer(configuration.GetConnectionString("BookStoreDb"), sql =>
+                sql.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));
+
             options.AddInterceptors(sp.GetRequiredService<DomainEventsToOutboxInterceptor>());
         });
 

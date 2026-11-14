@@ -59,6 +59,15 @@ public sealed class ReadingPath : AggregateRoot<int>
 
     public IReadOnlyList<ReadingPathStage> OrderedStages => _stages.OrderBy(s => s.StageNumber).ToList();
 
+    private readonly List<ReadingPathTranslation> _translations = [];
+    public IReadOnlyCollection<ReadingPathTranslation> Translations => _translations.AsReadOnly();
+
+    private readonly List<ReadingPathStageTranslation> _stageTranslations = [];
+    public IReadOnlyCollection<ReadingPathStageTranslation> StageTranslations => _stageTranslations.AsReadOnly();
+
+    public IReadOnlyList<Language> TranslatedLanguages =>
+        _translations.Select(t => t.Language).OrderBy(l => l).ToList();
+
     private ReadingPath() { } // EF Core
 
     public static ReadingPath Create(
@@ -70,9 +79,74 @@ public sealed class ReadingPath : AggregateRoot<int>
         return path;
     }
 
+    public ReadingPathTranslation? TranslationFor(Language language) =>
+    language.IsTranslatable() ? _translations.FirstOrDefault(t => t.Language == language) : null;
+
+    public string TitleIn(Language language) => TranslationRules.Prefer(TranslationFor(language)?.Title, Title)!;
+
+    public string? DescriptionIn(Language language) => TranslationRules.Prefer(TranslationFor(language)?.Description, Description);
+
+    public string ReasonIn(ReadingPathStage stage, Language language)
+    {
+        var translated = language.IsTranslatable()
+            ? _stageTranslations.FirstOrDefault(st => st.Language == language && st.BookId == stage.BookId)?.Reason
+            : null;
+
+        return TranslationRules.Prefer(translated, stage.Reason)!;
+    }
+
+    /// Full replacement for one language: title, description and the stage
+    /// reasons sent. A stage left out of `stageReasons` falls back to Arabic.
+    public void SetTranslation(Language language, string title, string? description, IReadOnlyList<StageReasonInput> stageReasons)
+    {
+        TranslationRules.EnsureTranslatable(language);
+
+        var stageBookIds = _stages.Select(s => s.BookId).ToHashSet();
+        var unknown = stageReasons.Select(r => r.BookId).Where(id => !stageBookIds.Contains(id)).Distinct().ToList();
+        if (unknown.Count > 0)
+            throw new ArgumentException($"Book(s) {string.Join(", ", unknown)} are not stages of this path.", nameof(stageReasons));
+        if (stageReasons.Select(r => r.BookId).Distinct().Count() != stageReasons.Count)
+            throw new ArgumentException("Each stage can appear only once.", nameof(stageReasons));
+
+        var reasons = stageReasons
+            .Select(r => (r.BookId, Reason: TranslationRules.Optional(r.Reason, MaxReasonLength, "Reason")))
+            .Where(r => r.Reason is not null)
+            .ToDictionary(r => r.BookId, r => r.Reason!);
+
+        var translation = TranslationFor(language);
+        if (translation is null)
+        {
+            translation = ReadingPathTranslation.Create(language);
+            translation.Update(title, description);
+            _translations.Add(translation);
+        }
+        else
+        {
+            translation.Update(title, description);
+        }
+
+        // In place, never remove-and-re-add the same key (EF tracking pitfall).
+        _stageTranslations.RemoveAll(st => st.Language == language && !reasons.ContainsKey(st.BookId));
+        foreach (var (bookId, reason) in reasons)
+        {
+            var existing = _stageTranslations.FirstOrDefault(st => st.Language == language && st.BookId == bookId);
+            if (existing is null)
+                _stageTranslations.Add(ReadingPathStageTranslation.Create(bookId, language, reason));
+            else
+                existing.Update(reason);
+        }
+    }
+
+    public bool RemoveTranslation(Language language)
+    {
+        var removed = _translations.RemoveAll(t => t.Language == language) > 0;
+        _stageTranslations.RemoveAll(st => st.Language == language);
+        return removed;
+    }
+
     public void Update(
-        string title, string? description, ReaderLevel level, int estimatedWeeks,
-        int discountPercentage, bool isFeatured, int displayOrder, IReadOnlyList<ReadingPathStageInput> stages)
+           string title, string? description, ReaderLevel level, int estimatedWeeks,
+           int discountPercentage, bool isFeatured, int displayOrder, IReadOnlyList<ReadingPathStageInput> stages)
     {
         if (string.IsNullOrWhiteSpace(title) || title.Trim().Length > MaxTitleLength)
             throw new ArgumentException($"Title is required, at most {MaxTitleLength} characters.", nameof(title));
@@ -106,6 +180,10 @@ public sealed class ReadingPath : AggregateRoot<int>
         _stages.Clear();
         for (var i = 0; i < stages.Count; i++)
             _stages.Add(ReadingPathStage.Create(i + 1, stages[i]));
+
+        // A book that left the path takes its translated reasons with it.
+        var bookIds = _stages.Select(s => s.BookId).ToHashSet();
+        _stageTranslations.RemoveAll(st => !bookIds.Contains(st.BookId));
     }
 
     public void Activate() => IsActive = true;

@@ -23,6 +23,21 @@ public sealed class CategoryConfiguration : IEntityTypeConfiguration<Category>
         builder.Property(c => c.Letter).HasMaxLength(8);
         builder.Property(c => c.Description).HasMaxLength(Category.MaxDescriptionLength);
 
+        builder.OwnsMany(c => c.Translations, t =>
+        {
+            t.ToTable("CategoryTranslations");
+            t.WithOwner().HasForeignKey("CategoryId");
+            t.Property(x => x.Language).HasConversion<string>().HasMaxLength(5);
+            t.HasKey("CategoryId", nameof(CategoryTranslation.Language));
+            t.Property(x => x.Name).HasMaxLength(Category.MaxNameLength).IsRequired();
+            t.Property(x => x.Description).HasMaxLength(Category.MaxDescriptionLength);
+        });
+
+        builder.Metadata.FindNavigation(nameof(Category.Translations))!
+            .SetPropertyAccessMode(PropertyAccessMode.Field);
+
+        builder.Ignore(c => c.TranslatedLanguages);
+
         // Self-reference without navigations. Restrict: a parent with
         // children can never be deleted, even by direct SQL.
         builder.HasOne<Category>().WithMany().HasForeignKey(c => c.ParentId).OnDelete(DeleteBehavior.Restrict);
@@ -52,6 +67,25 @@ public sealed class MuhaqqiqConfiguration : IEntityTypeConfiguration<Muhaqqiq>
         builder.PrimitiveCollection(m => m.Specialties)
             .HasField("_specialties")
             .UsePropertyAccessMode(PropertyAccessMode.Field);
+
+        builder.OwnsMany(m => m.Translations, t =>
+        {
+            t.ToTable("MuhaqqiqTranslations");
+            t.WithOwner().HasForeignKey("MuhaqqiqId");
+            t.Property(x => x.Language).HasConversion<string>().HasMaxLength(5);
+            t.HasKey("MuhaqqiqId", nameof(MuhaqqiqTranslation.Language));
+            t.Property(x => x.Name).HasMaxLength(Muhaqqiq.MaxNameLength).IsRequired();
+            t.Property(x => x.Bio).HasMaxLength(Muhaqqiq.MaxBioLength);
+
+            t.PrimitiveCollection(x => x.Specialties)
+                .HasField("_specialties")
+                .UsePropertyAccessMode(PropertyAccessMode.Field);
+        });
+
+        builder.Metadata.FindNavigation(nameof(Muhaqqiq.Translations))!
+            .SetPropertyAccessMode(PropertyAccessMode.Field);
+
+        builder.Ignore(m => m.TranslatedLanguages);
 
         builder.HasIndex(m => new { m.IsFeatured, m.DisplayOrder });
 

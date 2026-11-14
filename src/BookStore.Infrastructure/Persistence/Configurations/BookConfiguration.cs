@@ -131,6 +131,36 @@ public sealed class BookConfiguration : IEntityTypeConfiguration<Book>
         builder.Property(b => b.Badges).IsRequired(); // [Flags] int: New | Deluxe | Bestseller
         builder.Property(b => b.EditionLabel).HasMaxLength(Book.MaxEditionLabelLength);
 
+        builder.Property(b => b.TransliteratedTitle).HasMaxLength(Book.MaxTransliteratedTitleLength);
+
+        builder.OwnsMany(b => b.Translations, t =>
+        {
+            t.ToTable("BookTranslations");
+            t.WithOwner().HasForeignKey("BookId");
+
+            t.Property(x => x.Language).HasConversion<string>().HasMaxLength(5);
+
+            // (BookId, Language) is the key: at most one translation per language,
+            // enforced by the database.
+            t.HasKey("BookId", nameof(BookTranslation.Language));
+
+            t.Property(x => x.Title).HasMaxLength(BookTranslation.MaxTitleLength).IsRequired();
+            t.Property(x => x.Subtitle).HasMaxLength(BookTranslation.MaxSubtitleLength);
+            t.Property(x => x.Author).HasMaxLength(BookTranslation.MaxAuthorLength);
+            t.Property(x => x.Description).HasMaxLength(BookTranslation.MaxDescriptionLength);
+            t.Property(x => x.EditionLabel).HasMaxLength(Book.MaxEditionLabelLength);
+            t.Property(x => x.UpdatedAtUtc).IsRequired();
+
+            t.PrimitiveCollection(x => x.Highlights)
+                .HasField("_highlights")
+                .UsePropertyAccessMode(PropertyAccessMode.Field);
+        });
+
+        builder.Metadata.FindNavigation(nameof(Book.Translations))!
+            .SetPropertyAccessMode(PropertyAccessMode.Field);
+
+        builder.Ignore(b => b.TranslatedLanguages);
+
         builder.PrimitiveCollection(b => b.Highlights)
             .HasField("_highlights")
             .UsePropertyAccessMode(PropertyAccessMode.Field);

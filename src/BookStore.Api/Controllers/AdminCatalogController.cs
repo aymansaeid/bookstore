@@ -3,6 +3,7 @@ using BookStore.Api.Contracts;
 using BookStore.Application.Catalog;
 using BookStore.Application.Catalog.Commands;
 using BookStore.Application.Catalog.Queries;
+using BookStore.Application.Catalog.Translations;
 using BookStore.Domain.Users;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -14,6 +15,9 @@ public sealed record UpdateCategoryRequest(string Name, string? Letter, string? 
 
 public sealed record UpdateMuhaqqiqRequest(
     string Name, string? Bio, IReadOnlyList<string>? Specialties, bool IsFeatured, int DisplayOrder);
+
+public sealed record CategoryTranslationRequest(string Name, string? Description);
+public sealed record MuhaqqiqTranslationRequest(string Name, string? Bio, IReadOnlyList<string>? Specialties);
 
 [ApiController]
 [Route("api/admin")]
@@ -96,4 +100,50 @@ public sealed class AdminCatalogController(ISender sender) : ControllerBase
     [ProducesResponseType(typeof(ImageRegenerationResult), StatusCodes.Status200OK)]
     public async Task<IActionResult> RegenerateImages(CancellationToken ct) =>
         (await sender.Send(new RegenerateImageVariantsCommand(), ct)).ToActionResult();
+
+    // ---- Category translations ----
+
+    [HttpGet("categories/{id:int}/translations")]
+    [ProducesResponseType(typeof(AdminCategoryTranslationsDto), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetCategoryTranslations(int id, CancellationToken ct) =>
+        (await sender.Send(new GetCategoryTranslationsQuery(id), ct)).ToActionResult();
+
+    [HttpGet("categories/{id:int}/translations/{lang}")]
+    [ProducesResponseType(typeof(CategoryTranslationDto), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetCategoryTranslation(int id, string lang, CancellationToken ct) =>
+        (await sender.Send(new GetCategoryTranslationQuery(id, lang), ct)).ToActionResult();
+
+    [HttpPut("categories/{id:int}/translations/{lang}")]
+    [ProducesResponseType(typeof(CategoryTranslationDto), StatusCodes.Status200OK)]
+    public async Task<IActionResult> SetCategoryTranslation(int id, string lang, CategoryTranslationRequest r, CancellationToken ct) =>
+        (await sender.Send(new SetCategoryTranslationCommand(id, lang, r.Name, r.Description), ct)).ToActionResult();
+
+    [HttpDelete("categories/{id:int}/translations/{lang}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> DeleteCategoryTranslation(int id, string lang, CancellationToken ct) =>
+        (await sender.Send(new DeleteCategoryTranslationCommand(id, lang), ct)).ToActionResult();
+
+    // ---- Muhaqqiq translations ----
+
+    [HttpGet("muhaqqiqs/{id:int}/translations")]
+    [ProducesResponseType(typeof(AdminMuhaqqiqTranslationsDto), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetMuhaqqiqTranslations(int id, CancellationToken ct) =>
+        (await sender.Send(new GetMuhaqqiqTranslationsQuery(id), ct)).ToActionResult();
+
+    [HttpGet("muhaqqiqs/{id:int}/translations/{lang}")]
+    [ProducesResponseType(typeof(MuhaqqiqTranslationDto), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetMuhaqqiqTranslation(int id, string lang, CancellationToken ct) =>
+        (await sender.Send(new GetMuhaqqiqTranslationQuery(id, lang), ct)).ToActionResult();
+
+    [HttpPut("muhaqqiqs/{id:int}/translations/{lang}")]
+    [ProducesResponseType(typeof(MuhaqqiqTranslationDto), StatusCodes.Status200OK)]
+    public async Task<IActionResult> SetMuhaqqiqTranslation(int id, string lang, MuhaqqiqTranslationRequest r, CancellationToken ct) =>
+        (await sender.Send(new SetMuhaqqiqTranslationCommand(id, lang, r.Name, r.Bio, r.Specialties), ct)).ToActionResult();
+
+    [HttpDelete("muhaqqiqs/{id:int}/translations/{lang}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> DeleteMuhaqqiqTranslation(int id, string lang, CancellationToken ct) =>
+        (await sender.Send(new DeleteMuhaqqiqTranslationCommand(id, lang), ct)).ToActionResult();
+
+
 }

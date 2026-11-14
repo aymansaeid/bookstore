@@ -14,26 +14,25 @@ public static class SearchTermBuilder
         var phrase = SearchNormalizer.Normalize(query);
         var tokens = SearchNormalizer.Tokenize(phrase);
 
-        // Nothing usable (empty, or only single letters): no text filter.
         if (tokens.Count == 0)
             return new BuiltSearch(null, []);
 
+        // Every name in every language: "Hadith" and "Hadis" find the same category.
         var categoryNames = activeCategories
-            .Select(c => (Category: c, Name: SearchNormalizer.Normalize(c.Name)))
+            .Select(c => (Category: c, Names: AllNames(c.Name, c.Translations.Select(t => t.Name))))
             .ToList();
 
         var muhaqqiqNames = activeMuhaqqiqs
-            .Select(m => (m.Id, Name: SearchNormalizer.Normalize(m.Name)))
+            .Select(m => (m.Id, Names: AllNames(m.Name, m.Translations.Select(t => t.Name))))
             .ToList();
 
         var terms = tokens.Select(token =>
         {
             var directCategoryIds = categoryNames
-                .Where(x => x.Name.Contains(token, StringComparison.Ordinal))
+                .Where(x => x.Names.Any(n => n.Contains(token, StringComparison.Ordinal)))
                 .Select(x => x.Category.Id)
                 .ToHashSet();
 
-            // A matching top-level category also matches its subcategories' books.
             var categoryIds = activeCategories
                 .Where(c => directCategoryIds.Contains(c.Id)
                             || (c.ParentId is { } parentId && directCategoryIds.Contains(parentId)))
@@ -41,7 +40,7 @@ public static class SearchTermBuilder
                 .ToList();
 
             var muhaqqiqIds = muhaqqiqNames
-                .Where(x => x.Name.Contains(token, StringComparison.Ordinal))
+                .Where(x => x.Names.Any(n => n.Contains(token, StringComparison.Ordinal)))
                 .Select(x => x.Id)
                 .ToList();
 
@@ -50,4 +49,7 @@ public static class SearchTermBuilder
 
         return new BuiltSearch(phrase, terms);
     }
+
+    private static IReadOnlyList<string> AllNames(string source, IEnumerable<string> translations) =>
+        translations.Prepend(source).Select(SearchNormalizer.Normalize).Where(n => n.Length > 0).ToList();
 }

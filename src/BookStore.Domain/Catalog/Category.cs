@@ -25,6 +25,38 @@ public sealed class Category : AggregateRoot<int>
 
     public bool IsTopLevel => ParentId is null;
 
+    private readonly List<CategoryTranslation> _translations = [];
+    public IReadOnlyCollection<CategoryTranslation> Translations => _translations.AsReadOnly();
+
+    public IReadOnlyList<Language> TranslatedLanguages =>
+        _translations.Select(t => t.Language).OrderBy(l => l).ToList();
+
+    public CategoryTranslation? TranslationFor(Language language) =>
+        language.IsTranslatable() ? _translations.FirstOrDefault(t => t.Language == language) : null;
+
+    public string NameIn(Language language) => TranslationRules.Prefer(TranslationFor(language)?.Name, Name)!;
+
+    public string? DescriptionIn(Language language) => TranslationRules.Prefer(TranslationFor(language)?.Description, Description);
+
+    public void SetTranslation(Language language, string name, string? description)
+    {
+        TranslationRules.EnsureTranslatable(language);
+
+        var translation = TranslationFor(language);
+        if (translation is null)
+        {
+            translation = CategoryTranslation.Create(language);
+            translation.Update(name, description);
+            _translations.Add(translation);
+        }
+        else
+        {
+            translation.Update(name, description);
+        }
+    }
+
+    public bool RemoveTranslation(Language language) => _translations.RemoveAll(t => t.Language == language) > 0;
+
     private Category() { } // EF Core
 
     public static Category Create(

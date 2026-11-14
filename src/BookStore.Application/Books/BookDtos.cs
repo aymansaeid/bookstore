@@ -2,6 +2,7 @@
 using BookStore.Application.Catalog;
 using BookStore.Application.Reviews;
 using BookStore.Domain.Books;
+using BookStore.Domain.Common;
 
 namespace BookStore.Application.Books;
 
@@ -48,7 +49,7 @@ public sealed record AdminBookDto(
     int? CategoryId, IReadOnlyList<int> MuhaqqiqIds,
     ReaderLevel? Level, int? Volumes, decimal? CompareAtPrice, bool InstallmentsAllowed,
     IReadOnlyList<string> Highlights, IReadOnlyList<string> Badges, string? EditionLabel,
-    int? EditionGroupId, IReadOnlyList<int> RelatedBookIds);
+    int? EditionGroupId, IReadOnlyList<int> RelatedBookIds, string? TransliteratedTitle, IReadOnlyList<string> Translations);
 
 public static class BookMappings
 {
@@ -97,7 +98,7 @@ public static class BookMappings
             b.CategoryId, b.OrderedMuhaqqiqIds,
             b.Level, b.Volumes, b.CompareAtPrice, b.InstallmentsAllowed,
             b.Highlights.ToList(), BadgeNames(b.Badges), b.EditionLabel,
-            b.EditionGroupId, b.OrderedRelatedBookIds);
+            b.EditionGroupId, b.OrderedRelatedBookIds, b.TransliteratedTitle, b.TranslatedLanguages.Codes());
 
     public static BookImageDto ToDto(this BookImage i, IFileStorage storage)
     {

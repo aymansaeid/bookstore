@@ -85,6 +85,19 @@ public sealed class Book : AggregateRoot<int>
 
     public byte[] RowVersion { get; private set; } = [];
 
+    public const int MaxTransliteratedTitleLength = 500;
+    private const int MaxSearchTitleLength = 1000;
+
+    /// Latin transliteration of the Arabic title ("Zâd al-Maʿâd"), edited by the
+    /// admin, searched in every language.
+    public string? TransliteratedTitle { get; private set; }
+
+    private readonly List<BookTranslation> _translations = [];
+    public IReadOnlyCollection<BookTranslation> Translations => _translations.AsReadOnly();
+
+    public IReadOnlyList<Common.Language> TranslatedLanguages =>
+        _translations.Select(t => t.Language).OrderBy(l => l).ToList();
+
     private Book() { } // EF Core
 
     public static Book Create(
@@ -462,15 +475,32 @@ public sealed class Book : AggregateRoot<int>
 
     /// Category and muhaqqiq names are deliberately NOT copied in: they're
     /// matched at query time, so renaming one never leaves stale search text.
+    /// One index across all languages: Arabic, the transliteration and every
+    /// translation. Category and muhaqqiq names are still matched at query time.
     public void RebuildSearchIndex()
     {
-        SearchTitle = SearchNormalizer.Normalize($"{Title} {Subtitle}");
+        var titles = new List<string?> { Title, Subtitle, TransliteratedTitle };
+        foreach (var t in _translations)
+        {
+            titles.Add(t.Title);
+            titles.Add(t.Subtitle);
+        }
 
-        var parts = new[] { Title, Subtitle, Author, Publisher, Isbn, EditionLabel }
-            .Concat(_highlights)
-            .Where(part => !string.IsNullOrWhiteSpace(part));
+        // Arabic first, so "title starts with the query" still ranks the Arabic title.
+        var searchTitle = SearchNormalizer.Normalize(string.Join(' ', titles.Where(x => !string.IsNullOrWhiteSpace(x))));
+        SearchTitle = searchTitle.Length <= MaxSearchTitleLength ? searchTitle : searchTitle[..MaxSearchTitleLength].TrimEnd();
 
-        SearchText = SearchNormalizer.Normalize(string.Join(' ', parts));
+        var parts = new List<string?> { Title, Subtitle, Author, Publisher, Isbn, EditionLabel, TransliteratedTitle, Description };
+        parts.AddRange(_highlights);
+        foreach (var t in _translations)
+        {
+            parts.AddRange([t.Title, t.Subtitle, t.Author, t.EditionLabel, t.Description]);
+            parts.AddRange(t.Highlights);
+        }
+
+        // Descriptions are included as the brief asks; relevance still ranks
+        // title matches above them.
+        SearchText = SearchNormalizer.Normalize(string.Join(' ', parts.Where(p => !string.IsNullOrWhiteSpace(p))));
     }
 
     public void ReplaceImageRendition(
@@ -481,4 +511,59 @@ public sealed class Book : AggregateRoot<int>
 
         image.SetRendition(storageKey, width, height, variantWidths);
     }
+
+    public BookTranslation? TranslationFor(Common.Language language) =>
+    language.IsTranslatable() ? _translations.FirstOrDefault(t => t.Language == language) : null;
+
+    /// The book's text in a language, each field falling back to Arabic on its own.
+    public BookText TextIn(Common.Language language)
+    {
+        var t = TranslationFor(language);
+
+        return new BookText(
+            TranslationRules.Prefer(t?.Title, Title)!,
+            TranslationRules.Prefer(t?.Subtitle, Subtitle),
+            TranslationRules.Prefer(t?.Author, Author)!,
+            TranslationRules.Prefer(t?.Description, Description)!,
+            TranslationRules.Prefer(t?.EditionLabel, EditionLabel),
+            TranslationRules.Prefer(t?.Highlights, _highlights));
+    }
+
+    /// Updates the existing row in place: removing and re-adding the same
+    /// (BookId, Language) key in one save makes EF throw.
+    public void SetTranslation(Common.Language language, BookTranslationInput input)
+    {
+        TranslationRules.EnsureTranslatable(language);
+
+        var translation = TranslationFor(language);
+        if (translation is null)
+        {
+            translation = BookTranslation.Create(language);
+            translation.Update(input); // validate before adding
+            _translations.Add(translation);
+        }
+        else
+        {
+            translation.Update(input);
+        }
+
+        RebuildSearchIndex();
+    }
+
+    public bool RemoveTranslation(Common.Language language)
+    {
+        var removed = _translations.RemoveAll(t => t.Language == language) > 0;
+        if (removed)
+            RebuildSearchIndex();
+
+        return removed;
+    }
+
+    public void SetTransliteratedTitle(string? transliteratedTitle)
+    {
+        TransliteratedTitle = TranslationRules.Optional(
+            transliteratedTitle, MaxTransliteratedTitleLength, nameof(TransliteratedTitle));
+        RebuildSearchIndex();
+    }
+
 }

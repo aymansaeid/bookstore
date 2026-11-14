@@ -34,6 +34,37 @@ public sealed class ReadingPathConfiguration : IEntityTypeConfiguration<ReadingP
             stage.HasIndex(s => s.BookId);
         });
 
+        builder.OwnsMany(p => p.Translations, t =>
+        {
+            t.ToTable("ReadingPathTranslations");
+            t.WithOwner().HasForeignKey("ReadingPathId");
+            t.Property(x => x.Language).HasConversion<string>().HasMaxLength(5);
+            t.HasKey("ReadingPathId", nameof(ReadingPathTranslation.Language));
+            t.Property(x => x.Title).HasMaxLength(ReadingPath.MaxTitleLength).IsRequired();
+            t.Property(x => x.Description).HasMaxLength(ReadingPath.MaxDescriptionLength);
+        });
+
+        builder.OwnsMany(p => p.StageTranslations, t =>
+        {
+            t.ToTable("ReadingPathStageTranslations");
+            t.WithOwner().HasForeignKey("ReadingPathId");
+            t.Property(x => x.Language).HasConversion<string>().HasMaxLength(5);
+
+            // BookId is a value WE set. Without this, EF makes the non-owner int part
+            // of an owned key an IDENTITY column: the BookRelations bug again.
+            t.Property(x => x.BookId).ValueGeneratedNever();
+
+            t.HasKey("ReadingPathId", nameof(ReadingPathStageTranslation.BookId), nameof(ReadingPathStageTranslation.Language));
+            t.Property(x => x.Reason).HasMaxLength(ReadingPath.MaxReasonLength).IsRequired();
+        });
+
+        builder.Metadata.FindNavigation(nameof(ReadingPath.Translations))!
+            .SetPropertyAccessMode(PropertyAccessMode.Field);
+        builder.Metadata.FindNavigation(nameof(ReadingPath.StageTranslations))!
+            .SetPropertyAccessMode(PropertyAccessMode.Field);
+
+        builder.Ignore(p => p.TranslatedLanguages);
+
         builder.Metadata.FindNavigation(nameof(ReadingPath.Stages))!
             .SetPropertyAccessMode(PropertyAccessMode.Field);
 

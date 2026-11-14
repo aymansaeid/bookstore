@@ -4,6 +4,7 @@ using BookStore.Application.Abstractions.Storage;
 using BookStore.Application.Books;
 using BookStore.Application.Books.Commands;
 using BookStore.Application.Books.Queries;
+using BookStore.Application.Books.Translations;
 using BookStore.Domain.Books;
 using BookStore.Domain.Users;
 using MediatR;
@@ -30,6 +31,11 @@ public sealed record SetMerchandisingRequest(
     string? EditionLabel);
 
 public sealed record SetBookIdsRequest(IReadOnlyList<int> BookIds);
+
+public sealed record BookTranslationRequest(
+    string Title, string? Subtitle, string? Author, string? Description, string? EditionLabel, IReadOnlyList<string>? Highlights);
+
+public sealed record TransliterationRequest(string? TransliteratedTitle);
 
 [ApiController]
 [Route("api/admin/books")]
@@ -160,4 +166,42 @@ public sealed class AdminBooksController(ISender sender) : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> SetRelated(int id, SetBookIdsRequest r, CancellationToken ct) =>
         (await sender.Send(new SetRelatedBooksCommand(id, r.BookIds), ct)).ToActionResult();
+
+    /// Arabic source + every translation + which languages are missing.
+    [HttpGet("{id:int}/translations")]
+    [ProducesResponseType(typeof(AdminBookTranslationsDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetTranslations(int id, CancellationToken ct) =>
+        (await sender.Send(new GetBookTranslationsQuery(id), ct)).ToActionResult();
+
+    [HttpGet("{id:int}/translations/{lang}")]
+    [ProducesResponseType(typeof(BookTranslationDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetTranslation(int id, string lang, CancellationToken ct) =>
+        (await sender.Send(new GetBookTranslationQuery(id, lang), ct)).ToActionResult();
+
+    /// lang: en | tr. Full replacement for that language; blank fields fall back to Arabic.
+    [HttpPut("{id:int}/translations/{lang}")]
+    [ProducesResponseType(typeof(BookTranslationDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> SetTranslation(int id, string lang, BookTranslationRequest r, CancellationToken ct) =>
+        (await sender.Send(new SetBookTranslationCommand(
+            id, lang, r.Title, r.Subtitle, r.Author, r.Description, r.EditionLabel, r.Highlights), ct)).ToActionResult();
+
+    [HttpDelete("{id:int}/translations/{lang}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> DeleteTranslation(int id, string lang, CancellationToken ct) =>
+        (await sender.Send(new DeleteBookTranslationCommand(id, lang), ct)).ToActionResult();
+
+    /// Latin transliteration of the Arabic title, searched in every language. Null clears it.
+    [HttpPut("{id:int}/transliteration")]
+    [ProducesResponseType(typeof(AdminBookDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> SetTransliteration(int id, TransliterationRequest r, CancellationToken ct) =>
+        (await sender.Send(new SetBookTransliterationCommand(id, r.TransliteratedTitle), ct)).ToActionResult();
+
+
 }

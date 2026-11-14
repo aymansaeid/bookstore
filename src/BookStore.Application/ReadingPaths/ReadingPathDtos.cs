@@ -31,7 +31,8 @@ public sealed record AdminPathStageDto(int StageNumber, int BookId, string Reaso
 public sealed record AdminReadingPathDto(
     int Id, string Slug, string Title, string? Description, ReaderLevel Level, int EstimatedWeeks,
     int DiscountPercentage, bool IsFeatured, int DisplayOrder, bool IsActive,
-    IReadOnlyList<AdminPathStageDto> Stages, int EnrollmentCount);
+    IReadOnlyList<AdminPathStageDto> Stages, int EnrollmentCount,
+    IReadOnlyList<string> Translations);
 
 public static class PathPricing
 {
@@ -49,10 +50,11 @@ public static class PathPricing
 public static class ReadingPathMappings
 {
     public static AdminReadingPathDto ToAdminDto(this ReadingPath p, int enrollmentCount) =>
-        new(p.Id, p.Slug.Value, p.Title, p.Description, p.Level, p.EstimatedWeeks,
-            p.DiscountPercentage, p.IsFeatured, p.DisplayOrder, p.IsActive,
-            p.OrderedStages.Select(s => new AdminPathStageDto(s.StageNumber, s.BookId, s.Reason, s.EstimatedWeeks)).ToList(),
-            enrollmentCount);
+      new(p.Id, p.Slug.Value, p.Title, p.Description, p.Level, p.EstimatedWeeks,
+          p.DiscountPercentage, p.IsFeatured, p.DisplayOrder, p.IsActive,
+          p.OrderedStages.Select(s => new AdminPathStageDto(s.StageNumber, s.BookId, s.Reason, s.EstimatedWeeks)).ToList(),
+          enrollmentCount,
+          p.TranslatedLanguages.Codes());
 }
 
 public static class ReadingPathErrors
