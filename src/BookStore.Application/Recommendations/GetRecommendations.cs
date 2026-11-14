@@ -1,4 +1,5 @@
-﻿using BookStore.Application.Abstractions.Messaging;
+﻿using BookStore.Application.Abstractions;
+using BookStore.Application.Abstractions.Messaging;
 using BookStore.Application.Abstractions.Queries;
 using BookStore.Application.Abstractions.Repositories;
 using BookStore.Application.Abstractions.Reviews.Queries;
@@ -7,6 +8,7 @@ using BookStore.Application.Books;
 using BookStore.Application.Common;
 using BookStore.Application.Library;
 using BookStore.Domain.Books;
+using BookStore.Domain.Common;
 
 namespace BookStore.Application.Recommendations;
 
@@ -26,13 +28,15 @@ public sealed class GetRecommendationsQueryHandler(
     ICategoryRepository categoryRepository,
     ICatalogSearch catalogSearch,
     IReviewQueries reviewQueries,
-    IFileStorage fileStorage)
+    IFileStorage fileStorage,
+    ILanguageContext languageContext)
     : IQueryHandler<GetRecommendationsQuery, RecommendationsDto>
 {
     private const int PoolSize = 40;
 
     public async Task<Result<RecommendationsDto>> Handle(GetRecommendationsQuery query, CancellationToken ct)
     {
+        var language = languageContext.Current;
         var limit = Math.Clamp(query.Limit, 1, 24);
         var customer = await customerRepository.GetByIdAsync(query.CustomerId, ct);
 
@@ -43,7 +47,7 @@ public sealed class GetRecommendationsQueryHandler(
         var complements = new Dictionary<int, (int, string)>();
         foreach (var ownedBook in ownedBooks)
             foreach (var relatedId in ownedBook.OrderedRelatedBookIds)
-                complements.TryAdd(relatedId, (ownedBook.Id, ownedBook.Title));
+                complements.TryAdd(relatedId, (ownedBook.Id, ownedBook.TextIn(language).Title));
 
         // 2. Who they follow, and what they're interested in.
         var followIds = (await followRepository.ListByCustomerAsync(query.CustomerId, ct)).Select(f => f.MuhaqqiqId).ToList();
@@ -75,8 +79,8 @@ public sealed class GetRecommendationsQueryHandler(
         var signals = new RecommendationSignals(
             owned.Keys.ToHashSet(),
             complements.ToDictionary(kv => kv.Key, kv => kv.Value),
-            followed.Where(m => m.IsActive).ToDictionary(m => m.Id, m => (m.Name, m.Slug.Value)),
-            interests.ToDictionary(c => c.Id, c => (c.Name, c.Slug.Value)),
+            followed.Where(m => m.IsActive).ToDictionary(m => m.Id, m => (m.NameIn(language), m.Slug.Value)),
+            interests.ToDictionary(c => c.Id, c => (c.NameIn(language), c.Slug.Value)),
             categories.Where(c => c.ParentId is not null).ToDictionary(c => c.Id, c => c.ParentId!.Value),
             customer?.ReadingLevel,
             customer?.MonthlyBudget,
@@ -86,7 +90,7 @@ public sealed class GetRecommendationsQueryHandler(
         var ratings = await reviewQueries.GetRatingSnapshotsAsync(picks.Select(p => p.Book.Id).ToList(), ct);
 
         var items = picks.Select(p => new RecommendedBookDto(
-            p.Book.ToSummaryDto(fileStorage, ratings.GetValueOrDefault(p.Book.Id)), p.MatchPercent, p.Reasons)).ToList();
+            p.Book.ToSummaryDto(fileStorage, ratings.GetValueOrDefault(p.Book.Id), language), p.MatchPercent, p.Reasons)).ToList();
 
         // The two most frequent personal reasons become the row's pills.
         var headline = items

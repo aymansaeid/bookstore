@@ -19,7 +19,8 @@ public sealed record NotificationDto(
     string? MuhaqqiqSlug,
     decimal? OldPrice,
     decimal? NewPrice,
-    string? Currency);
+    string? Currency,
+    string? OriginalBookTitle);
 
 public sealed record NotificationsPageDto(PagedResult<NotificationDto> Notifications, int UnreadCount);
 

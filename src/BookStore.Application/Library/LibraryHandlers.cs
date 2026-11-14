@@ -12,7 +12,10 @@ namespace BookStore.Application.Library;
 public sealed record GetLibraryQuery(int CustomerId) : IQuery<LibraryDto>;
 
 public sealed class GetLibraryQueryHandler(
-    LibraryReader libraryReader, IBookRepository bookRepository, IFileStorage fileStorage)
+    LibraryReader libraryReader,
+    IBookRepository bookRepository,
+    IFileStorage fileStorage,
+    ILanguageContext languageContext)
     : IQueryHandler<GetLibraryQuery, LibraryDto>
 {
     public async Task<Result<LibraryDto>> Handle(GetLibraryQuery query, CancellationToken ct)
@@ -31,7 +34,7 @@ public sealed class GetLibraryQueryHandler(
             {
                 var entry = entriesByBook.GetValueOrDefault(kv.Key);
                 return new LibraryItemDto(
-                    books[kv.Key].ToSummaryDto(fileStorage, rating: null),
+                    books[kv.Key].ToSummaryDto(fileStorage, rating: null, languageContext.Current),
                     kv.Value.Ownership,
                     entry?.ReadingStatus ?? ReadingStatus.NotStarted,
                     entry?.ProgressPercent ?? 0,
@@ -78,7 +81,8 @@ public sealed class UpdateReadingProgressCommandHandler(
     ILibraryEntryRepository libraryRepository,
     IBookRepository bookRepository,
     IUnitOfWork unitOfWork,
-    IFileStorage fileStorage)
+    IFileStorage fileStorage,
+    ILanguageContext languageContext)
     : ICommandHandler<UpdateReadingProgressCommand, LibraryItemDto>
 {
     public async Task<Result<LibraryItemDto>> Handle(UpdateReadingProgressCommand command, CancellationToken ct)
@@ -105,7 +109,7 @@ public sealed class UpdateReadingProgressCommandHandler(
         await unitOfWork.SaveChangesAsync(ct);
 
         return Result.Success(new LibraryItemDto(
-            book.ToSummaryDto(fileStorage, rating: null), ownedBook.Ownership,
+            book.ToSummaryDto(fileStorage, rating: null, languageContext.Current), ownedBook.Ownership,
             entry.ReadingStatus, entry.ProgressPercent, ownedBook.AcquiredAtUtc,
             entry.ReadingStatus == ReadingStatus.NotStarted ? null : entry.UpdatedAtUtc));
     }

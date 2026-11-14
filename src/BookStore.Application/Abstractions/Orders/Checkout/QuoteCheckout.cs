@@ -1,4 +1,5 @@
-﻿using BookStore.Application.Abstractions.Messaging;
+﻿using BookStore.Application.Abstractions;
+using BookStore.Application.Abstractions.Messaging;
 using BookStore.Application.Abstractions.Repositories;
 using BookStore.Application.Abstractions.Storage;
 using BookStore.Application.Books;
@@ -11,7 +12,7 @@ using Microsoft.Extensions.Options;
 namespace BookStore.Application.Orders.Checkout;
 
 public sealed record QuoteLineDto(
-    int BookId, string Title, string Slug, string? CoverImageUrl, string? CoverThumbnailUrl,
+    int BookId, string Title, string Slug, string? CoverImageUrl, string? CoverThumbnailUrl, string OriginalTitle,
     decimal UnitPrice, decimal? OldPrice, int Quantity, decimal LineTotal, bool Available);
 
 public sealed record QuoteCouponDto(string Code, int DiscountPercentage);
@@ -84,11 +85,13 @@ public sealed class QuoteCheckoutQueryHandler(
     ICustomerRepository customerRepository,
     IFileStorage fileStorage,
     IOptions<StoreOptions> storeOptions,
-    PathDiscountCalculator pathDiscountCalculator)
+    PathDiscountCalculator pathDiscountCalculator,
+    ILanguageContext languageContext)
     : IQueryHandler<QuoteCheckoutQuery, CheckoutQuoteDto>
 {
     public async Task<Result<CheckoutQuoteDto>> Handle(QuoteCheckoutQuery query, CancellationToken ct)
     {
+        var language = languageContext.Current;
         var store = storeOptions.Value;
         var currency = store.Currency;
         var problems = new List<string>();
@@ -127,11 +130,19 @@ public sealed class QuoteCheckoutQueryHandler(
             var lineTotal = book.Price.MultiplyBy(cartLine.Quantity);
             subtotal = subtotal.Add(lineTotal);
 
+            var text = book.TextIn(language);
             lines.Add(new QuoteLineDto(
-                book.Id, book.Title, book.Slug.Value, BookMappings.CoverUrl(book, fileStorage),
+                book.Id,
+                text.Title,
+                book.Slug.Value,
+                BookMappings.CoverUrl(book, fileStorage),
                 BookMappings.CoverThumbnailUrl(book, fileStorage),
-                book.Price.Amount, book.SavingsAmount is null ? null : book.CompareAtPrice,
-                cartLine.Quantity, lineTotal.Amount, available));
+                book.Title,
+                book.Price.Amount,
+                book.SavingsAmount is null ? null : book.CompareAtPrice,
+                cartLine.Quantity,
+                lineTotal.Amount,
+                available));
         }
 
         // Coupon: same validity rule as checkout; the reason stays vague.

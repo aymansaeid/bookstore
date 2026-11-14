@@ -6,6 +6,8 @@ using BookStore.Application.Abstractions.Storage;
 using BookStore.Application.Books;
 using BookStore.Application.Catalog;
 using BookStore.Application.Common;
+using BookStore.Domain.Books;
+using BookStore.Domain.Common;
 using BookStore.Domain.Notifications;
 using FluentValidation;
 
@@ -24,27 +26,49 @@ public sealed class GetNotificationsQueryValidator : AbstractValidator<GetNotifi
 }
 
 public sealed class GetNotificationsQueryHandler(
-    INotificationRepository repository, IBookRepository bookRepository, IFileStorage fileStorage)
+    INotificationRepository repository,
+    IBookRepository bookRepository,
+    IMuhaqqiqRepository muhaqqiqRepository,
+    IFileStorage fileStorage,
+    ILanguageContext languageContext)
     : IQueryHandler<GetNotificationsQuery, NotificationsPageDto>
 {
     public async Task<Result<NotificationsPageDto>> Handle(GetNotificationsQuery query, CancellationToken ct)
     {
+        var language = languageContext.Current;
         var page = await repository.ListAsync(query.CustomerId, query.UnreadOnly, query.Page, query.PageSize, ct);
         var unread = await repository.CountUnreadAsync(query.CustomerId, ct);
 
-        // Covers are looked up live (one query for the page): image URLs can
-        // change after a regenerate, titles in notifications shouldn't.
+        // Live books for covers (and translated titles), one query per page.
         var bookIds = page.Items.Where(n => n.BookId is not null).Select(n => n.BookId!.Value).Distinct().ToList();
         var books = bookIds.Count == 0
             ? new Dictionary<int, Domain.Books.Book>()
             : (await bookRepository.ListByIdsAsync(bookIds, ct)).ToDictionary(b => b.Id);
 
-        var items = page.Items.Select(n => new NotificationDto(
-            n.Id, n.Type, n.CreatedAtUtc, n.IsRead,
-            n.BookId, n.BookTitle, n.BookSlug,
-            n.BookId is { } id && books.TryGetValue(id, out var book) ? BookMappings.CoverThumbnailUrl(book, fileStorage) : null,
-            n.OrderNumber, n.MuhaqqiqId, n.MuhaqqiqName, n.MuhaqqiqSlug,
-            n.OldPrice, n.NewPrice, n.Currency)).ToList();
+        // Muhaqqiq names only need a lookup in a translated language;
+        // Arabic keeps the name recorded with the notification.
+        var muhaqqiqIds = page.Items.Where(n => n.MuhaqqiqId is not null).Select(n => n.MuhaqqiqId!.Value).Distinct().ToList();
+        var muhaqqiqs = muhaqqiqIds.Count == 0 || !language.IsTranslatable()
+            ? new Dictionary<int, Domain.Catalog.Muhaqqiq>()
+            : (await muhaqqiqRepository.ListByIdsAsync(muhaqqiqIds, ct)).ToDictionary(m => m.Id);
+
+        var items = page.Items.Select(n =>
+        {
+            var book = n.BookId is { } bookId ? books.GetValueOrDefault(bookId) : null;
+            var muhaqqiq = n.MuhaqqiqId is { } muhaqqiqId ? muhaqqiqs.GetValueOrDefault(muhaqqiqId) : null;
+
+            return new NotificationDto(
+                n.Id, n.Type, n.CreatedAtUtc, n.IsRead,
+                n.BookId,
+                n.BookTitle is null ? null : LocalizedTitles.FromSnapshot(n.BookTitle, book, language),
+                n.BookSlug,
+                book is null ? null : BookMappings.CoverThumbnailUrl(book, fileStorage),
+                n.OrderNumber, n.MuhaqqiqId,
+                muhaqqiq is null ? n.MuhaqqiqName : muhaqqiq.NameIn(language),
+                n.MuhaqqiqSlug,
+                n.OldPrice, n.NewPrice, n.Currency,
+                n.BookTitle);
+        }).ToList();
 
         return Result.Success(new NotificationsPageDto(
             new PagedResult<NotificationDto>(items, page.Page, page.PageSize, page.TotalCount), unread));
@@ -96,7 +120,8 @@ public sealed record GetFollowedMuhaqqiqsQuery(int CustomerId) : IQuery<IReadOnl
 public sealed class GetFollowedMuhaqqiqsQueryHandler(
     IMuhaqqiqFollowRepository followRepository,
     IMuhaqqiqRepository muhaqqiqRepository,
-    ICatalogQueries catalogQueries)
+    ICatalogQueries catalogQueries,
+    ILanguageContext languageContext)
     : IQueryHandler<GetFollowedMuhaqqiqsQuery, IReadOnlyList<FollowedMuhaqqiqDto>>
 {
     public async Task<Result<IReadOnlyList<FollowedMuhaqqiqDto>>> Handle(GetFollowedMuhaqqiqsQuery query, CancellationToken ct)
@@ -114,7 +139,7 @@ public sealed class GetFollowedMuhaqqiqsQueryHandler(
             .Where(f => muhaqqiqs.ContainsKey(f.MuhaqqiqId))
             .OrderByDescending(f => f.CreatedAtUtc)
             .Select(f => new FollowedMuhaqqiqDto(
-                muhaqqiqs[f.MuhaqqiqId].ToPublicDto(counts.GetValueOrDefault(f.MuhaqqiqId)), f.CreatedAtUtc))
+                muhaqqiqs[f.MuhaqqiqId].ToPublicDto(counts.GetValueOrDefault(f.MuhaqqiqId), languageContext.Current), f.CreatedAtUtc))
             .ToList());
     }
 }

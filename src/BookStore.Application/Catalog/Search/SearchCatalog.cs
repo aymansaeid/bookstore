@@ -1,4 +1,5 @@
-﻿using BookStore.Application.Abstractions.Messaging;
+﻿using BookStore.Application.Abstractions;
+using BookStore.Application.Abstractions.Messaging;
 using BookStore.Application.Abstractions.Queries;
 using BookStore.Application.Abstractions.Repositories;
 using BookStore.Application.Abstractions.Reviews.Queries;
@@ -7,6 +8,7 @@ using BookStore.Application.Books;
 using BookStore.Application.Common;
 using BookStore.Domain.Books;
 using BookStore.Domain.Catalog;
+using BookStore.Domain.Common;
 using FluentValidation;
 
 namespace BookStore.Application.Catalog.Search;
@@ -76,19 +78,22 @@ public sealed class SearchCatalogQueryHandler(
     ICategoryRepository categoryRepository,
     IMuhaqqiqRepository muhaqqiqRepository,
     IReviewQueries reviewQueries,
-    IFileStorage fileStorage)
+    IFileStorage fileStorage,
+    ILanguageContext languageContext)
     : IQueryHandler<SearchCatalogQuery, CatalogSearchResultDto>
 {
     private const int MaxMuhaqqiqFacets = 30;
 
     public async Task<Result<CatalogSearchResultDto>> Handle(SearchCatalogQuery query, CancellationToken ct)
     {
+        var language = languageContext.Current;
+
         // Both tables are small and needed for names anyway: load once,
         // reuse for slug lookups, name matching, facets and the DTOs.
         var categories = await categoryRepository.ListAsync(includeInactive: true, ct);
         var muhaqqiqs = await muhaqqiqRepository.ListAsync(includeInactive: true, ct);
 
-        var taxonomy = new TaxonomyLookup(categories.ToDictionary(c => c.Id), muhaqqiqs.ToDictionary(m => m.Id));
+        var taxonomy = new TaxonomyLookup(categories.ToDictionary(c => c.Id), muhaqqiqs.ToDictionary(m => m.Id), language);
         var activeCategories = categories.Where(c => c.IsActive).ToList();
         var activeMuhaqqiqs = muhaqqiqs.Where(m => m.IsActive).ToList();
 
@@ -147,7 +152,7 @@ public sealed class SearchCatalogQueryHandler(
         if (query.IncludeFacets)
         {
             var counts = await catalogSearch.GetFacetsAsync(filter, ct);
-            facets = BuildFacets(counts, activeCategories, activeMuhaqqiqs);
+            facets = BuildFacets(counts, activeCategories, activeMuhaqqiqs, language);
         }
 
         return Result.Success(new CatalogSearchResultDto(
@@ -173,28 +178,29 @@ public sealed class SearchCatalogQueryHandler(
     }
 
     private static CatalogFacetsDto BuildFacets(
-        CatalogFacetCounts counts, IReadOnlyList<Category> activeCategories, IReadOnlyList<Muhaqqiq> activeMuhaqqiqs)
+        CatalogFacetCounts counts, IReadOnlyList<Category> activeCategories, IReadOnlyList<Muhaqqiq> activeMuhaqqiqs,
+        Language language)
     {
         var categoryFacets = activeCategories
             .Where(c => c.IsTopLevel)
-            .OrderBy(c => c.DisplayOrder).ThenBy(c => c.Name, StringComparer.Ordinal)
+            .OrderBy(c => c.DisplayOrder).ThenBy(c => c.NameIn(language), StringComparer.Ordinal)
             .Select(top =>
             {
                 var children = activeCategories
                     .Where(c => c.ParentId == top.Id)
-                    .OrderBy(c => c.DisplayOrder).ThenBy(c => c.Name, StringComparer.Ordinal)
-                    .Select(c => new FacetCountDto(c.Id, c.Slug.Value, c.Name, counts.Categories.GetValueOrDefault(c.Id)))
+                    .OrderBy(c => c.DisplayOrder).ThenBy(c => c.NameIn(language), StringComparer.Ordinal)
+                    .Select(c => new FacetCountDto(c.Id, c.Slug.Value, c.NameIn(language), counts.Categories.GetValueOrDefault(c.Id)))
                     .Where(f => f.Count > 0)
                     .ToList();
 
                 var total = counts.Categories.GetValueOrDefault(top.Id) + children.Sum(c => c.Count);
-                return new CategoryFacetDto(top.Id, top.Slug.Value, top.Name, total, children);
+                return new CategoryFacetDto(top.Id, top.Slug.Value, top.NameIn(language), total, children);
             })
             .Where(f => f.Count > 0)
             .ToList();
 
         var muhaqqiqFacets = activeMuhaqqiqs
-            .Select(m => new FacetCountDto(m.Id, m.Slug.Value, m.Name, counts.Muhaqqiqs.GetValueOrDefault(m.Id)))
+            .Select(m => new FacetCountDto(m.Id, m.Slug.Value, m.NameIn(language), counts.Muhaqqiqs.GetValueOrDefault(m.Id)))
             .Where(f => f.Count > 0)
             .OrderByDescending(f => f.Count)
             .ThenBy(f => f.Name, StringComparer.Ordinal)

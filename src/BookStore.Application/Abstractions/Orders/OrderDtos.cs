@@ -1,6 +1,10 @@
-﻿using BookStore.Application.Abstractions.Storage;
+﻿using BookStore.Application.Abstractions;
+using BookStore.Application.Abstractions.Messaging;
+using BookStore.Application.Abstractions.Repositories;
+using BookStore.Application.Abstractions.Storage;
 using BookStore.Application.Books;
 using BookStore.Domain.Books;
+using BookStore.Domain.Common;
 using BookStore.Domain.Orders;
 
 namespace BookStore.Application.Orders;
@@ -51,11 +55,12 @@ public sealed record AdminOrderDetailsDto(
     IReadOnlyList<string> AllowedActions,
     string ShippingMethodCode, string? ShippingMethodName,
     bool GiftWrap, decimal GiftWrapFee, string? GiftMessage,
-    bool CancelledByCustomer  ,  decimal PathDiscountAmount, int? ReadingPathId);
+    bool CancelledByCustomer, decimal PathDiscountAmount, int? ReadingPathId);
 
 public sealed record PublicOrderLineDto(
     string Title, int Quantity, decimal UnitPrice, decimal LineTotal,
-    int BookId, string? BookSlug, string? CoverImageUrl , string? CoverThumbnailUrl);
+    int BookId, string? BookSlug, string? CoverImageUrl, string? CoverThumbnailUrl, string OriginalTitle);
+
 public sealed record PublicOrderDto(
     string OrderNumber,
     OrderStatus Status,
@@ -72,8 +77,9 @@ public sealed record PublicOrderDto(
     DateTimeOffset CreatedAtUtc,
     DateTimeOffset? ShippedAtUtc,
     DateTimeOffset? DeliveredAtUtc,
-     string ShippingMethodCode, string? ShippingMethodName, bool GiftWrap, decimal GiftWrapFee,
+    string ShippingMethodCode, string? ShippingMethodName, bool GiftWrap, decimal GiftWrapFee,
     bool CanBeCancelled, decimal PathDiscountAmount, int? ReadingPathId);
+
 public static class OrderMappings
 {
     public static AdminOrderDetailsDto ToAdminDetailsDto(this Order o) =>
@@ -87,13 +93,13 @@ public static class OrderMappings
             o.AppliedCouponCode, o.ShippingCarrier, o.TrackingNumber, o.CancellationReason,
             o.CheckoutSessionId, o.PaymentReference,
             o.CreatedAtUtc, o.PaidAtUtc, o.ShippedAtUtc, o.DeliveredAtUtc, o.CancelledAtUtc,
-            GetAllowedActions(o), o.ShippingMethodCode, o.ShippingMethodName, o.GiftWrap, o.GiftWrapFee.Amount, o.GiftMessage, o.CancelledByCustomer  ,  o.PathDiscountAmount.Amount, o.AppliedReadingPathId);
+            GetAllowedActions(o), o.ShippingMethodCode, o.ShippingMethodName, o.GiftWrap, o.GiftWrapFee.Amount, o.GiftMessage, o.CancelledByCustomer, o.PathDiscountAmount.Amount, o.AppliedReadingPathId);
 
     /// books: the purchased books, for slugs and covers. Optional: a line whose
     /// book can't be found still renders, just without a link or cover. The
     /// title is always the one snapshotted at purchase.
     public static PublicOrderDto ToPublicDto(
-        this Order o, IReadOnlyDictionary<int, Book>? books = null, IFileStorage? storage = null) =>
+        this Order o, IReadOnlyDictionary<int, Book>? books = null, IFileStorage? storage = null, Language language = Language.Ar) =>
         new(o.OrderNumber, o.Status,
             o.Lines.Select(l =>
             {
@@ -101,11 +107,13 @@ public static class OrderMappings
                 books?.TryGetValue(l.BookId, out book);
 
                 return new PublicOrderLineDto(
-                    l.BookTitleSnapshot, l.Quantity, l.UnitPriceAtPurchase.Amount, l.LineTotal.Amount,
+                    LocalizedTitles.FromSnapshot(l.BookTitleSnapshot, book, language),
+                    l.Quantity, l.UnitPriceAtPurchase.Amount, l.LineTotal.Amount,
                     l.BookId,
                     book?.Slug.Value,
                     book is not null && storage is not null ? BookMappings.CoverUrl(book, storage) : null,
-                    book is not null && storage is not null ? BookMappings.CoverThumbnailUrl(book, storage) : null);
+                    book is not null && storage is not null ? BookMappings.CoverThumbnailUrl(book, storage) : null,
+                    l.BookTitleSnapshot);
             }).ToList(),
             o.Subtotal.Amount, o.ShippingCost.Amount, o.CouponDiscountAmount.Amount, o.Total.Amount, o.Total.Currency,
             o.ShippingAddress.City, o.ShippingAddress.CountryCode,

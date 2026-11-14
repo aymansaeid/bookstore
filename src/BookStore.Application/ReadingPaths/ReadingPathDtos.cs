@@ -7,12 +7,13 @@ namespace BookStore.Application.ReadingPaths;
 
 public sealed record PathPricingDto(decimal TotalPrice, int DiscountPercentage, decimal DiscountedPrice, decimal Savings, string Currency);
 
-public sealed record PathCoverDto(int StageNumber, int BookId, string Title, string? CoverThumbnailUrl);
+public sealed record PathCoverDto(int StageNumber, int BookId, string Title, string? CoverThumbnailUrl, string OriginalTitle);
 
 public sealed record ReadingPathSummaryDto(
     int Id, string Slug, string Title, string? Description, ReaderLevel Level, int EstimatedWeeks,
     int StageCount, bool IsFeatured, bool IsMostChosen, int EnrollmentCount,
-    IReadOnlyList<PathCoverDto> Covers, PathPricingDto Pricing);
+    IReadOnlyList<PathCoverDto> Covers, PathPricingDto Pricing,
+    string OriginalTitle);
 
 public sealed record PathStageDto(
     int StageNumber, string Reason, int? EstimatedWeeks, BookSummaryDto Book, int PageCount,

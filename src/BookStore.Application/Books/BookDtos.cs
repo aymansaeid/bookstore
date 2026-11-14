@@ -17,7 +17,7 @@ public sealed record BookSummaryDto(
     int Id, string Slug, string Title, string Author, string? EditionLabel, int? Volumes,
     decimal Price, decimal? OldPrice, string Currency, bool InStock,
     string? CoverImageUrl, decimal? AverageRating, int ReviewCount,
-    string? CoverImageSrcSet);
+    string? CoverImageSrcSet , string OriginalTitle, string? TransliteratedTitle);
 
 /// Only loaded for a single book (the book page); null in list responses.
 public sealed record BookPageExtras(IReadOnlyList<BookSummaryDto> Editions, IReadOnlyList<BookSummaryDto> Related);
@@ -36,7 +36,7 @@ public sealed record PublicBookDto(
     string? EditionLabel,
     IReadOnlyList<BookSummaryDto>? Editions, IReadOnlyList<BookSummaryDto>? Related,
     string? CoverImageSrcSet,
-    int? SoldLast7Days);
+    int? SoldLast7Days, string OriginalTitle, string OriginalAuthor, string? TransliteratedTitle);
 
 public sealed record AdminBookDto(
     int Id, string Slug, string Title, string? Subtitle, string Author, string Isbn, string Description,
@@ -54,17 +54,19 @@ public sealed record AdminBookDto(
 public static class BookMappings
 {
     public static PublicBookDto ToPublicDto(
-        this Book b,
-        IFileStorage storage,
-        RatingSnapshot? rating = null,
-        TaxonomyLookup? taxonomy = null,
-        BookPageExtras? extras = null,
-        int? soldLast7Days = null)
+     this Book b,
+     IFileStorage storage,
+     RatingSnapshot? rating = null,
+     TaxonomyLookup? taxonomy = null,
+     BookPageExtras? extras = null,
+     int? soldLast7Days = null,
+     Language? language = null)
     {
         var lookup = taxonomy ?? TaxonomyLookup.Empty;
+        var text = b.TextIn(language ?? lookup.ContentLanguage);
 
         return new PublicBookDto(
-            b.Id, b.Slug.Value, b.Title, b.Subtitle, b.Author, b.Isbn, b.Description,
+            b.Id, b.Slug.Value, text.Title, text.Subtitle, text.Author, b.Isbn, text.Description,
             b.Format.ToString(), b.PageCount, b.Language, b.Publisher, b.PublicationDate,
             b.Dimensions.WeightGrams, b.Dimensions.HeightMm, b.Dimensions.WidthMm, b.Dimensions.DepthMm,
             b.Price.Amount, b.Price.Currency, b.AvailableToSell > 0,
@@ -74,18 +76,26 @@ public static class BookMappings
             lookup.CategoryFor(b), lookup.MuhaqqiqsFor(b),
             b.Level, b.Volumes,
             b.SavingsAmount is null ? null : b.CompareAtPrice, b.SavingsAmount, b.SavingsPercent,
-            b.InstallmentsAllowed, b.Highlights.ToList(), BadgeNames(b.Badges),
-            b.EditionLabel,
+            b.InstallmentsAllowed, text.Highlights, BadgeNames(b.Badges),
+            text.EditionLabel,
             extras?.Editions, extras?.Related,
             CoverSrcSet(b, storage),
-            soldLast7Days);
+            soldLast7Days,
+            b.Title, b.Author, b.TransliteratedTitle);
     }
 
-    public static BookSummaryDto ToSummaryDto(this Book b, IFileStorage storage, RatingSnapshot? rating) =>
-        new(b.Id, b.Slug.Value, b.Title, b.Author, b.EditionLabel, b.Volumes,
+    public static BookSummaryDto ToSummaryDto(
+        this Book b, IFileStorage storage, RatingSnapshot? rating, Language language = Language.Ar)
+    {
+        var text = b.TextIn(language);
+
+        return new BookSummaryDto(
+            b.Id, b.Slug.Value, text.Title, text.Author, text.EditionLabel, b.Volumes,
             b.Price.Amount, b.SavingsAmount is null ? null : b.CompareAtPrice, b.Price.Currency,
             b.AvailableToSell > 0, CoverUrl(b, storage), rating?.AverageRating, rating?.ReviewCount ?? 0,
-            CoverSrcSet(b, storage));
+            CoverSrcSet(b, storage),
+            b.Title, b.TransliteratedTitle);
+    }
 
     public static AdminBookDto ToAdminDto(this Book b, IFileStorage storage) =>
         new(b.Id, b.Slug.Value, b.Title, b.Subtitle, b.Author, b.Isbn, b.Description,

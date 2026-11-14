@@ -62,9 +62,11 @@ public sealed class BookPageAssembler(
 
         var soldLast7Days = await reportingQueries.CountUnitsSoldAsync(book.Id, DateTimeOffset.UtcNow.AddDays(-7), ct);
 
+        // Edition and related cards in the same language as the page.
+        var language = taxonomy.ContentLanguage;
         var extras = new BookPageExtras(
-            editions.Select(b => b.ToSummaryDto(fileStorage, ratings.GetValueOrDefault(b.Id))).ToList(),
-            related.Select(b => b.ToSummaryDto(fileStorage, ratings.GetValueOrDefault(b.Id))).ToList());
+            editions.Select(b => b.ToSummaryDto(fileStorage, ratings.GetValueOrDefault(b.Id), language)).ToList(),
+            related.Select(b => b.ToSummaryDto(fileStorage, ratings.GetValueOrDefault(b.Id), language)).ToList());
 
         return book.ToPublicDto(fileStorage, ratings.GetValueOrDefault(book.Id), taxonomy, extras, soldLast7Days);
     }

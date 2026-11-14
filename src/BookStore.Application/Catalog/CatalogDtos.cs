@@ -12,7 +12,8 @@ public sealed record MuhaqqiqRefDto(int Id, string Slug, string Name);
 
 public sealed record PublicCategoryDto(
     int Id, string Slug, string Name, string? Letter, string? Description,
-    int BookCount, CategoryRefDto? Parent, IReadOnlyList<PublicCategoryDto> Children);
+    int BookCount, CategoryRefDto? Parent, IReadOnlyList<PublicCategoryDto> Children,
+    string OriginalName);
 
 public sealed record AdminCategoryDto(
     int Id, string Slug, string Name, string? Letter, string? Description,
@@ -20,7 +21,8 @@ public sealed record AdminCategoryDto(
 
 public sealed record PublicMuhaqqiqDto(
     int Id, string Slug, string Name, string? Bio, IReadOnlyList<string> Specialties,
-    bool IsFeatured, int WorksCount);
+    bool IsFeatured, int WorksCount,
+    string OriginalName);
 
 public sealed record AdminMuhaqqiqDto(
     int Id, string Slug, string Name, string? Bio, IReadOnlyList<string> Specialties,
@@ -28,13 +30,15 @@ public sealed record AdminMuhaqqiqDto(
 
 public static class CatalogMappings
 {
-    public static CategoryRefDto ToRef(this Category c) => new(c.Id, c.Slug.Value, c.Name);
+    public static CategoryRefDto ToRef(this Category c, Language language = Language.Ar) =>
+        new(c.Id, c.Slug.Value, c.NameIn(language));
 
     public static AdminCategoryDto ToAdminDto(this Category c, int bookCount) =>
         new(c.Id, c.Slug.Value, c.Name, c.Letter, c.Description, c.ParentId, c.DisplayOrder, c.IsActive, bookCount, c.TranslatedLanguages.Codes());
 
-    public static PublicMuhaqqiqDto ToPublicDto(this Muhaqqiq m, int worksCount) =>
-        new(m.Id, m.Slug.Value, m.Name, m.Bio, m.Specialties.ToList(), m.IsFeatured, worksCount);
+    public static PublicMuhaqqiqDto ToPublicDto(this Muhaqqiq m, int worksCount, Language language = Language.Ar) =>
+        new(m.Id, m.Slug.Value, m.NameIn(language), m.BioIn(language), m.SpecialtiesIn(language),
+            m.IsFeatured, worksCount, m.Name);
 
     public static AdminMuhaqqiqDto ToAdminDto(this Muhaqqiq m, int worksCount) =>
         new(m.Id, m.Slug.Value, m.Name, m.Bio, m.Specialties.ToList(), m.IsFeatured, m.DisplayOrder, m.IsActive, worksCount , m.TranslatedLanguages.Codes());
