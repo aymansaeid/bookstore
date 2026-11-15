@@ -1,9 +1,11 @@
-﻿using BookStore.Application.Abstractions.Messaging;
+﻿using BookStore.Application.Abstractions;
+using BookStore.Application.Abstractions.Messaging;
 using BookStore.Application.Abstractions.Repositories;
 using BookStore.Application.Common;
 using BookStore.Application.Orders;
 using BookStore.Application.Orders.Checkout;
 using BookStore.Application.Returns;
+using BookStore.Domain.Common;
 using BookStore.Domain.Legal;
 using FluentValidation;
 using MediatR;
@@ -15,20 +17,23 @@ public sealed record GetPublishedLegalDocumentQuery(LegalDocumentType Type, stri
     : IQuery<PublishedLegalDocumentDto>;
 
 public sealed class GetPublishedLegalDocumentQueryHandler(
-    ILegalDocumentRepository repository,
+    LegalDocumentResolver resolver,
+    ILanguageContext languageContext,
     IOptions<StoreOptions> storeOptions,
     IOptions<ReturnOptions> returnOptions)
     : IQueryHandler<GetPublishedLegalDocumentQuery, PublishedLegalDocumentDto>
 {
     public async Task<Result<PublishedLegalDocumentDto>> Handle(GetPublishedLegalDocumentQuery query, CancellationToken ct)
     {
-        var language = LegalLanguages.Normalize(query.Language);
-        var document = await repository.GetPublishedAsync(query.Type, language, ct);
-        if (document is null)
-            return Result.Failure<PublishedLegalDocumentDto>(LegalErrors.NotPublished(query.Type, language));
+        // ?lang= wins when sent; otherwise Accept-Language.
+        var language = Languages.TryParse(query.Language, out var requested) ? requested : languageContext.Current;
 
-        // Generic render: seller details filled in, order fields show "—".
-        var context = LegalContextFactory.Generic(language, storeOptions.Value, returnOptions.Value.WindowDays);
+        var document = await resolver.ResolveAsync(query.Type, language, ct);
+        if (document is null)
+            return Result.Failure<PublishedLegalDocumentDto>(LegalErrors.NotPublished(query.Type, language.Code()));
+
+        // Rendered in the DOCUMENT's language (English may be served the Arabic text).
+        var context = LegalContextFactory.Generic(document.Language, storeOptions.Value, returnOptions.Value.WindowDays);
 
         return Result.Success(new PublishedLegalDocumentDto(
             document.Type, document.Language, document.Version, document.Title,
@@ -78,7 +83,8 @@ public sealed class PreviewCheckoutLegalQueryValidator : AbstractValidator<Previ
 
 public sealed class PreviewCheckoutLegalQueryHandler(
     ISender sender,
-    ILegalDocumentRepository repository,
+    LegalDocumentResolver resolver,
+    ILanguageContext languageContext,
     IOptions<StoreOptions> storeOptions,
     IOptions<ReturnOptions> returnOptions)
     : IQueryHandler<PreviewCheckoutLegalQuery, CheckoutLegalPreviewDto>
@@ -91,13 +97,13 @@ public sealed class PreviewCheckoutLegalQueryHandler(
 
         var quote = quoteResult.Value;
         var store = storeOptions.Value;
-        var language = LegalLanguages.Normalize(query.Language);
+        var language = Languages.TryParse(query.Language, out var requested) ? requested : languageContext.Current;
         var buyer = query.Buyer;
 
         var selected = quote.ShippingOptions.FirstOrDefault(o => o.Code == quote.SelectedShippingMethod);
 
         var context = new LegalRenderContext(
-            store.Seller, language, quote.Currency, store.TimeZoneId, returnOptions.Value.WindowDays,
+            store.Seller, language.Code(), quote.Currency, store.TimeZoneId, returnOptions.Value.WindowDays,
             OrderNumber: null,
             OrderDateUtc: DateTimeOffset.UtcNow,
             CustomerName: buyer.Name,
@@ -106,7 +112,8 @@ public sealed class PreviewCheckoutLegalQueryHandler(
             DeliveryAddress: LegalContextFactory.FormatAddress(
                 buyer.Line1, buyer.Line2, buyer.City, buyer.StateOrProvince, buyer.PostalCode, buyer.CountryCode),
             ShippingMethod: selected?.Name ?? selected?.Carrier ?? selected?.Code,
-            Lines: quote.Lines.Select(l => new LegalLine(l.Title, l.Quantity, l.UnitPrice, l.LineTotal)).ToList(),
+            // The Arabic title, exactly as the order will record it.
+            Lines: quote.Lines.Select(l => new LegalLine(l.OriginalTitle, l.Quantity, l.UnitPrice, l.LineTotal)).ToList(),
             Subtotal: quote.Subtotal,
             Discount: quote.DiscountAmount + quote.PathDiscountAmount,
             Shipping: quote.ShippingCost,
@@ -115,11 +122,11 @@ public sealed class PreviewCheckoutLegalQueryHandler(
 
         async Task<RenderedLegalDocumentDto?> RenderAsync(LegalDocumentType type)
         {
-            var document = await repository.GetPublishedAsync(type, language, ct);
+            var document = await resolver.ResolveAsync(type, language, ct);
             return document is null
                 ? null
                 : new RenderedLegalDocumentDto(type, document.Version, document.Title,
-                    LegalTemplateRenderer.RenderBody(document.BodyMarkdown, context));
+                    LegalTemplateRenderer.RenderBody(document.BodyMarkdown, context with { Language = document.Language }));
         }
 
         return Result.Success(new CheckoutLegalPreviewDto(

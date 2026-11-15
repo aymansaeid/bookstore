@@ -8,6 +8,7 @@ using BookStore.Application.Common;
 using BookStore.Application.Emails;
 using BookStore.Domain.Auth;
 using BookStore.Domain.Books;
+using BookStore.Domain.Common;
 using BookStore.Domain.Customers;
 using FluentValidation;
 using Microsoft.Extensions.Options;
@@ -18,7 +19,8 @@ public sealed record RegisterCustomerCommand(
     string Email, string Password, string FirstName, string LastName,
     string? Phone, bool AcceptsMarketingEmails,
     ReaderLevel? ReadingLevel = null,
-    IReadOnlyList<int>? InterestCategoryIds = null) : ICommand;
+    IReadOnlyList<int>? InterestCategoryIds = null,
+    string? PreferredLanguage = null) : ICommand;
 
 public sealed class RegisterCustomerCommandValidator : AbstractValidator<RegisterCustomerCommand>
 {
@@ -40,7 +42,8 @@ public sealed class RegisterCustomerCommandHandler(
     IEmailSender emailSender,
     IUnitOfWork unitOfWork,
     IOptions<StoreOptions> storeOptions,
-    ICategoryRepository categoryRepository)
+    ICategoryRepository categoryRepository,
+    ILanguageContext languageContext)
     : ICommandHandler<RegisterCustomerCommand>
 {
     private static readonly TimeSpan VerificationValidity = TimeSpan.FromHours(24);
@@ -66,6 +69,11 @@ public sealed class RegisterCustomerCommandHandler(
             email,
             passwordHasher.Hash(command.Password),
             command.FirstName, command.LastName, command.Phone, command.AcceptsMarketingEmails);
+
+        // Account emails (starting with the verification link below) go out in
+        // this language.
+        customer.SetPreferredLanguage(
+            Languages.TryParse(command.PreferredLanguage, out var chosen) ? chosen : languageContext.Current);
 
         // Interests picked during sign-up (spec 5.8). Stale or unknown ids are
         // dropped silently: a tag list must never be the reason a sign-up fails.

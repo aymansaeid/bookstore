@@ -15,12 +15,16 @@ namespace BookStore.Api.Controllers;
 
 public sealed record RegisterRequest(
     string Email, string Password, string FirstName, string LastName, string? Phone, bool AcceptsMarketingEmails,
-    ReaderLevel? ReadingLevel = null, IReadOnlyList<int>? InterestCategoryIds = null);
+    ReaderLevel? ReadingLevel = null, IReadOnlyList<int>? InterestCategoryIds = null, string? PreferredLanguage = null);
 
 public sealed record CustomerLoginRequest(string Email, string Password);
+
 public sealed record VerifyEmailRequest(string Token);
+
 public sealed record ForgotPasswordRequest(string Email);
+
 public sealed record ResetPasswordRequest(string Token, string NewPassword);
+
 public sealed record ResendVerificationRequest(string Email);
 
 
@@ -34,8 +38,8 @@ public sealed class CustomerAuthController(ISender sender, IWebHostEnvironment e
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Register(RegisterRequest r, CancellationToken ct) =>
         (await sender.Send(new RegisterCustomerCommand(
-    r.Email, r.Password, r.FirstName, r.LastName, r.Phone, r.AcceptsMarketingEmails,
-    r.ReadingLevel, r.InterestCategoryIds), ct)).ToActionResult();
+            r.Email, r.Password, r.FirstName, r.LastName, r.Phone, r.AcceptsMarketingEmails,
+            r.ReadingLevel, r.InterestCategoryIds, r.PreferredLanguage), ct)).ToActionResult();
 
     [HttpPost("verify-email")]
     [EnableRateLimiting("customer-auth")]

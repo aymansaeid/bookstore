@@ -3,6 +3,7 @@ using BookStore.Application.Abstractions.Outbox;
 using BookStore.Application.Abstractions.Repositories;
 using BookStore.Application.Common;
 using BookStore.Application.Emails;
+using BookStore.Domain.Common;
 using BookStore.Domain.Returns.Events;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -35,6 +36,7 @@ public sealed class ReturnRequestedEmailHandler(
 
 public sealed class ReturnApprovedEmailHandler(
     IReturnRequestRepository returnRepository,
+    IOrderRepository orderRepository,
     IEmailSender emailSender,
     IOptions<StoreOptions> storeOptions) : IOutboxMessageHandler
 {
@@ -44,14 +46,17 @@ public sealed class ReturnApprovedEmailHandler(
     {
         var e = OutboxSerialization.Deserialize<ReturnApprovedDomainEvent>(payloadJson);
         var request = await returnRepository.GetByIdAsync(e.ReturnRequestId, ct);
+        if (request is null)
+            return;
 
-        if (request is not null)
-            await emailSender.SendAsync(ReturnEmailTemplates.Approved(request, storeOptions.Value), ct);
+        var language = (await orderRepository.GetByIdAsync(request.OrderId, ct))?.Language ?? Languages.Default;
+        await emailSender.SendAsync(ReturnEmailTemplates.Approved(request, storeOptions.Value, language), ct);
     }
 }
 
 public sealed class ReturnRejectedEmailHandler(
     IReturnRequestRepository returnRepository,
+    IOrderRepository orderRepository,
     IEmailSender emailSender,
     IOptions<StoreOptions> storeOptions) : IOutboxMessageHandler
 {
@@ -61,14 +66,17 @@ public sealed class ReturnRejectedEmailHandler(
     {
         var e = OutboxSerialization.Deserialize<ReturnRejectedDomainEvent>(payloadJson);
         var request = await returnRepository.GetByIdAsync(e.ReturnRequestId, ct);
+        if (request is null)
+            return;
 
-        if (request is not null)
-            await emailSender.SendAsync(ReturnEmailTemplates.Rejected(request, storeOptions.Value), ct);
+        var language = (await orderRepository.GetByIdAsync(request.OrderId, ct))?.Language ?? Languages.Default;
+        await emailSender.SendAsync(ReturnEmailTemplates.Rejected(request, storeOptions.Value, language), ct);
     }
 }
 
 public sealed class ReturnCompletedEmailHandler(
-    IReturnRequestRepository returnRepository,
+    IReturnRequestRepository returnRepository,  
+    IOrderRepository orderRepository,
     IEmailSender emailSender,
     IOptions<StoreOptions> storeOptions) : IOutboxMessageHandler
 {
@@ -78,8 +86,10 @@ public sealed class ReturnCompletedEmailHandler(
     {
         var e = OutboxSerialization.Deserialize<ReturnCompletedDomainEvent>(payloadJson);
         var request = await returnRepository.GetByIdAsync(e.ReturnRequestId, ct);
+        if (request is null)
+            return;
 
-        if (request is not null)
-            await emailSender.SendAsync(ReturnEmailTemplates.Completed(request, storeOptions.Value), ct);
+        var language = (await orderRepository.GetByIdAsync(request.OrderId, ct))?.Language ?? Languages.Default;
+        await emailSender.SendAsync(ReturnEmailTemplates.Completed(request, storeOptions.Value, language), ct);
     }
 }

@@ -1,5 +1,6 @@
-﻿using System.Globalization;
+﻿using BookStore.Domain.Common;
 using BookStore.Domain.Shipping;
+using System.Globalization;
 
 namespace BookStore.Application.Shipping;
 
@@ -7,7 +8,7 @@ public sealed record AdminShippingZoneDto(
     int Id, string Name, decimal FlatRate, string Currency,
     IReadOnlyList<string> CountryCodes, bool IsActive,
     string? StandardCarrier, int? StandardMinDays, int? StandardMaxDays,
-    decimal? FreeShippingThreshold, IReadOnlyList<ShippingOptionDto> Options);
+    decimal? FreeShippingThreshold, IReadOnlyList<ShippingOptionDto> Options , IReadOnlyList<string> Translations);
 
 // Flattened one row per country, which is exactly what a checkout country
 // dropdown and a "shipping: $12" preview need.
@@ -26,7 +27,8 @@ public static class ShippingZoneMappings
             z.StandardCarrier, z.StandardMinDays, z.StandardMaxDays, z.FreeShippingThreshold,
             z.Options.OrderBy(o => o.DisplayOrder)
                 .Select(o => new ShippingOptionDto(o.Code, o.Name, o.Carrier, o.Price, o.MinDays, o.MaxDays))
-                .ToList());
+                .ToList(),
+        z.CompleteTranslationLanguages().Codes());
 
     public static IEnumerable<PublicShippingRateDto> ToPublicRates(this ShippingZone z) =>
         z.CountryCodes.Select(code => new PublicShippingRateDto(

@@ -1,61 +1,48 @@
 ﻿using BookStore.Application.Abstractions.Emails;
 using BookStore.Application.Common;
+using BookStore.Domain.Common;
 
 namespace BookStore.Application.Emails;
 
+/// language: the language the alert was requested in.
 public static class StockNotificationEmailTemplates
 {
     public static EmailMessage ConfirmSubscription(
-        string email, string bookTitle, string token, StoreOptions store)
+        string email, string bookTitle, string token, StoreOptions store, Language language = Language.Ar)
     {
-        var url = $"{store.StorefrontBaseUrl}/notify-me/confirm?token={Uri.EscapeDataString(token)}";
+        var t = EmailCopy.For(language);
+        var url = StorefrontLinks.For(store, language, $"/notify-me/confirm?token={Uri.EscapeDataString(token)}");
 
-        var content = $"""
-            <h1 style="margin:0 0 16px;font-size:22px;">Confirm your alert</h1>
-            <p style="margin:0;">Confirm that you'd like to be emailed when <strong>{EmailLayout.Encode(bookTitle)}</strong> is back in stock.</p>
-            {EmailLayout.Button(url, "Confirm alert")}
-            <p style="margin:0;color:#78716c;font-size:13px;">We'll email you once, and only when the book is available. If you didn't request this, ignore this email and nothing will happen.</p>
-            """;
+        var content = string.Concat(
+            EmailLayout.Heading(t.AlertHeading),
+            EmailLayout.Paragraph(t.AlertBody(bookTitle), "0"),
+            EmailLayout.Button(url, t.AlertButton),
+            EmailLayout.Note(t.AlertNote));
 
-        var text = $"""
-            Confirm your alert
+        var text = EmailLayout.PlainText(t.AlertHeading, t.AlertBody(bookTitle), url, t.AlertNote);
 
-            Confirm you'd like to be emailed when "{bookTitle}" is back in stock:
-            {url}
-
-            We'll email you once, and only when the book is available.
-            If you didn't request this, ignore this email.
-            """;
-
-        return new EmailMessage(email, $"Confirm your alert for {bookTitle}",
-            EmailLayout.Wrap(store.Name, store.SupportEmail, content), text);
+        return new EmailMessage(email, t.AlertSubject(bookTitle), EmailLayout.Wrap(store, language, content), text);
     }
 
     public static EmailMessage BackInStock(
-        string email, string bookTitle, string bookSlug, string unsubscribeToken, StoreOptions store)
+        string email, string bookTitle, string bookSlug, string unsubscribeToken, StoreOptions store,
+        Language language = Language.Ar)
     {
-        var bookUrl = $"{store.StorefrontBaseUrl}/books/{Uri.EscapeDataString(bookSlug)}";
-        var unsubscribeUrl = $"{store.StorefrontBaseUrl}/notify-me/unsubscribe?token={Uri.EscapeDataString(unsubscribeToken)}";
+        var t = EmailCopy.For(language);
+        var bookUrl = StorefrontLinks.Book(store, language, bookSlug);
+        var unsubscribeUrl = StorefrontLinks.For(
+            store, language, $"/notify-me/unsubscribe?token={Uri.EscapeDataString(unsubscribeToken)}");
 
-        var content = $"""
-            <h1 style="margin:0 0 16px;font-size:22px;">It's back in stock</h1>
-            <p style="margin:0;"><strong>{EmailLayout.Encode(bookTitle)}</strong> is available again.</p>
-            {EmailLayout.Button(bookUrl, "Order now")}
-            <p style="margin:0;color:#78716c;font-size:13px;">Stock is limited and we can't hold a copy, so order soon if you'd like one. You're receiving this because you asked to be notified &mdash; <a href="{EmailLayout.Encode(unsubscribeUrl)}">unsubscribe</a>.</p>
-            """;
+        var content = string.Concat(
+            EmailLayout.Heading(t.BackHeading),
+            EmailLayout.Paragraph(t.BackBody(bookTitle), "0"),
+            EmailLayout.Button(bookUrl, t.OrderNow),
+            EmailLayout.NoteHtml(
+                $"{EmailLayout.Encode(t.BackNote)} {EmailLayout.Encode(t.WhyYouGotThis)} {EmailLayout.Link(unsubscribeUrl, t.Unsubscribe)}."));
 
-        var text = $"""
-            It's back in stock
+        var text = EmailLayout.PlainText(
+            t.BackHeading, t.BackBody(bookTitle), $"{t.OrderNow}: {bookUrl}", t.BackNote, $"{t.Unsubscribe}: {unsubscribeUrl}");
 
-            "{bookTitle}" is available again.
-
-            Order now: {bookUrl}
-
-            Stock is limited and we can't hold a copy, so order soon.
-            Unsubscribe: {unsubscribeUrl}
-            """;
-
-        return new EmailMessage(email, $"{bookTitle} is back in stock",
-            EmailLayout.Wrap(store.Name, store.SupportEmail, content), text);
+        return new EmailMessage(email, t.BackSubject(bookTitle), EmailLayout.Wrap(store, language, content), text);
     }
 }

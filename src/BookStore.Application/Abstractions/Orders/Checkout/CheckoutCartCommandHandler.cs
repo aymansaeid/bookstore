@@ -31,7 +31,9 @@ public sealed class CheckoutCartCommandHandler(
     IOptions<PaymentOptions> paymentOptions,
     IOptions<ReturnOptions> returnOptions,
     ILogger<CheckoutCartCommandHandler> logger,
-    PathDiscountCalculator pathDiscountCalculator)
+    PathDiscountCalculator pathDiscountCalculator,
+    ILanguageContext languageContext,
+    LegalDocumentResolver legalResolver)
     : ICommandHandler<CheckoutCartCommand, CheckoutCartResponse>
 {
     public async Task<Result<CheckoutCartResponse>> Handle(CheckoutCartCommand command, CancellationToken ct)
@@ -57,15 +59,22 @@ public sealed class CheckoutCartCommandHandler(
             return Result.Failure<CheckoutCartResponse>(CheckoutErrors.IdempotencyKeyReused);
         }
 
-        // 0b. The buyer must have accepted the CURRENTLY published contract in
-        // their language (or the config fallback until one is published).
-        var language = LegalLanguages.Normalize(command.Language);
-        var contract = await legalDocumentRepository.GetPublishedAsync(
-            LegalDocumentType.DistanceSalesContract, language, ct);
-        var preInformation = await legalDocumentRepository.GetPublishedAsync(
-            LegalDocumentType.PreInformationForm, language, ct);
+        // 0b. The checkout language: the body's "language" when sent, else
+        // Accept-Language. It becomes the order's language (emails, links) and
+        // decides which legal texts the buyer must accept.
+        var orderLanguage = Languages.TryParse(command.Language, out var requestedLanguage)
+            ? requestedLanguage
+            : languageContext.Current;
+        var language = orderLanguage.Code();
 
-        var requiredTermsVersion = contract?.Version ?? payments.CurrentTermsVersion;
+        var contract = await legalResolver.ResolveAsync(LegalDocumentType.DistanceSalesContract, orderLanguage, ct);
+        var preInformation = await legalResolver.ResolveAsync(LegalDocumentType.PreInformationForm, orderLanguage, ct);
+
+        var requiredTerms = CheckoutTerms.RequiredVersion(contract, preInformation, orderLanguage, payments.CurrentTermsVersion);
+        if (requiredTerms.IsFailure)
+            return Result.Failure<CheckoutCartResponse>(requiredTerms.Error);
+
+        var requiredTermsVersion = requiredTerms.Value;
 
         if (!string.Equals(command.AcceptedTermsVersion, requiredTermsVersion, StringComparison.Ordinal))
             return Result.Failure<CheckoutCartResponse>(CheckoutErrors.TermsOutdated(requiredTermsVersion));
@@ -177,7 +186,7 @@ public sealed class CheckoutCartCommandHandler(
 
         var requestedMethod = (command.ShippingMethod ?? CheckoutPricing.StandardCode).Trim().ToLowerInvariant();
         var shippingChoice = CheckoutPricing
-            .ShippingOptions(zone, merchandiseTotal, store.Pickup, countryCode)
+            .ShippingOptions(zone, merchandiseTotal, store.Pickup, countryCode, orderLanguage)
             .FirstOrDefault(o => o.Code == requestedMethod);
 
         if (shippingChoice is null)
@@ -214,6 +223,8 @@ public sealed class CheckoutCartCommandHandler(
             customerEmail, address, store.Currency,
             command.IdempotencyKey, requiredTermsVersion, command.ClientIp);
 
+        order.SetLanguage(orderLanguage);
+
         if (customer is not null)
             order.AssignToCustomer(customer.Id);
 
@@ -231,12 +242,14 @@ public sealed class CheckoutCartCommandHandler(
         if (command.GiftWrap)
             order.AddGiftWrap(Money.From(store.GiftWrap.Fee, store.Currency), command.GiftMessage);
 
-        // The exact text this buyer saw, filled in with this order's details.
-        var legalContext = LegalContextFactory.FromOrder(order, language, store, returnOptions.Value.WindowDays);
+        // The exact text this buyer saw, filled in with this order's details,
+        // rendered in each document's own language.
         var legalRecords = new[] { preInformation, contract }
             .Where(document => document is not null)
             .Select(document => OrderLegalRecord.Create(
-                order.OrderNumber, document!, LegalTemplateRenderer.RenderDocument(document!, legalContext)))
+                order.OrderNumber, document!,
+                LegalTemplateRenderer.RenderDocument(
+                    document!, LegalContextFactory.FromOrder(order, document!.Language, store, returnOptions.Value.WindowDays))))
             .ToList();
 
         if (legalRecords.Count == 0)
@@ -249,17 +262,23 @@ public sealed class CheckoutCartCommandHandler(
         CheckoutSessionResult session;
         try
         {
+            // Book names on the payment page in the buyer's language.
+            var paymentTitles = lineData
+                .Select(x => x.Item1)
+                .DistinctBy(b => b.Id)
+                .ToDictionary(b => b.Id, b => b.TextIn(orderLanguage).Title);
+
             session = await paymentGateway.CreateCheckoutSessionAsync(new CreateCheckoutSessionRequest(
                 order.OrderNumber,
                 order.CustomerEmail,
                 order.Lines.Select(l => new CheckoutLineItem(
-                    l.BookTitleSnapshot, l.UnitPriceAtPurchase.Amount, l.Quantity)).ToList(),
+                    paymentTitles.GetValueOrDefault(l.BookId, l.BookTitleSnapshot), l.UnitPriceAtPurchase.Amount, l.Quantity)).ToList(),
                 order.ShippingCost.Amount,
                 order.DiscountAmount.Amount,
                 order.Total.Amount,
                 order.Total.Currency,
-                $"{store.StorefrontBaseUrl}{payments.SuccessPath}{orderQuery}",
-                $"{store.StorefrontBaseUrl}{payments.CancelPath}{orderQuery}",
+                StorefrontLinks.For(store, orderLanguage, payments.SuccessPath + orderQuery),
+                StorefrontLinks.For(store, orderLanguage, payments.CancelPath + orderQuery),
                 expiresAt,
                 command.IdempotencyKey,
                 order.GiftWrapFee.Amount), ct);

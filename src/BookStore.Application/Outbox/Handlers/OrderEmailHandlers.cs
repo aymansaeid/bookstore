@@ -1,12 +1,14 @@
 ﻿using BookStore.Application.Abstractions.Emails;
 using BookStore.Application.Abstractions.Outbox;
 using BookStore.Application.Abstractions.Repositories;
+using BookStore.Application.Books;
 using BookStore.Application.Common;
 using BookStore.Application.Emails;
+using BookStore.Domain.Common;
+using BookStore.Domain.Legal;
 using BookStore.Domain.Orders.Events;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using BookStore.Domain.Legal;
 
 namespace BookStore.Application.Outbox.Handlers;
 
@@ -15,6 +17,7 @@ namespace BookStore.Application.Outbox.Handlers;
 /// accurate line items, totals and address without bloating the event.
 public sealed class OrderPaidEmailHandler(
     IOrderRepository orderRepository,
+    IBookRepository bookRepository,
     IEmailSender emailSender,
     IOptions<StoreOptions> storeOptions,
     IOrderLegalRecordRepository legalRecordRepository,
@@ -35,9 +38,24 @@ public sealed class OrderPaidEmailHandler(
             return;
         }
 
+        // Titles in the order's language; Arabic orders keep the recorded titles.
+        IReadOnlyDictionary<int, string>? titles = null;
+        if (order.Language.IsTranslatable())
+        {
+            var books = (await bookRepository.ListByIdsAsync(order.Lines.Select(l => l.BookId).Distinct().ToList(), ct))
+                .ToDictionary(b => b.Id);
+
+            titles = order.Lines
+                .DistinctBy(l => l.BookId)
+                .ToDictionary(
+                    l => l.BookId,
+                    l => LocalizedTitles.FromSnapshot(l.BookTitleSnapshot, books.GetValueOrDefault(l.BookId), order.Language));
+        }
+
         var records = await legalRecordRepository.ListByOrderNumberAsync(order.OrderNumber, ct);
 
-        var message = OrderEmailTemplates.OrderConfirmation(order, storeOptions.Value, includesLegalDocuments: records.Count > 0)
+        var message = OrderEmailTemplates.OrderConfirmation(
+                order, storeOptions.Value, includesLegalDocuments: records.Count > 0, lineTitles: titles)
             with
         {
             Attachments = records.Select(r => new EmailAttachment(
@@ -77,6 +95,29 @@ public sealed class OrderShippedEmailHandler(
         }
 
         await emailSender.SendAsync(OrderEmailTemplates.OrderShipped(order, storeOptions.Value), ct);
+    }
+}
+
+public sealed class OrderDeliveredEmailHandler(
+    IOrderRepository orderRepository,
+    IEmailSender emailSender,
+    IOptions<StoreOptions> storeOptions,
+    ILogger<OrderDeliveredEmailHandler> logger) : IOutboxMessageHandler
+{
+    public string MessageType => nameof(OrderDeliveredDomainEvent);
+
+    public async Task HandleAsync(string payloadJson, CancellationToken ct)
+    {
+        var e = OutboxSerialization.Deserialize<OrderDeliveredDomainEvent>(payloadJson);
+
+        var order = await orderRepository.GetByIdAsync(e.OrderId, ct);
+        if (order is null)
+        {
+            logger.LogWarning("Order {OrderId} no longer exists; skipping delivered email.", e.OrderId);
+            return;
+        }
+
+        await emailSender.SendAsync(OrderEmailTemplates.OrderDelivered(order, storeOptions.Value), ct);
     }
 }
 

@@ -4,12 +4,14 @@ using BookStore.Application.Abstractions.Messaging;
 using BookStore.Application.Abstractions.Repositories;
 using BookStore.Application.Auth;
 using BookStore.Application.Common;
+using BookStore.Domain.Common;
 using FluentValidation;
 
 namespace BookStore.Application.Customers.Commands;
 
 public sealed record UpdateCustomerProfileCommand(
-    int CustomerId, string FirstName, string LastName, string? Phone, bool AcceptsMarketingEmails)
+    int CustomerId, string FirstName, string LastName, string? Phone, bool AcceptsMarketingEmails,
+    string? PreferredLanguage = null)
     : ICommand<CustomerProfileDto>;
 
 public sealed class UpdateCustomerProfileCommandValidator : AbstractValidator<UpdateCustomerProfileCommand>
@@ -19,6 +21,9 @@ public sealed class UpdateCustomerProfileCommandValidator : AbstractValidator<Up
         RuleFor(x => x.FirstName).NotEmpty().MaximumLength(100);
         RuleFor(x => x.LastName).NotEmpty().MaximumLength(100);
         RuleFor(x => x.Phone).MaximumLength(30);
+        RuleFor(x => x.PreferredLanguage)
+    .Must(value => value is null || Languages.TryParse(value, out _))
+    .WithMessage("preferredLanguage must be ar, en or tr.");
     }
 }
 
@@ -34,6 +39,8 @@ public sealed class UpdateCustomerProfileCommandHandler(
             return Result.Failure<CustomerProfileDto>(CustomerErrors.AccountUnavailable);
 
         customer.UpdateProfile(command.FirstName, command.LastName, command.Phone, command.AcceptsMarketingEmails);
+        if (Languages.TryParse(command.PreferredLanguage, out var preferred))
+            customer.SetPreferredLanguage(preferred);
         await unitOfWork.SaveChangesAsync(ct);
 
         return Result.Success(customer.ToProfileDto());

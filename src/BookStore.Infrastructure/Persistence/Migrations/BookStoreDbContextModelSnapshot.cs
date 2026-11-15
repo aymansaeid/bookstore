@@ -223,6 +223,10 @@ namespace BookStore.Infrastructure.Persistence.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
+                    b.Property<string>("TransliteratedTitle")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.Property<int?>("Volumes")
                         .HasColumnType("int");
 
@@ -441,6 +445,11 @@ namespace BookStore.Infrastructure.Persistence.Migrations
                     b.Property<string>("Phone")
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("PreferredLanguage")
+                        .IsRequired()
+                        .HasMaxLength(5)
+                        .HasColumnType("nvarchar(5)");
 
                     b.Property<string>("ReadingLevel")
                         .HasMaxLength(20)
@@ -833,6 +842,11 @@ namespace BookStore.Infrastructure.Persistence.Migrations
                     b.Property<bool>("IsConfirmed")
                         .HasColumnType("bit");
 
+                    b.Property<string>("Language")
+                        .IsRequired()
+                        .HasMaxLength(5)
+                        .HasColumnType("nvarchar(5)");
+
                     b.Property<DateTimeOffset?>("NotifiedAtUtc")
                         .HasColumnType("datetimeoffset");
 
@@ -909,6 +923,11 @@ namespace BookStore.Infrastructure.Persistence.Migrations
 
                     b.Property<bool>("GiftWrap")
                         .HasColumnType("bit");
+
+                    b.Property<string>("Language")
+                        .IsRequired()
+                        .HasMaxLength(5)
+                        .HasColumnType("nvarchar(5)");
 
                     b.Property<string>("OrderNumber")
                         .IsRequired()
@@ -1638,6 +1657,51 @@ namespace BookStore.Infrastructure.Persistence.Migrations
                                 .HasForeignKey("BookId");
                         });
 
+                    b.OwnsMany("BookStore.Domain.Books.BookTranslation", "Translations", b1 =>
+                        {
+                            b1.Property<int>("BookId")
+                                .HasColumnType("int");
+
+                            b1.Property<string>("Language")
+                                .HasMaxLength(5)
+                                .HasColumnType("nvarchar(5)");
+
+                            b1.Property<string>("Author")
+                                .HasMaxLength(300)
+                                .HasColumnType("nvarchar(300)");
+
+                            b1.Property<string>("Description")
+                                .HasMaxLength(4000)
+                                .HasColumnType("nvarchar(4000)");
+
+                            b1.Property<string>("EditionLabel")
+                                .HasMaxLength(100)
+                                .HasColumnType("nvarchar(100)");
+
+                            b1.PrimitiveCollection<string>("Highlights")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("Subtitle")
+                                .HasMaxLength(500)
+                                .HasColumnType("nvarchar(500)");
+
+                            b1.Property<string>("Title")
+                                .IsRequired()
+                                .HasMaxLength(500)
+                                .HasColumnType("nvarchar(500)");
+
+                            b1.Property<DateTimeOffset>("UpdatedAtUtc")
+                                .HasColumnType("datetimeoffset");
+
+                            b1.HasKey("BookId", "Language");
+
+                            b1.ToTable("BookTranslations", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("BookId");
+                        });
+
                     b.Navigation("Dimensions")
                         .IsRequired();
 
@@ -1649,6 +1713,8 @@ namespace BookStore.Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Related");
+
+                    b.Navigation("Translations");
                 });
 
             modelBuilder.Entity("BookStore.Domain.Catalog.Category", b =>
@@ -1657,6 +1723,75 @@ namespace BookStore.Infrastructure.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("ParentId")
                         .OnDelete(DeleteBehavior.Restrict);
+
+                    b.OwnsMany("BookStore.Domain.Catalog.CategoryTranslation", "Translations", b1 =>
+                        {
+                            b1.Property<int>("CategoryId")
+                                .HasColumnType("int");
+
+                            b1.Property<string>("Language")
+                                .HasMaxLength(5)
+                                .HasColumnType("nvarchar(5)");
+
+                            b1.Property<string>("Description")
+                                .HasMaxLength(500)
+                                .HasColumnType("nvarchar(500)");
+
+                            b1.Property<string>("Name")
+                                .IsRequired()
+                                .HasMaxLength(100)
+                                .HasColumnType("nvarchar(100)");
+
+                            b1.Property<DateTimeOffset>("UpdatedAtUtc")
+                                .HasColumnType("datetimeoffset");
+
+                            b1.HasKey("CategoryId", "Language");
+
+                            b1.ToTable("CategoryTranslations", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("CategoryId");
+                        });
+
+                    b.Navigation("Translations");
+                });
+
+            modelBuilder.Entity("BookStore.Domain.Catalog.Muhaqqiq", b =>
+                {
+                    b.OwnsMany("BookStore.Domain.Catalog.MuhaqqiqTranslation", "Translations", b1 =>
+                        {
+                            b1.Property<int>("MuhaqqiqId")
+                                .HasColumnType("int");
+
+                            b1.Property<string>("Language")
+                                .HasMaxLength(5)
+                                .HasColumnType("nvarchar(5)");
+
+                            b1.Property<string>("Bio")
+                                .HasMaxLength(2000)
+                                .HasColumnType("nvarchar(2000)");
+
+                            b1.Property<string>("Name")
+                                .IsRequired()
+                                .HasMaxLength(200)
+                                .HasColumnType("nvarchar(200)");
+
+                            b1.PrimitiveCollection<string>("Specialties")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<DateTimeOffset>("UpdatedAtUtc")
+                                .HasColumnType("datetimeoffset");
+
+                            b1.HasKey("MuhaqqiqId", "Language");
+
+                            b1.ToTable("MuhaqqiqTranslations", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("MuhaqqiqId");
+                        });
+
+                    b.Navigation("Translations");
                 });
 
             modelBuilder.Entity("BookStore.Domain.Customers.Customer", b =>
@@ -2068,7 +2203,65 @@ namespace BookStore.Infrastructure.Persistence.Migrations
                                 .HasForeignKey("ReadingPathId");
                         });
 
+                    b.OwnsMany("BookStore.Domain.ReadingPaths.ReadingPathStageTranslation", "StageTranslations", b1 =>
+                        {
+                            b1.Property<int>("ReadingPathId")
+                                .HasColumnType("int");
+
+                            b1.Property<int>("BookId")
+                                .HasColumnType("int");
+
+                            b1.Property<string>("Language")
+                                .HasMaxLength(5)
+                                .HasColumnType("nvarchar(5)");
+
+                            b1.Property<string>("Reason")
+                                .IsRequired()
+                                .HasMaxLength(300)
+                                .HasColumnType("nvarchar(300)");
+
+                            b1.HasKey("ReadingPathId", "BookId", "Language");
+
+                            b1.ToTable("ReadingPathStageTranslations", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("ReadingPathId");
+                        });
+
+                    b.OwnsMany("BookStore.Domain.ReadingPaths.ReadingPathTranslation", "Translations", b1 =>
+                        {
+                            b1.Property<int>("ReadingPathId")
+                                .HasColumnType("int");
+
+                            b1.Property<string>("Language")
+                                .HasMaxLength(5)
+                                .HasColumnType("nvarchar(5)");
+
+                            b1.Property<string>("Description")
+                                .HasMaxLength(1000)
+                                .HasColumnType("nvarchar(1000)");
+
+                            b1.Property<string>("Title")
+                                .IsRequired()
+                                .HasMaxLength(200)
+                                .HasColumnType("nvarchar(200)");
+
+                            b1.Property<DateTimeOffset>("UpdatedAtUtc")
+                                .HasColumnType("datetimeoffset");
+
+                            b1.HasKey("ReadingPathId", "Language");
+
+                            b1.ToTable("ReadingPathTranslations", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("ReadingPathId");
+                        });
+
+                    b.Navigation("StageTranslations");
+
                     b.Navigation("Stages");
+
+                    b.Navigation("Translations");
                 });
 
             modelBuilder.Entity("BookStore.Domain.Returns.ReturnRequest", b =>
@@ -2188,6 +2381,32 @@ namespace BookStore.Infrastructure.Persistence.Migrations
                                 .HasForeignKey("ShippingZoneId");
                         });
 
+                    b.OwnsMany("BookStore.Domain.Shipping.ShippingOptionTranslation", "OptionTranslations", b1 =>
+                        {
+                            b1.Property<int>("ShippingZoneId")
+                                .HasColumnType("int");
+
+                            b1.Property<string>("Code")
+                                .HasMaxLength(30)
+                                .HasColumnType("nvarchar(30)");
+
+                            b1.Property<string>("Language")
+                                .HasMaxLength(5)
+                                .HasColumnType("nvarchar(5)");
+
+                            b1.Property<string>("Name")
+                                .IsRequired()
+                                .HasMaxLength(100)
+                                .HasColumnType("nvarchar(100)");
+
+                            b1.HasKey("ShippingZoneId", "Code", "Language");
+
+                            b1.ToTable("ShippingOptionTranslations", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("ShippingZoneId");
+                        });
+
                     b.OwnsOne("BookStore.Domain.Common.Money", "FlatRate", b1 =>
                         {
                             b1.Property<int>("ShippingZoneId")
@@ -2213,6 +2432,8 @@ namespace BookStore.Infrastructure.Persistence.Migrations
 
                     b.Navigation("FlatRate")
                         .IsRequired();
+
+                    b.Navigation("OptionTranslations");
 
                     b.Navigation("Options");
                 });

@@ -53,12 +53,12 @@ public sealed class BookBackInStockHandler(
             try
             {
                 await emailSender.SendAsync(
-                    StockNotificationEmailTemplates.BackInStock(
-                        notification.Email, book.Title, book.Slug.Value,
-                        // The plaintext token is gone (we only stored the
-                        // hash), so unsubscribe links here carry the
+                 StockNotificationEmailTemplates.BackInStock(
+                    notification.Email, book.TextIn(notification.Language).Title, book.Slug.Value,
+                          // The plaintext token is gone (we only stored the
+                         // hash), so unsubscribe links here carry the
                         // notification id instead — see the controller.
-                        notification.Id.ToString(), storeOptions.Value), ct);
+                          notification.Id.ToString(), storeOptions.Value, notification.Language), ct);
 
                 sent++;
             }

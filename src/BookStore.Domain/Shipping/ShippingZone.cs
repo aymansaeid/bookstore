@@ -27,7 +27,13 @@ public sealed partial class ShippingZone : AggregateRoot<int>
     public decimal? FreeShippingThreshold { get; private set; }
 
     private readonly List<ShippingOption> _options = [];
+
     public IReadOnlyCollection<ShippingOption> Options => _options.AsReadOnly();
+
+    public const int MaxOptionNameLength = 100;
+
+    private readonly List<ShippingOptionTranslation> _optionTranslations = [];
+    public IReadOnlyCollection<ShippingOptionTranslation> OptionTranslations => _optionTranslations.AsReadOnly();
 
     private ShippingZone() { } // EF Core
 
@@ -104,11 +110,11 @@ public sealed partial class ShippingZone : AggregateRoot<int>
     }
 
     public void SetDeliveryDetails(
-    string? standardCarrier,
-    int? standardMinDays,
-    int? standardMaxDays,
-    decimal? freeShippingThreshold,
-    IReadOnlyList<ShippingOptionInput> options)
+        string? standardCarrier,
+        int? standardMinDays,
+        int? standardMaxDays,
+        decimal? freeShippingThreshold,
+        IReadOnlyList<ShippingOptionInput> options)
     {
         ValidateDays(standardMinDays, standardMaxDays, "standard delivery");
 
@@ -145,6 +151,9 @@ public sealed partial class ShippingZone : AggregateRoot<int>
         _options.Clear();
         for (var i = 0; i < options.Count; i++)
             _options.Add(ShippingOption.Create(options[i], i));
+
+        // A removed option takes its translations with it.
+        _optionTranslations.RemoveAll(t => _options.All(o => o.Code != t.Code));
     }
 
     private static void ValidateDays(int? min, int? max, string what)
@@ -156,6 +165,55 @@ public sealed partial class ShippingZone : AggregateRoot<int>
         if (min < 0 || max > MaxDeliveryDays || min > max)
             throw new ArgumentException($"Delivery days for {what} must satisfy 0 <= min <= max <= {MaxDeliveryDays}.");
     }
+
+    public string OptionNameIn(ShippingOption option, Language language) =>
+        TranslationRules.Prefer(
+            language.IsTranslatable()
+                ? _optionTranslations.FirstOrDefault(t => t.Language == language && t.Code == option.Code)?.Name
+                : null,
+            option.Name)!;
+
+    /// Languages in which EVERY extra option has a name. A zone without extras
+    /// has nothing to translate, so it counts as complete.
+    public IReadOnlyList<Language> CompleteTranslationLanguages() =>
+        Languages.Translatable
+            .Where(l => _options.All(o => _optionTranslations.Any(t => t.Language == l && t.Code == o.Code)))
+            .ToList();
+
+    /// Full replacement for one language. An option left out (or blank) falls
+    /// back to its Arabic name.
+    public void SetOptionTranslations(Language language, IReadOnlyDictionary<string, string?> namesByCode)
+    {
+        TranslationRules.EnsureTranslatable(language);
+        var codes = _options.Select(o => o.Code).ToHashSet();
+        var names = new Dictionary<string, string>();
+
+        foreach (var (rawCode, rawName) in namesByCode)
+        {
+            var code = rawCode.Trim().ToLowerInvariant();
+            if (!codes.Contains(code))
+                throw new ArgumentException($"'{rawCode}' is not an option of this zone.", nameof(namesByCode));
+
+            var name = TranslationRules.Optional(rawName, MaxOptionNameLength, "Name");
+            if (name is not null)
+                names[code] = name;
+        }
+
+        // In place: never remove and re-add the same key in one save.
+        _optionTranslations.RemoveAll(t => t.Language == language && !names.ContainsKey(t.Code));
+
+        foreach (var (code, name) in names)
+        {
+            var existing = _optionTranslations.FirstOrDefault(t => t.Language == language && t.Code == code);
+            if (existing is null)
+                _optionTranslations.Add(ShippingOptionTranslation.Create(code, language, name));
+            else
+                existing.Rename(name);
+        }
+    }
+
+    public bool RemoveOptionTranslations(Language language) =>
+        _optionTranslations.RemoveAll(t => t.Language == language) > 0;
 
     [GeneratedRegex("^[a-z0-9-]{2,30}$")]
     private static partial Regex OptionCodePattern();

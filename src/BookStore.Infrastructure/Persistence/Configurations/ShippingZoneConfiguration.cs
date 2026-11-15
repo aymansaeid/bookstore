@@ -48,5 +48,18 @@ public sealed class ShippingZoneConfiguration : IEntityTypeConfiguration<Shippin
 
         builder.Metadata.FindNavigation(nameof(ShippingZone.Options))!
             .SetPropertyAccessMode(PropertyAccessMode.Field);
+
+        builder.OwnsMany(z => z.OptionTranslations, t =>
+        {
+            t.ToTable("ShippingOptionTranslations");
+            t.WithOwner().HasForeignKey("ShippingZoneId");
+            t.Property(x => x.Code).HasMaxLength(30);
+            t.Property(x => x.Language).HasConversion<string>().HasMaxLength(5);
+            t.HasKey("ShippingZoneId", nameof(ShippingOptionTranslation.Code), nameof(ShippingOptionTranslation.Language));
+            t.Property(x => x.Name).HasMaxLength(ShippingZone.MaxOptionNameLength).IsRequired();
+        });
+
+        builder.Metadata.FindNavigation(nameof(ShippingZone.OptionTranslations))!
+            .SetPropertyAccessMode(PropertyAccessMode.Field);
     }
 }

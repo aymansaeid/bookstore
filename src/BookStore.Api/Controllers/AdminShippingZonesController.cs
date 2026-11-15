@@ -3,6 +3,7 @@ using BookStore.Api.Contracts;
 using BookStore.Application.Shipping;
 using BookStore.Application.Shipping.Commands;
 using BookStore.Application.Shipping.Queries;
+using BookStore.Application.Shipping.Translations;
 using BookStore.Domain.Shipping;
 using BookStore.Domain.Users;
 using MediatR;
@@ -11,6 +12,8 @@ using Microsoft.AspNetCore.Mvc;
 namespace BookStore.Api.Controllers;
 
 public sealed record UpdateShippingZoneRequest(string Name, decimal FlatRate, IReadOnlyList<string> CountryCodes);
+
+public sealed record ShippingZoneTranslationRequest(IReadOnlyList<OptionNameInput> Options);
 
 public sealed record SetZoneDeliveryRequest(
     string? StandardCarrier,
@@ -76,4 +79,26 @@ public sealed class AdminShippingZonesController(ISender sender) : ControllerBas
         (await sender.Send(new SetShippingZoneDeliveryCommand(
             id, r.StandardCarrier, r.StandardMinDays, r.StandardMaxDays, r.FreeShippingThreshold, r.Options), ct))
         .ToActionResult();
+
+    [HttpGet("{id:int}/translations")]
+    [ProducesResponseType(typeof(AdminShippingZoneTranslationsDto), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetTranslations(int id, CancellationToken ct) =>
+    (await sender.Send(new GetShippingZoneTranslationsQuery(id), ct)).ToActionResult();
+
+    [HttpGet("{id:int}/translations/{lang}")]
+    [ProducesResponseType(typeof(ShippingZoneTranslationDto), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetTranslation(int id, string lang, CancellationToken ct) =>
+        (await sender.Send(new GetShippingZoneTranslationQuery(id, lang), ct)).ToActionResult();
+
+    /// lang: en | tr. Body: { options: [{ code, name }] }. A missing option falls back to Arabic.
+    [HttpPut("{id:int}/translations/{lang}")]
+    [ProducesResponseType(typeof(ShippingZoneTranslationDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> SetTranslation(int id, string lang, ShippingZoneTranslationRequest r, CancellationToken ct) =>
+        (await sender.Send(new SetShippingZoneTranslationCommand(id, lang, r.Options ?? []), ct)).ToActionResult();
+
+    [HttpDelete("{id:int}/translations/{lang}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> DeleteTranslation(int id, string lang, CancellationToken ct) =>
+        (await sender.Send(new DeleteShippingZoneTranslationCommand(id, lang), ct)).ToActionResult();
 }

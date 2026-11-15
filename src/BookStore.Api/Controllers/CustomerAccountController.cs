@@ -27,7 +27,7 @@ namespace BookStore.Api.Controllers;
 
 public sealed record ReadingProfileRequest(ReaderLevel? ReadingLevel, decimal? MonthlyBudget, IReadOnlyList<int>? InterestCategoryIds);
 public sealed record ReadingProgressRequest(ReadingStatus Status, int ProgressPercent);
-public sealed record UpdateProfileRequest(string FirstName, string LastName, string? Phone, bool AcceptsMarketingEmails);
+public sealed record UpdateProfileRequest(string FirstName, string LastName, string? Phone, bool AcceptsMarketingEmails, string? PreferredLanguage = null);
 public sealed record ChangeCustomerPasswordRequest(string CurrentPassword, string NewPassword);
 public sealed record DeleteAccountRequest(string Password);
 public sealed record AddAddressRequest(SaveAddressData Address, bool IsDefault);
@@ -49,7 +49,7 @@ public sealed class CustomerAccountController(ISender sender) : ControllerBase
     [ProducesResponseType(typeof(CustomerProfileDto), StatusCodes.Status200OK)]
     public async Task<IActionResult> UpdateProfile(UpdateProfileRequest r, CancellationToken ct) =>
         (await sender.Send(new UpdateCustomerProfileCommand(
-            CustomerId(), r.FirstName, r.LastName, r.Phone, r.AcceptsMarketingEmails), ct)).ToActionResult();
+            CustomerId(), r.FirstName, r.LastName, r.Phone, r.AcceptsMarketingEmails, r.PreferredLanguage), ct)).ToActionResult();
 
     [HttpPost("change-password")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -101,6 +101,7 @@ public sealed class CustomerAccountController(ISender sender) : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> SetDefaultAddress(int addressId, CancellationToken ct) =>
         (await sender.Send(new SetDefaultCustomerAddressCommand(CustomerId(), addressId), ct)).ToActionResult();
+
     private int CustomerId() => int.Parse(User.FindFirstValue(JwtRegisteredClaimNames.Sub)!);
 
     [HttpGet("wishlist")]

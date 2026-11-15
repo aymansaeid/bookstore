@@ -107,6 +107,8 @@ public sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
         builder.Property(o => o.GiftWrap).IsRequired();
         builder.Property(o => o.GiftMessage).HasMaxLength(Order.MaxGiftMessageLength);
 
+        builder.Property(o => o.Language).HasConversion<string>().HasMaxLength(5).IsRequired();
+
         ConfigureMoney(builder.OwnsOne(o => o.GiftWrapFee), "GiftWrapFee");
         builder.Navigation(o => o.GiftWrapFee).IsRequired();
 

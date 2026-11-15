@@ -14,6 +14,7 @@ public sealed class StockNotificationConfiguration : IEntityTypeConfiguration<St
 
         builder.Property(n => n.Email).HasMaxLength(320).IsRequired();
         builder.Property(n => n.ConfirmationTokenHash).HasMaxLength(64).IsRequired();
+        builder.Property(n => n.Language).HasConversion<string>().HasMaxLength(5).IsRequired();
         builder.HasIndex(n => n.ConfirmationTokenHash);
 
         // One subscription per (book, email): re-subscribing updates the

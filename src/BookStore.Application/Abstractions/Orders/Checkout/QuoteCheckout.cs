@@ -180,7 +180,7 @@ public sealed class QuoteCheckoutQueryHandler(
 
         // Shipping: same function checkout charges with.
         var zone = countryCode is null ? null : await shippingZoneRepository.GetByCountryCodeAsync(countryCode, ct);
-        var options = CheckoutPricing.ShippingOptions(zone, merchandiseTotal, store.Pickup, countryCode);
+        var options = CheckoutPricing.ShippingOptions(zone, merchandiseTotal, store.Pickup, countryCode, language);
 
         ShippingChoice? selected = null;
         if (countryCode is null)

@@ -1,5 +1,6 @@
 ﻿using BookStore.Application.Abstractions.Emails;
 using BookStore.Application.Common;
+using BookStore.Domain.Common;
 using BookStore.Domain.Returns;
 using BookStore.Domain.Returns.Events;
 
@@ -7,6 +8,7 @@ namespace BookStore.Application.Emails;
 
 public static class ReturnEmailTemplates
 {
+    /// To the admin: unchanged (English).
     public static EmailMessage RequestedToAdmin(string toEmail, ReturnRequestedDomainEvent e, StoreOptions store)
     {
         var url = $"{store.AdminBaseUrl}/returns";
@@ -25,74 +27,58 @@ public static class ReturnEmailTemplates
             EmailLayout.Wrap(store.Name, store.SupportEmail, content), text);
     }
 
-    public static EmailMessage Approved(ReturnRequest r, StoreOptions store)
+    /// language: the order's language.
+    public static EmailMessage Approved(ReturnRequest r, StoreOptions store, Language language = Language.Ar)
     {
-        var money = OrderEmailTemplates.MoneyFormatter(r.RefundAmount.Currency);
+        var t = EmailCopy.For(language);
+        var refund = OrderEmailTemplates.MoneyFormatter(r.RefundAmount.Currency)(r.RefundAmount.Amount);
 
-        var content = $"""
-            <h1 style="margin:0 0 16px;font-size:22px;">Your return is approved</h1>
-            <p style="margin:0 0 16px;">Your return for order <strong>{EmailLayout.Encode(r.OrderNumber)}</strong> has been approved.</p>
-            <p style="margin:0 0 8px;font-weight:600;">How to send it back</p>
-            <p style="margin:0 0 16px;">{EmailLayout.Encode(r.ReturnInstructions)}</p>
-            <p style="margin:0;">Once we receive it, we'll refund <strong>{EmailLayout.Encode(money(r.RefundAmount.Amount))}</strong> to your original payment method.</p>
-            """;
+        var content = string.Concat(
+            EmailLayout.Heading(t.ReturnApprovedHeading),
+            EmailLayout.Paragraph(t.ReturnApprovedIntro(r.OrderNumber)),
+            $"""<p style="margin:0 0 8px;font-weight:600;">{EmailLayout.Encode(t.HowToSendBack)}</p>""",
+            EmailLayout.Paragraph(r.ReturnInstructions ?? string.Empty),
+            EmailLayout.Paragraph(t.RefundOnReceipt(refund), "0"));
 
-        var text = $"""
-            Your return is approved
+        var text = EmailLayout.PlainText(
+            t.ReturnApprovedHeading, t.ReturnApprovedIntro(r.OrderNumber),
+            $"{t.HowToSendBack}:\n{r.ReturnInstructions}", t.RefundOnReceipt(refund));
 
-            Order {r.OrderNumber}
-
-            How to send it back:
-            {r.ReturnInstructions}
-
-            Once we receive it, we'll refund {money(r.RefundAmount.Amount)} to your original payment method.
-            """;
-
-        return new EmailMessage(r.CustomerEmail, $"Return approved for order {r.OrderNumber}",
-            EmailLayout.Wrap(store.Name, store.SupportEmail, content), text);
+        return new EmailMessage(r.CustomerEmail, t.ReturnApprovedSubject(r.OrderNumber),
+            EmailLayout.Wrap(store, language, content), text);
     }
 
-    public static EmailMessage Rejected(ReturnRequest r, StoreOptions store)
+    public static EmailMessage Rejected(ReturnRequest r, StoreOptions store, Language language = Language.Ar)
     {
-        var content = $"""
-            <h1 style="margin:0 0 16px;font-size:22px;">About your return request</h1>
-            <p style="margin:0 0 16px;">We weren't able to accept the return for order <strong>{EmailLayout.Encode(r.OrderNumber)}</strong>.</p>
-            <p style="margin:0 0 16px;">Reason: {EmailLayout.Encode(r.RejectionReason)}</p>
-            <p style="margin:0;">If you think this is a mistake, just reply to this email.</p>
-            """;
+        var t = EmailCopy.For(language);
+        var reason = t.Reason(r.RejectionReason ?? string.Empty);
 
-        var text = $"""
-            About your return request
+        var content = string.Concat(
+            EmailLayout.Heading(t.ReturnRejectedHeading),
+            EmailLayout.Paragraph(t.ReturnRejectedIntro(r.OrderNumber)),
+            EmailLayout.Paragraph(reason),
+            EmailLayout.Paragraph(t.ReturnRejectedNote, "0"));
 
-            We weren't able to accept the return for order {r.OrderNumber}.
-            Reason: {r.RejectionReason}
+        var text = EmailLayout.PlainText(
+            t.ReturnRejectedHeading, t.ReturnRejectedIntro(r.OrderNumber), reason, t.ReturnRejectedNote);
 
-            If you think this is a mistake, reply to this email.
-            """;
-
-        return new EmailMessage(r.CustomerEmail, $"Your return request for order {r.OrderNumber}",
-            EmailLayout.Wrap(store.Name, store.SupportEmail, content), text);
+        return new EmailMessage(r.CustomerEmail, t.ReturnRejectedSubject(r.OrderNumber),
+            EmailLayout.Wrap(store, language, content), text);
     }
 
-    public static EmailMessage Completed(ReturnRequest r, StoreOptions store)
+    public static EmailMessage Completed(ReturnRequest r, StoreOptions store, Language language = Language.Ar)
     {
-        var money = OrderEmailTemplates.MoneyFormatter(r.RefundAmount.Currency);
+        var t = EmailCopy.For(language);
+        var refund = OrderEmailTemplates.MoneyFormatter(r.RefundAmount.Currency)(r.RefundAmount.Amount);
 
-        var content = $"""
-            <h1 style="margin:0 0 16px;font-size:22px;">Your refund is on its way</h1>
-            <p style="margin:0 0 16px;">We've received your return for order <strong>{EmailLayout.Encode(r.OrderNumber)}</strong>
-            and refunded <strong>{EmailLayout.Encode(money(r.RefundAmount.Amount))}</strong>.</p>
-            <p style="margin:0;color:#57534e;">It should appear on your original payment method within 5&ndash;10 business days.</p>
-            """;
+        var content = string.Concat(
+            EmailLayout.Heading(t.RefundHeading),
+            EmailLayout.Paragraph(t.RefundIntro(r.OrderNumber, refund)),
+            EmailLayout.Muted(t.RefundTiming));
 
-        var text = $"""
-            Your refund is on its way
+        var text = EmailLayout.PlainText(t.RefundHeading, t.RefundIntro(r.OrderNumber, refund), t.RefundTiming);
 
-            We've received your return for order {r.OrderNumber} and refunded {money(r.RefundAmount.Amount)}.
-            It should appear within 5-10 business days.
-            """;
-
-        return new EmailMessage(r.CustomerEmail, $"Refund issued for order {r.OrderNumber}",
-            EmailLayout.Wrap(store.Name, store.SupportEmail, content), text);
+        return new EmailMessage(r.CustomerEmail, t.RefundSubject(r.OrderNumber),
+            EmailLayout.Wrap(store, language, content), text);
     }
 }

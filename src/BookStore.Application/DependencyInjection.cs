@@ -2,6 +2,7 @@
 using BookStore.Application.Behaviors;
 using BookStore.Application.Books.Queries;
 using BookStore.Application.Catalog;
+using BookStore.Application.Legal;
 using BookStore.Application.Library;
 using BookStore.Application.Loyalty;
 using BookStore.Application.Notifications;
@@ -49,6 +50,8 @@ public static class DependencyInjection
 
         services.AddScoped<LoyaltyService>();
         services.AddScoped<LoyaltyReader>();
+
+        services.AddScoped<LegalDocumentResolver>();
 
         return services;
     }

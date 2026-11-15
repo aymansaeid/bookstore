@@ -41,6 +41,8 @@ public sealed class Customer : AggregateRoot<int>
 
     public string FullName => $"{FirstName} {LastName}".Trim();
 
+    public Language PreferredLanguage { get; private set; } = Languages.Default;
+
     private Customer() { } // EF Core
 
     public static Customer Register(
@@ -73,6 +75,9 @@ public sealed class Customer : AggregateRoot<int>
         customer.Raise(new CustomerRegisteredDomainEvent(customer.Email, DateTimeOffset.UtcNow));
         return customer;
     }
+
+    public void SetPreferredLanguage(Language language) =>
+    PreferredLanguage = Enum.IsDefined(language) ? language : Languages.Default;
 
     /// Raises an event so past guest orders with this address can be
     /// attached — deliberately only after verification, or anyone could

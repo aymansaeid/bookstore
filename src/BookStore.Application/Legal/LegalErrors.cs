@@ -23,4 +23,9 @@ public static class LegalErrors
             $"Unknown placeholder(s): {string.Join(", ", names.Select(n => "{{" + n + "}}"))}. Fix them before publishing.");
 
     public static Error Invalid(string message) => Error.Validation("Legal.Invalid", message);
+
+    public static Error TermsUnavailable(string language) =>
+    Error.Conflict("Checkout.TermsUnavailable",
+        $"The distance sales contract and pre-information form aren't published in '{language}' yet, so checkout in this language is unavailable.");
+
 }

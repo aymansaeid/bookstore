@@ -10,6 +10,8 @@ namespace BookStore.Infrastructure.Persistence.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            // REMOVE OR COMMENT OUT THIS ENTIRE BLOCK:
+            /*
             migrationBuilder.AlterColumn<int>(
                 name: "RelatedBookId",
                 table: "BookRelations",
@@ -18,6 +20,7 @@ namespace BookStore.Infrastructure.Persistence.Migrations
                 oldClrType: typeof(int),
                 oldType: "int")
                 .OldAnnotation("SqlServer:Identity", "1, 1");
+            */
         }
 
         /// <inheritdoc />

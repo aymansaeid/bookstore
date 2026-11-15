@@ -6,135 +6,153 @@ using BookStore.Domain.Orders;
 
 namespace BookStore.Application.Emails;
 
+/// Order emails, in the language the order was placed in.
 public static class OrderEmailTemplates
 {
-    public static EmailMessage OrderConfirmation(Order order, StoreOptions store, bool includesLegalDocuments = false)
+    /// lineTitles: book titles in the order's language, by book id. Lines
+    /// without one show the title recorded at purchase.
+    public static EmailMessage OrderConfirmation(
+        Order order, StoreOptions store, bool includesLegalDocuments = false,
+        IReadOnlyDictionary<int, string>? lineTitles = null)
     {
+        var language = order.Language;
+        var t = EmailCopy.For(language);
         var money = MoneyFormatter(order.Total.Currency);
-        var trackUrl = $"{store.StorefrontBaseUrl}/track?order={Uri.EscapeDataString(order.OrderNumber)}";
+        var trackUrl = StorefrontLinks.TrackOrder(store, language, order.OrderNumber);
 
-        var lines = order.Lines.Select(l => (l.BookTitleSnapshot, l.Quantity, money(l.LineTotal.Amount)));
+        string TitleOf(OrderLine line) => lineTitles?.GetValueOrDefault(line.BookId) ?? line.BookTitleSnapshot;
 
-        var totals = new StringBuilder("""<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:14px;margin-top:8px;">""");
-        totals.Append(EmailLayout.TotalsRow("Subtotal", money(order.Subtotal.Amount)));
+        var lines = order.Lines.Select(l => (TitleOf(l), l.Quantity, money(l.LineTotal.Amount))).ToList();
+
+        var totals = new StringBuilder(EmailLayout.TotalsTableStart);
+        totals.Append(EmailLayout.TotalsRow(t.Subtotal, money(order.Subtotal.Amount), language));
 
         if (order.PathDiscountAmount.Amount > 0)
-            totals.Append(EmailLayout.TotalsRow("Reading path discount", "−" + money(order.PathDiscountAmount.Amount)));
+            totals.Append(EmailLayout.TotalsRow(t.PathDiscount, "−" + money(order.PathDiscountAmount.Amount), language));
 
         if (order.CouponDiscountAmount.Amount > 0)
-            totals.Append(EmailLayout.TotalsRow($"Discount ({order.AppliedCouponCode})", "−" + money(order.CouponDiscountAmount.Amount)));
+            totals.Append(EmailLayout.TotalsRow(
+                t.CouponDiscount(order.AppliedCouponCode ?? string.Empty), "−" + money(order.CouponDiscountAmount.Amount), language));
 
-        var shippingLabel = order.ShippingMethodCode == "pickup"
-            ? order.ShippingMethodName ?? "Pickup"
-            : $"Shipping ({order.ShippingMethodName ?? "Standard"})";
-        totals.Append(EmailLayout.TotalsRow(shippingLabel, order.ShippingCost.Amount == 0 ? "Free" : money(order.ShippingCost.Amount)));
+        totals.Append(EmailLayout.TotalsRow(
+            ShippingLabel(order, t),
+            order.ShippingCost.Amount == 0 ? t.Free : money(order.ShippingCost.Amount),
+            language));
 
         if (order.GiftWrap)
-            totals.Append(EmailLayout.TotalsRow("Gift wrap", money(order.GiftWrapFee.Amount)));
+            totals.Append(EmailLayout.TotalsRow(t.GiftWrap, money(order.GiftWrapFee.Amount), language));
 
-        totals.Append(EmailLayout.TotalsRow("Total", money(order.Total.Amount), bold: true));
+        totals.Append(EmailLayout.TotalsRow(t.Total, money(order.Total.Amount), language, bold: true));
         totals.Append("</table>");
 
         var address = order.ShippingAddress;
-        var addressHtml = string.Join("<br>", new[]
+        var addressParts = new[]
             {
                 address.RecipientName, address.Line1, address.Line2,
                 $"{address.City} {address.PostalCode}", address.StateOrProvince, address.CountryCode
             }
             .Where(part => !string.IsNullOrWhiteSpace(part))
-            .Select(EmailLayout.Encode));
+            .ToList();
 
-        var content = $"""
-            <h1 style="margin:0 0 16px;font-size:22px;">Thanks for your order</h1>
-            <p style="margin:0 0 4px;">Order <strong>{EmailLayout.Encode(order.OrderNumber)}</strong> is confirmed and we're getting it ready to ship.</p>
-            {EmailLayout.LineItemsTable(lines)}
-            {totals}
-            {EmailLayout.Button(trackUrl, "Track your order")}
-            {(includesLegalDocuments ? "<p style=\"margin:16px 0 0;color:#57534e;font-size:13px;\">Your distance sales contract and pre-information form are attached to this email. Please keep them for your records.</p>" : "")}
-            <p style="margin:24px 0 8px;font-weight:600;">Shipping to</p>
-            <p style="margin:0;color:#57534e;">{addressHtml}</p>
-            """;
+        var content = string.Concat(
+            EmailLayout.Heading(t.ConfirmedHeading),
+            EmailLayout.Paragraph(t.ConfirmedIntro(order.OrderNumber), "0 0 4px"),
+            EmailLayout.LineItemsTable(lines, language),
+            totals.ToString(),
+            EmailLayout.Button(trackUrl, t.TrackOrder),
+            includesLegalDocuments ? EmailLayout.Muted(t.LegalAttached, "16px 0 0") : string.Empty,
+            $"""<p style="margin:24px 0 8px;font-weight:600;">{EmailLayout.Encode(t.ShippingTo)}</p>""",
+            $"""<p style="margin:0;color:#57534e;">{string.Join("<br>", addressParts.Select(EmailLayout.Encode))}</p>""");
 
-        var text = $"""
-            Thanks for your order
+        var text = EmailLayout.PlainText(
+            t.ConfirmedHeading,
+            t.ConfirmedIntro(order.OrderNumber),
+            string.Join("\n", order.Lines.Select(l => $"- {TitleOf(l)} x{l.Quantity}  {money(l.LineTotal.Amount)}")),
+            $"{t.Total}: {money(order.Total.Amount)}",
+            $"{t.TrackOrder}: {trackUrl}");
 
-            Order {order.OrderNumber} is confirmed.
-
-            {string.Join("\n", order.Lines.Select(l => $"- {l.BookTitleSnapshot} x{l.Quantity}  {money(l.LineTotal.Amount)}"))}
-
-            Total: {money(order.Total.Amount)}
-
-            Track your order: {trackUrl}
-            """;
-
-        return new EmailMessage(
-            order.CustomerEmail,
-            $"Order {order.OrderNumber} confirmed",
-            EmailLayout.Wrap(store.Name, store.SupportEmail, content),
-            text);
+        return new EmailMessage(order.CustomerEmail, t.ConfirmedSubject(order.OrderNumber),
+            EmailLayout.Wrap(store, language, content), text);
     }
 
     public static EmailMessage OrderShipped(Order order, StoreOptions store)
     {
-        var trackUrl = $"{store.StorefrontBaseUrl}/track?order={Uri.EscapeDataString(order.OrderNumber)}";
+        var language = order.Language;
+        var t = EmailCopy.For(language);
+        var trackUrl = StorefrontLinks.TrackOrder(store, language, order.OrderNumber);
 
-        var content = $"""
-            <h1 style="margin:0 0 16px;font-size:22px;">Your order is on its way</h1>
-            <p style="margin:0 0 16px;">Order <strong>{EmailLayout.Encode(order.OrderNumber)}</strong> has shipped.</p>
-            <table role="presentation" cellpadding="0" cellspacing="0" style="font-size:14px;">
-              <tr><td style="padding:4px 16px 4px 0;color:#78716c;">Carrier</td><td>{EmailLayout.Encode(order.ShippingCarrier)}</td></tr>
-              <tr><td style="padding:4px 16px 4px 0;color:#78716c;">Tracking number</td><td><strong>{EmailLayout.Encode(order.TrackingNumber)}</strong></td></tr>
-            </table>
-            {EmailLayout.Button(trackUrl, "Track your order")}
-            <p style="margin:0;color:#78716c;font-size:13px;">Tracking can take up to 24 hours to appear on the carrier's website.</p>
-            """;
+        var content = string.Concat(
+            EmailLayout.Heading(t.ShippedHeading),
+            EmailLayout.Paragraph(t.ShippedIntro(order.OrderNumber)),
+            """<table role="presentation" cellpadding="0" cellspacing="0" style="font-size:14px;">""",
+            EmailLayout.DetailRow(t.Carrier, EmailLayout.Encode(order.ShippingCarrier), language),
+            EmailLayout.DetailRow(t.TrackingNumber, $"<strong>{EmailLayout.Encode(order.TrackingNumber)}</strong>", language),
+            "</table>",
+            EmailLayout.Button(trackUrl, t.TrackOrder),
+            EmailLayout.Note(t.ShippedNote));
 
-        var text = $"""
-            Your order is on its way
+        var text = EmailLayout.PlainText(
+            t.ShippedHeading,
+            t.ShippedIntro(order.OrderNumber),
+            $"{t.Carrier}: {order.ShippingCarrier}\n{t.TrackingNumber}: {order.TrackingNumber}",
+            $"{t.TrackOrder}: {trackUrl}");
 
-            Order {order.OrderNumber} has shipped.
-            Carrier: {order.ShippingCarrier}
-            Tracking number: {order.TrackingNumber}
+        return new EmailMessage(order.CustomerEmail, t.ShippedSubject(order.OrderNumber),
+            EmailLayout.Wrap(store, language, content), text);
+    }
 
-            Track your order: {trackUrl}
-            """;
+    public static EmailMessage OrderDelivered(Order order, StoreOptions store)
+    {
+        var language = order.Language;
+        var t = EmailCopy.For(language);
+        var orderUrl = StorefrontLinks.TrackOrder(store, language, order.OrderNumber);
 
-        return new EmailMessage(
-            order.CustomerEmail,
-            $"Order {order.OrderNumber} has shipped",
-            EmailLayout.Wrap(store.Name, store.SupportEmail, content),
-            text);
+        var content = string.Concat(
+            EmailLayout.Heading(t.DeliveredHeading),
+            EmailLayout.Paragraph(t.DeliveredIntro(order.OrderNumber), "0"),
+            EmailLayout.Button(orderUrl, t.ViewOrder),
+            EmailLayout.Note(t.DeliveredNote));
+
+        var text = EmailLayout.PlainText(
+            t.DeliveredHeading, t.DeliveredIntro(order.OrderNumber), $"{t.ViewOrder}: {orderUrl}", t.DeliveredNote);
+
+        return new EmailMessage(order.CustomerEmail, t.DeliveredSubject(order.OrderNumber),
+            EmailLayout.Wrap(store, language, content), text);
     }
 
     public static EmailMessage OrderCancelled(Order order, bool wasPaid, StoreOptions store, bool byCustomer = false)
     {
-        var intro = byCustomer
-            ? $"As you requested, order <strong>{EmailLayout.Encode(order.OrderNumber)}</strong> has been cancelled."
-            : $"Order <strong>{EmailLayout.Encode(order.OrderNumber)}</strong> has been cancelled.";
-        var refundNote = wasPaid
-            ? "<p style=\"margin:0 0 16px;\">Your refund has been issued and should appear on your original payment method within 5&ndash;10 business days.</p>"
-            : string.Empty;
+        var language = order.Language;
+        var t = EmailCopy.For(language);
+        var reason = string.IsNullOrWhiteSpace(order.CancellationReason) ? null : t.Reason(order.CancellationReason);
 
-        var content = $"""
-            <h1 style="margin:0 0 16px;font-size:22px;">Order cancelled</h1>
-            <p style="margin:0 0 16px;">Order <strong>{EmailLayout.Encode(order.OrderNumber)}</strong> has been cancelled.</p>
-            {refundNote}
-            <p style="margin:0;color:#57534e;">Reason: {EmailLayout.Encode(order.CancellationReason)}</p>
-            """;
+        var content = string.Concat(
+            EmailLayout.Heading(t.CancelledHeading),
+            EmailLayout.Paragraph(t.CancelledIntro(order.OrderNumber, byCustomer)),
+            wasPaid ? EmailLayout.Paragraph(t.RefundIssued) : string.Empty,
+            reason is null ? string.Empty : EmailLayout.Muted(reason));
 
-        var text = $"""
-            Order cancelled
+        var text = EmailLayout.PlainText(
+            t.CancelledHeading,
+            t.CancelledIntro(order.OrderNumber, byCustomer),
+            wasPaid ? t.RefundIssued : null,
+            reason);
 
-            Order {order.OrderNumber} has been cancelled.
-            {(wasPaid ? "Your refund has been issued and should appear within 5-10 business days.\n" : "")}
-            Reason: {order.CancellationReason}
-            """;
+        return new EmailMessage(order.CustomerEmail, t.CancelledSubject(order.OrderNumber),
+            EmailLayout.Wrap(store, language, content), text);
+    }
 
-        return new EmailMessage(
-            order.CustomerEmail,
-            $"Order {order.OrderNumber} cancelled",
-            EmailLayout.Wrap(store.Name, store.SupportEmail, content),
-            text);
+    private static string ShippingLabel(Order order, EmailCopy t)
+    {
+        if (order.ShippingMethodCode == "pickup")
+            return order.ShippingMethodName ?? t.Pickup;
+
+        // Older orders stored the English fallback "Standard".
+        var name = string.IsNullOrWhiteSpace(order.ShippingMethodName) || order.ShippingMethodName == "Standard"
+            ? t.StandardShipping
+            : order.ShippingMethodName;
+
+        return t.ShippingWith(name);
     }
 
     /// Currency-aware formatting. Falls back to "25.00 USD" for codes the

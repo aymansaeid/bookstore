@@ -27,6 +27,8 @@ public sealed class CustomerConfiguration : IEntityTypeConfiguration<Customer>
         builder.Property(c => c.ReadingLevel).HasConversion<string>().HasMaxLength(20);
         builder.Property(c => c.MonthlyBudget).HasColumnType("decimal(18,2)");
 
+        builder.Property(c => c.PreferredLanguage).HasConversion<string>().HasMaxLength(5).IsRequired();
+
         builder.PrimitiveCollection(c => c.InterestCategoryIds)
         .HasField("_interestCategoryIds")
         .UsePropertyAccessMode(PropertyAccessMode.Field);

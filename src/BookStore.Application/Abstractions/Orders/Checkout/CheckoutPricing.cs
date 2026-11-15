@@ -26,9 +26,10 @@ public static class CheckoutPricing
         coupon?.CalculateDiscount(subtotal) ?? Money.Zero(subtotal.Currency);
 
     /// merchandiseTotal = books after coupon, before shipping. That's what the
-    /// free-shipping threshold is measured against.
+    /// free-shipping threshold is measured against. Names in `language`.
     public static IReadOnlyList<ShippingChoice> ShippingOptions(
-        ShippingZone? zone, Money merchandiseTotal, PickupSettings pickup, string? countryCode)
+        ShippingZone? zone, Money merchandiseTotal, PickupSettings pickup, string? countryCode,
+        Language language = Language.Ar)
     {
         var currency = merchandiseTotal.Currency;
         var options = new List<ShippingChoice>();
@@ -46,7 +47,7 @@ public static class CheckoutPricing
             options.AddRange(zone.Options
                 .OrderBy(o => o.DisplayOrder)
                 .Select(o => new ShippingChoice(
-                    o.Code, o.Name, o.Carrier, Money.From(o.Price, currency), o.Price == 0,
+                    o.Code, zone.OptionNameIn(o, language), o.Carrier, Money.From(o.Price, currency), o.Price == 0,
                     o.MinDays, o.MaxDays, IsPickup: false, IsRecommended: false)));
         }
 
@@ -55,7 +56,7 @@ public static class CheckoutPricing
             && string.Equals(countryCode, pickup.CountryCode, StringComparison.OrdinalIgnoreCase))
         {
             options.Add(new ShippingChoice(
-                PickupCode, pickup.Name, null, Money.Zero(currency), IsFree: true,
+                PickupCode, pickup.NameIn(language), null, Money.Zero(currency), IsFree: true,
                 pickup.ReadyInDays, pickup.ReadyInDays, IsPickup: true, IsRecommended: false));
         }
 

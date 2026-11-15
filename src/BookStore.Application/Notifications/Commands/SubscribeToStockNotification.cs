@@ -5,6 +5,7 @@ using BookStore.Application.Abstractions.Messaging;
 using BookStore.Application.Abstractions.Repositories;
 using BookStore.Application.Common;
 using BookStore.Application.Emails;
+using BookStore.Domain.Common;
 using BookStore.Domain.Notifications;
 using FluentValidation;
 using Microsoft.Extensions.Options;
@@ -29,7 +30,8 @@ public sealed class SubscribeToStockNotificationCommandHandler(
     ITokenHasher tokenHasher,
     IEmailSender emailSender,
     IUnitOfWork unitOfWork,
-    IOptions<StoreOptions> storeOptions)
+    IOptions<StoreOptions> storeOptions,
+    ILanguageContext languageContext)
     : ICommandHandler<SubscribeToStockNotificationCommand>
 {
     public async Task<Result> Handle(SubscribeToStockNotificationCommand command, CancellationToken ct)
@@ -43,7 +45,7 @@ public sealed class SubscribeToStockNotificationCommandHandler(
 
         var email = command.Email.Trim().ToLowerInvariant();
         var generated = tokenHasher.Generate();
-
+        var language = languageContext.Current;
         var existing = await notificationRepository.GetByBookAndEmailAsync(book.Id, email, ct);
 
         if (existing is not null)
@@ -54,10 +56,13 @@ public sealed class SubscribeToStockNotificationCommandHandler(
             // Either unconfirmed (they lost the email) or previously
             // notified (the book sold out again) — reset and re-send.
             existing.Resubscribe(generated.TokenHash);
+            existing.SetLanguage(language);
         }
         else
         {
-            notificationRepository.Add(StockNotification.Create(book.Id, email, generated.TokenHash));
+            var created = StockNotification.Create(book.Id, email, generated.TokenHash);
+            created.SetLanguage(language);
+            notificationRepository.Add(created);
         }
 
         await unitOfWork.SaveChangesAsync(ct);
@@ -66,7 +71,7 @@ public sealed class SubscribeToStockNotificationCommandHandler(
         // they own the address.
         await emailSender.SendAsync(
             StockNotificationEmailTemplates.ConfirmSubscription(
-                email, book.Title, generated.PlainToken, storeOptions.Value), ct);
+                email, book.TextIn(language).Title, generated.PlainToken, storeOptions.Value, language), ct);
 
         return Result.Success();
     }
@@ -88,7 +93,8 @@ public sealed class ConfirmStockNotificationCommandHandler(
     IStockNotificationRepository notificationRepository,
     IBookRepository bookRepository,
     ITokenHasher tokenHasher,
-    IUnitOfWork unitOfWork)
+    IUnitOfWork unitOfWork,
+    ILanguageContext languageContext)
     : ICommandHandler<ConfirmStockNotificationCommand, ConfirmedSubscriptionDto>
 {
     public async Task<Result<ConfirmedSubscriptionDto>> Handle(
@@ -105,7 +111,7 @@ public sealed class ConfirmStockNotificationCommandHandler(
         notification.Confirm();
         await unitOfWork.SaveChangesAsync(ct);
 
-        return Result.Success(new ConfirmedSubscriptionDto(book.Id, book.Title));
+        return Result.Success(new ConfirmedSubscriptionDto(book.Id, book.TextIn(languageContext.Current).Title));
     }
 }
 

@@ -4,56 +4,46 @@ using BookStore.Domain.Customers;
 
 namespace BookStore.Application.Emails;
 
+/// Account emails, in the customer's preferred language.
 public static class CustomerEmailTemplates
 {
     public static EmailMessage VerifyEmail(Customer customer, string token, StoreOptions store)
     {
-        var url = $"{store.StorefrontBaseUrl}/verify-email?token={Uri.EscapeDataString(token)}";
+        var language = customer.PreferredLanguage;
+        var t = EmailCopy.For(language);
+        var storeName = store.NameIn(language);
+        var url = StorefrontLinks.For(store, language, $"/verify-email?token={Uri.EscapeDataString(token)}");
 
-        var content = $"""
-            <h1 style="margin:0 0 16px;font-size:22px;">Confirm your email</h1>
-            <p style="margin:0 0 8px;">Hi {EmailLayout.Encode(customer.FirstName)}, welcome to {EmailLayout.Encode(store.Name)}.</p>
-            <p style="margin:0;">Click below to confirm your email address and activate your account.</p>
-            {EmailLayout.Button(url, "Confirm email")}
-            <p style="margin:0;color:#78716c;font-size:13px;">This link expires in 24 hours. If you didn't create an account, you can ignore this email.</p>
-            """;
+        var content = string.Concat(
+            EmailLayout.Heading(t.VerifyHeading),
+            EmailLayout.Paragraph(t.VerifyGreeting(customer.FirstName, storeName), "0 0 8px"),
+            EmailLayout.Paragraph(t.VerifyBody, "0"),
+            EmailLayout.Button(url, t.VerifyButton),
+            EmailLayout.Note(t.VerifyNote));
 
-        var text = $"""
-            Confirm your email
+        var text = EmailLayout.PlainText(
+            t.VerifyHeading, t.VerifyGreeting(customer.FirstName, storeName), $"{t.VerifyButton}: {url}", t.VerifyNote);
 
-            Hi {customer.FirstName}, welcome to {store.Name}.
-
-            Confirm your email address: {url}
-
-            This link expires in 24 hours.
-            """;
-
-        return new EmailMessage(customer.Email, $"Confirm your email for {store.Name}",
-            EmailLayout.Wrap(store.Name, store.SupportEmail, content), text);
+        return new EmailMessage(customer.Email, t.VerifySubject(storeName),
+            EmailLayout.Wrap(store, language, content), text);
     }
 
     public static EmailMessage PasswordReset(Customer customer, string token, StoreOptions store)
     {
-        var url = $"{store.StorefrontBaseUrl}/reset-password?token={Uri.EscapeDataString(token)}";
+        var language = customer.PreferredLanguage;
+        var t = EmailCopy.For(language);
+        var url = StorefrontLinks.For(store, language, $"/reset-password?token={Uri.EscapeDataString(token)}");
 
-        var content = $"""
-            <h1 style="margin:0 0 16px;font-size:22px;">Reset your password</h1>
-            <p style="margin:0;">We received a request to reset the password for your account.</p>
-            {EmailLayout.Button(url, "Reset password")}
-            <p style="margin:0;color:#78716c;font-size:13px;">This link expires in 30 minutes and can be used once. If you didn't request this, no action is needed &mdash; your password hasn't changed.</p>
-            """;
+        var content = string.Concat(
+            EmailLayout.Heading(t.ResetHeading),
+            EmailLayout.Paragraph(t.ResetBody, "0"),
+            EmailLayout.Button(url, t.ResetButton),
+            EmailLayout.Note(t.ResetNote));
 
-        var text = $"""
-            Reset your password
+        var text = EmailLayout.PlainText(t.ResetHeading, t.ResetBody, $"{t.ResetButton}: {url}", t.ResetNote);
 
-            Reset your password: {url}
-
-            This link expires in 30 minutes and can be used once.
-            If you didn't request this, your password hasn't changed.
-            """;
-
-        return new EmailMessage(customer.Email, $"Reset your {store.Name} password",
-            EmailLayout.Wrap(store.Name, store.SupportEmail, content), text);
+        return new EmailMessage(customer.Email, t.ResetSubject(store.NameIn(language)),
+            EmailLayout.Wrap(store, language, content), text);
     }
 
     /// Sent when someone tries to register with an address that's already
@@ -61,29 +51,25 @@ public static class CustomerEmailTemplates
     /// that the account exists.
     public static EmailMessage RegistrationAttemptOnExistingAccount(Customer customer, StoreOptions store)
     {
-        var loginUrl = $"{store.StorefrontBaseUrl}/login";
-        var resetUrl = $"{store.StorefrontBaseUrl}/forgot-password";
+        var language = customer.PreferredLanguage;
+        var t = EmailCopy.For(language);
+        var loginUrl = StorefrontLinks.For(store, language, "/login");
+        var resetUrl = StorefrontLinks.For(store, language, "/forgot-password");
 
-        var content = $"""
-            <h1 style="margin:0 0 16px;font-size:22px;">You already have an account</h1>
-            <p style="margin:0 0 8px;">Someone just tried to create an account with this email address, but you already have one with us.</p>
-            <p style="margin:0;">If that was you, sign in instead &mdash; or reset your password if you've forgotten it.</p>
-            {EmailLayout.Button(loginUrl, "Sign in")}
-            <p style="margin:0;color:#78716c;font-size:13px;">Forgot your password? <a href="{EmailLayout.Encode(resetUrl)}">Reset it here</a>. If this wasn't you, you can safely ignore this email.</p>
-            """;
+        var content = string.Concat(
+            EmailLayout.Heading(t.ExistingHeading),
+            EmailLayout.Paragraph(t.ExistingBody, "0 0 8px"),
+            EmailLayout.Paragraph(t.ExistingHint, "0"),
+            EmailLayout.Button(loginUrl, t.SignIn),
+            EmailLayout.NoteHtml(
+                $"{EmailLayout.Encode(t.ForgotPassword)} {EmailLayout.Link(resetUrl, t.ResetHere)}. {EmailLayout.Encode(t.IgnoreIfNotYou)}"));
 
-        var text = $"""
-            You already have an account
+        var text = EmailLayout.PlainText(
+            t.ExistingHeading, t.ExistingBody,
+            $"{t.SignIn}: {loginUrl}\n{t.ForgotPassword} {resetUrl}",
+            t.IgnoreIfNotYou);
 
-            Someone tried to create an account with this email address, but you already have one.
-
-            Sign in: {loginUrl}
-            Reset your password: {resetUrl}
-
-            If this wasn't you, you can ignore this email.
-            """;
-
-        return new EmailMessage(customer.Email, $"You already have a {store.Name} account",
-            EmailLayout.Wrap(store.Name, store.SupportEmail, content), text);
+        return new EmailMessage(customer.Email, t.ExistingSubject(store.NameIn(language)),
+            EmailLayout.Wrap(store, language, content), text);
     }
 }

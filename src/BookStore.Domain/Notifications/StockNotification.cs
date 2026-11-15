@@ -18,6 +18,11 @@ public sealed class StockNotification : AggregateRoot<int>
 
     public bool IsAwaitingNotification => IsConfirmed && NotifiedAtUtc is null;
 
+    public Language Language { get; private set; } = Languages.Default;
+
+    public void SetLanguage(Language language) =>
+        Language = Enum.IsDefined(language) ? language : Languages.Default;
+
     private StockNotification() { } // EF Core
 
     public static StockNotification Create(int bookId, string email, string confirmationTokenHash)

@@ -8,6 +8,13 @@ public sealed class StoreOptions
     public string Name { get; init; } = "BookStore";
     public string SupportEmail { get; init; } = "support@example.com";
 
+    /// Store name per language, e.g. { "en": "Kitap Efendi" }. Missing: Name.
+    public Dictionary<string, string> LocalizedNames { get; init; } = new();
+
+    /// Optional site-wide banner (Arabic), and its translations.
+    public string? Announcement { get; init; }
+    public Dictionary<string, string> LocalizedAnnouncements { get; init; } = new();
+
     /// Public URL of the React storefront, used to build links in emails.
     /// No trailing slash.
     public string StorefrontBaseUrl { get; init; } = "http://localhost:3000";
@@ -33,6 +40,9 @@ public sealed class PickupSettings
     public string City { get; init; } = "Istanbul";
     public string PostalCode { get; init; } = string.Empty;
     public string CountryCode { get; init; } = "TR";
+
+    /// e.g. { "en": "Pick up at the bookshop", "tr": "Kitapçıdan teslim al" }.
+    public Dictionary<string, string> LocalizedNames { get; init; } = new();
 
     /// Shown as the "ready in" estimate for pickup.
     public int ReadyInDays { get; init; } = 1;

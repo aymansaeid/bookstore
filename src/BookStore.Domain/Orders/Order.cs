@@ -79,6 +79,8 @@ public sealed class Order : AggregateRoot<int>
 
     public Money CouponDiscountAmount => DiscountAmount.Subtract(PathDiscountAmount);
 
+    public Language Language { get; private set; } = Languages.Default;
+
     private Order() { } // EF Core
 
     public static Order Create(
@@ -122,6 +124,14 @@ public sealed class Order : AggregateRoot<int>
     {
         var random = Guid.NewGuid().ToString("N")[..10].ToUpperInvariant();
         return $"BK-{random}";
+    }
+
+    public void SetLanguage(Language language)
+    {
+        if (Status != OrderStatus.PendingPayment)
+            throw new InvalidOrderStateTransitionException(Id, Status, "change the language of");
+
+        Language = Enum.IsDefined(language) ? language : Languages.Default;
     }
 
     public void AssignToCustomer(int customerId)
