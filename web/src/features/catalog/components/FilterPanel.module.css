@@ -42,7 +42,7 @@
   justify-content: space-between;
   gap: 8px;
   inline-size: 100%;
-  min-block-size: 40px;
+  min-block-size: 44px;
   padding-inline: 10px;
   border-radius: 10px;
   color: var(--ink3);
@@ -76,7 +76,7 @@
 }
 
 .more {
-  min-block-size: 40px;
+  min-block-size: 44px;
   color: var(--red2);
   font-size: 13px;
   font-weight: 600;
@@ -89,7 +89,7 @@
 }
 
 .pill {
-  min-block-size: 40px;
+  min-block-size: 44px;
   padding-inline: 14px;
   border: 1px solid var(--line2);
   border-radius: var(--r-pill);

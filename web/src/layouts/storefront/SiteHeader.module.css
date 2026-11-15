@@ -34,6 +34,9 @@
   grid-area: logo;
   justify-self: start;
   border-radius: 8px;
+  display: inline-flex; 
+  align-items: center; 
+  min-block-size: 44px;
 }
 
 .logoImg {

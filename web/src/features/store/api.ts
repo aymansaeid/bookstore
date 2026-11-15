@@ -1,7 +1,7 @@
 import type { UiLanguage } from '@/app/locale';
 import { apiRequest } from '@/shared/api/http';
 
-/** API guide §4 StoreConfigDto. */
+/** API guide §4, §2b StoreConfigDto, for the page's language. */
 export interface StoreConfig {
   storeName: string;
   currency: string;
@@ -9,6 +9,15 @@ export interface StoreConfig {
   termsVersion: string;
   checkoutSessionMinutes: number;
   isTestMode: boolean;
+  /** The language this config answered in. */
+  language: UiLanguage;
+  /** The language of the contract the buyer will see (English falls back to Arabic). */
+  termsLanguage: UiLanguage | null;
+  /** False: checkout in this language isn't open yet (Turkish until its texts are published). */
+  termsAvailable: boolean;
+  /** Store-wide announcement in this language, set by the store; null for the default text. */
+  announcement: string | null;
+  supportedLanguages: UiLanguage[];
 }
 
 /** API guide §4 / §5b PublicShippingRateDto. One row per country. */

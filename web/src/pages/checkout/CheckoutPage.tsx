@@ -12,6 +12,7 @@ import type { Customer } from '@/features/auth/types';
 import { useCartStore } from '@/features/cart/cartStore';
 import { useCheckoutStore } from '@/features/checkout/checkoutStore';
 import { CheckoutSteps } from '@/features/checkout/components/CheckoutSteps';
+import { CheckoutClosedNotice } from '@/features/checkout/components/CheckoutClosedNotice';
 import { LegalDocumentsDialog } from '@/features/checkout/components/LegalDocumentsDialog';
 import { QuoteTotals } from '@/features/checkout/components/QuoteTotals';
 import { SavedAddressPicker } from '@/features/checkout/components/SavedAddressPicker';
@@ -238,6 +239,10 @@ function CheckoutForm({ customer }: { customer: Customer | null }) {
     if (error instanceof ApiError) {
       if (REQUOTE.has(error.code)) void queryClient.invalidateQueries({ queryKey: quoteKeys.all });
       switch (error.code) {
+         case 'Checkout.TermsUnavailable':
+          // Published or withdrawn since the page loaded: reload termsAvailable.
+          void queryClient.invalidateQueries({ queryKey: storeKeys.config(UI_LANGUAGE) });
+          break;
         case 'Checkout.TermsOutdated':
           setAccepted(false);
           void queryClient.invalidateQueries({ queryKey: storeKeys.config(UI_LANGUAGE) });
@@ -335,8 +340,13 @@ function CheckoutForm({ customer }: { customer: Customer | null }) {
   const problems = (data?.problems ?? []).filter((problem) => !SELF_HEALED.has(problem.code));
   const quantities = new Map(lines.map((line) => [line.bookId, line.quantity]));
   const busy = isSubmitting || redirecting;
+  const termsClosed = config.data?.termsAvailable === false;
   const canPay =
-    data !== undefined && data.canCheckout && quote.isCurrent && config.data !== undefined;
+    data !== undefined &&
+    data.canCheckout &&
+    quote.isCurrent &&
+    config.data !== undefined &&
+    !termsClosed;
   const payLabel = redirecting
     ? 'جارٍ تحويلك إلى صفحة الدفع…'
     : data
@@ -555,7 +565,7 @@ function CheckoutForm({ customer }: { customer: Customer | null }) {
             </h2>
             <Link to={paths.cart} className={styles.edit}>
               تعديل
-            </Link>
+            </Link> 
           </div>
 
           {data ? (
@@ -628,7 +638,7 @@ function CheckoutForm({ customer }: { customer: Customer | null }) {
               </p>
             )}
           </div>
-
+          {termsClosed && <CheckoutClosedNotice />}
           {submitError && <FormAlert>{submitError}</FormAlert>}
 
           <button

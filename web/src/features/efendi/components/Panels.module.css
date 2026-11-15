@@ -99,7 +99,7 @@
 
 .range {
   inline-size: 100%;
-  min-block-size: 32px;
+  min-block-size: 44px;
   accent-color: var(--red);
 }
 
@@ -115,7 +115,7 @@
 }
 
 .chip {
-  min-block-size: 40px;
+  min-block-size: 44px;
   padding-inline: 12px;
   border-radius: var(--r-pill);
   font-weight: 500;

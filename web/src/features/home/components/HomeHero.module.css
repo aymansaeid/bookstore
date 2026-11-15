@@ -155,7 +155,7 @@
   display: inline-flex;
   flex: none;
   align-items: center;
-  min-block-size: 40px;
+  min-block-size: 44px;
   padding-inline: 14px;
   border: 1px solid var(--ink-line2);
   border-radius: var(--r-pill);

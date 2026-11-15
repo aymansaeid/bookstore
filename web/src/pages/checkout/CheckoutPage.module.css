@@ -295,7 +295,7 @@
 }
 
 .docLink {
-  min-block-size: 40px;
+  min-block-size: 44px;
   color: var(--ink3);
   font-weight: 600;
   text-decoration: underline;

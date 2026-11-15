@@ -73,7 +73,7 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  min-block-size: 32px;
+  min-block-size: 44px;
   font-weight: 600;
 }
 

@@ -104,8 +104,8 @@
   display: grid;
   flex: none;
   place-items: center;
-  inline-size: 40px;
-  block-size: 40px;
+  inline-size: 44px;
+  block-size: 44px;
   border-radius: 10px;
   color: var(--ink3);
   font-size: 16px;

@@ -10,7 +10,7 @@ import { cx } from '@/shared/lib/cx';
 import { formatMoney } from '@/shared/lib/format';
 import { Icon } from '@/shared/ui/Icon/Icon';
 import { QuantityStepper } from '@/shared/ui/QuantityStepper/QuantityStepper';
-
+import { OriginalTitle } from '@/shared/ui/OriginalTitle/OriginalTitle';
 import styles from './CartLineItem.module.css';
 
 const asCard = (line: QuoteLine, currency: string): BookCardData => ({
@@ -62,6 +62,7 @@ export function CartLineItem({ line, quantity, currency }: CartLineItemProps) {
         <h3 className={styles.title}>
           <Link to={href}>{line.title}</Link>
         </h3>
+                  <OriginalTitle title={line.title} original={line.originalTitle} />
         <p className={styles.unit}>
           {formatMoney(line.unitPrice, currency)}
           {line.oldPrice !== null && <s>{formatMoney(line.oldPrice, currency)}</s>}

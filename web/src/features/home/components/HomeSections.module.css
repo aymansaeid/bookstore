@@ -104,7 +104,7 @@
 .reason {
   display: inline-flex;
   align-items: center;
-  min-block-size: 40px;
+  min-block-size: 44px;
   padding-inline: 14px;
   border: 1px solid var(--line2);
   border-radius: var(--r-pill);
@@ -311,7 +311,7 @@ a.reason:hover {
 
 .tab {
   flex: none;
-  min-block-size: 40px;
+  min-block-size: 44px;
   padding-inline: 16px;
   border-radius: var(--r-pill);
   color: var(--gray);

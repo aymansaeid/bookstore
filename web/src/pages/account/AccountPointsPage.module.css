@@ -93,6 +93,9 @@
 }
 
 .order {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 44px;
   justify-self: start;
   font-weight: 600;
   text-decoration: underline;

@@ -6,3 +6,7 @@ coverage/
 !.env.example
 .vite/
 *.tsbuildinfo
+
+# Force Git to track the Icon component folder, overriding any root/global macOS Icon rules
+!src/shared/ui/Icon/
+!src/shared/ui/Icon/*

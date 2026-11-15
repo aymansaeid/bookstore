@@ -24,6 +24,7 @@
 
 /* 16px on touch devices so iOS doesn't zoom (§8.4). */
 .input {
+  min-block-size: 44px;
   flex: 1;
   min-inline-size: 0;
   border: 0;
@@ -46,7 +47,7 @@
   display: grid;
   place-items: center;
   flex-shrink: 0;
-  inline-size: 40px;
+  inline-size: 44px;
   block-size: 44px;
   border-radius: 9px;
   color: var(--muted);
@@ -64,7 +65,7 @@
   gap: 6px;
   flex-shrink: 0;
   min-inline-size: 44px;
-  min-block-size: 40px;
+  min-block-size: 44px;
   padding-inline: 10px;
   border-radius: 10px;
   background: var(--ink);

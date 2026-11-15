@@ -5,6 +5,7 @@ export interface WishlistItem {
   bookId: number;
   slug: string;
   title: string;
+    originalTitle?: string | null;
   author: string;
   price: number;
   currency: string;

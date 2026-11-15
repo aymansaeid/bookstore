@@ -1,4 +1,6 @@
+import type { UiLanguage } from '@/app/locale';
 import type { ReaderLevel } from '@/shared/api/enums';
+
 
 /** API guide §7 / §7b customer profile. */
 export interface Customer {
@@ -13,6 +15,7 @@ export interface Customer {
   readingLevel: ReaderLevel | null;
   monthlyBudget: number | null;
   interestCategoryIds: number[];
+    preferredLanguage?: UiLanguage;
 }
 
 /** Login and refresh response. The refresh token is an HttpOnly cookie, never in the body. */

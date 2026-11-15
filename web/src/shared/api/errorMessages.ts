@@ -13,6 +13,7 @@ const MESSAGES: Readonly<Record<string, string>> = {
   'Checkout.ShippingMethodUnavailable': 'طريقة الشحن هذه غير متاحة لبلدك، اختر طريقة أخرى.',
   'Checkout.GiftWrapUnavailable': 'تغليف الهدايا غير متاح حالياً.',
   'Checkout.CouponInvalid': 'لا يمكن استخدام كود الخصم هذا.',
+    'Checkout.TermsUnavailable': 'الطلب بهذه اللغة غير متاح بعد. يمكنك إتمامه بالعربية.',
   'Checkout.TermsOutdated': 'تم تحديث الشروط. يرجى مراجعتها والموافقة عليها من جديد.',
   'Checkout.SavedAddressNotFound': 'العنوان المحفوظ لم يعد موجوداً، اختر عنواناً آخر.',
   'Checkout.CustomerNotFound': 'انتهت جلستك، يرجى تسجيل الدخول من جديد.',

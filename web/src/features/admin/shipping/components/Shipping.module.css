@@ -42,8 +42,8 @@
 .chipRemove {
   display: grid;
   place-items: center;
-  inline-size: 32px;
-  block-size: 32px;
+  inline-size: 44px;
+  block-size: 44px;
   border-radius: 50%;
   color: var(--ink3);
   font-size: 15px;
@@ -121,7 +121,7 @@
 }
 
 .preset {
-  min-block-size: 36px;
+  min-block-size: 44px;
   padding-inline: 12px;
   border: 1px dashed var(--line2);
   border-radius: var(--r-pill);

@@ -9,6 +9,7 @@ import type {
 
 /** API guide §4b PublicCategoryDto (two-level tree). */
 export interface Category extends CategoryRef {
+  originalName?: string;
   /** Decorative Ruqaʿa letter for top-level home tiles. */
   letter: string | null;
   description: string | null;

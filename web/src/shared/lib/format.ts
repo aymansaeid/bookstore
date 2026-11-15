@@ -26,8 +26,6 @@ const regionNames = new Intl.DisplayNames([UI_LANGUAGE], { type: 'region' });
 
 const NBSP = '\u00A0';
 
-// ... the rest of your file remains exactly the same
-
 export const formatCount = (value: number): string => arabic.format(value);
 
 /** Counter bubbles: 1–99, then "٩٩+". */

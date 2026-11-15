@@ -44,10 +44,13 @@ export interface BookSummary {
   coverImageSrcSet?: string | null;
   averageRating: number | null;
   reviewCount: number;
+  originalTitle?: string | null;
+  transliteratedTitle?: string | null;
 }
 
 /** API guide §4, §4b, §4c PublicBookDto. */
 export interface PublicBook extends BookSummary {
+  originalAuthor?: string | null;
   subtitle: string | null;
   isbn: string | null;
   description: string | null;
@@ -130,6 +133,7 @@ export interface PublicMuhaqqiq {
   id: number;
   slug: string;
   name: string;
+  originalName?: string;
   bio: string | null;
   specialties: string[];
   isFeatured: boolean;

@@ -12,6 +12,7 @@ export interface CustomerNotification {
   isRead: boolean;
   bookId: number | null;
   bookTitle: string | null;
+    originalBookTitle?: string | null;
   bookSlug: string | null;
   coverThumbnailUrl: string | null;
   orderNumber: string | null;

@@ -27,7 +27,7 @@
 }
 
 .preset {
-  min-block-size: 40px;
+  min-block-size: 44px;
   padding-inline: 14px;
   border-radius: var(--r-pill);
   color: var(--gray);

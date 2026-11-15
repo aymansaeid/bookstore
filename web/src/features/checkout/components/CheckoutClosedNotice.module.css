@@ -1,0 +1,19 @@
+.notice {
+  display: grid;
+  justify-items: start;
+  gap: 6px;
+  padding: 14px 16px;
+  border: 1px solid var(--gold);
+  border-radius: 16px;
+  background: var(--goldl);
+}
+
+.title {
+  font-weight: 700;
+}
+
+.text {
+  color: var(--ink3);
+  font-size: 13.5px;
+  line-height: 1.7;
+}

@@ -21,7 +21,10 @@
     box-shadow:
       0 20px 40px -12px rgba(20, 18, 16, 0.55),
       0 0 0 1px rgba(230, 205, 143, 0.25);
-    transition: transform 0.2s;
+    transition:
+      transform 0.2s,
+      padding 0.2s,
+      gap 0.2s;
   }
 
   .fab:hover {
@@ -31,7 +34,24 @@
   .text {
     display: flex;
     flex-direction: column;
+    max-inline-size: 220px;
+    overflow: hidden;
     line-height: 1.3;
+    white-space: nowrap;
+    transition:
+      max-inline-size 0.2s,
+      opacity 0.2s;
+  }
+
+  /* Scrolled into the page: only the avatar, so it hides as little as possible. */
+  .compact {
+    gap: 0;
+    padding-inline: 8px;
+  }
+
+  .compact .text {
+    max-inline-size: 0;
+    opacity: 0;
   }
 
   .text b {
@@ -47,5 +67,12 @@
 @media (min-width: 1280px) {
   .fab {
     inset-inline-end: 34px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fab,
+  .text {
+    transition: none;
   }
 }

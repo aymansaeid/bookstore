@@ -16,6 +16,7 @@ export interface ReadingPathSummary {
   id: number;
   slug: string;
   title: string;
+    originalTitle?: string | null;
   description: string | null;
   level: ReaderLevel;
   estimatedWeeks: number;

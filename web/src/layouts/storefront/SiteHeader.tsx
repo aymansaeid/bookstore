@@ -1,5 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router';
 
 import { activeNavId } from '@/app/navigation';
@@ -9,16 +10,15 @@ import { cx } from '@/shared/lib/cx';
 import { formatCount } from '@/shared/lib/format';
 import { CountBadge } from '@/shared/ui/CountBadge/CountBadge';
 import { Icon } from '@/shared/ui/Icon/Icon';
-import { Logo } from '@/shared/ui/Logo/Logo';
 import { LanguageSwitcher } from '@/shared/ui/LanguageSwitcher/LanguageSwitcher';
+import { Logo } from '@/shared/ui/Logo/Logo';
+
 import { AccountPill } from './AccountPill';
 import { HeaderSearch } from './HeaderSearch';
 import { MobileDrawer } from './MobileDrawer';
 import { PrimaryNav } from './PrimaryNav';
 import styles from './SiteHeader.module.css';
 import { useHeaderCounts } from './useHeaderCounts';
-import { useTranslation } from 'react-i18next';
-
 
 /** API guide §7c: re-check the bell on every page navigation (not on first render). */
 function useRefreshUnreadOnNavigation(pathname: string) {
@@ -45,11 +45,11 @@ export function SiteHeader() {
   return (
     <header className={styles.root}>
       <div className={cx('wrap', styles.bar)}>
-       <button
-            type="button"
-            className={styles.menuButton}
-            aria-label={t('header.menu')}
-            aria-haspopup="dialog"
+        <button
+          type="button"
+          className={styles.menuButton}
+          aria-label={t('header.menu')}
+          aria-haspopup="dialog"
           onClick={() => {
             drawerRef.current?.showModal();
           }}
@@ -57,44 +57,38 @@ export function SiteHeader() {
           <Icon name="menu" size={24} />
         </button>
 
-    <Link to={paths.home} className={styles.logo}>
-            <Logo className={styles.logoImg} alt={t('header.logoAlt')} priority />
-          </Link>
+        <Link to={paths.home} className={styles.logo}>
+          <Logo className={styles.logoImg} alt={t('header.logoAlt')} priority />
+        </Link>
 
-          <PrimaryNav active={active} label={t('header.mainNav')} className={styles.nav} />
+        <PrimaryNav active={active} label={t('header.mainNav')} className={styles.nav} />
 
         <HeaderSearch className={styles.search} />
 
         <div className={styles.actions}>
-         <Link
-              to={paths.account.notifications}
-              className={cx(styles.iconLink, styles.mobileOnly)}
-              aria-label={withCount(t('header.notifications'), counts.notifications)}
-            >
-              <Icon name="bell" />
-            </Link>
-            <Link
-              to={paths.account.wishlist}
-              className={cx(styles.iconLink, styles.desktopOnly)}
-              aria-label={withCount(t('header.wishlist'), counts.wishlist)}
-            >
-              <Icon name="heart" />
-            </Link>
-            <Link
-              to={paths.cart}
-              className={styles.iconLink}
-              aria-label={withCount(t('header.cart'), counts.cart)}
-            >
+          <Link
+            to={paths.account.notifications}
+            className={cx(styles.iconLink, styles.mobileOnly)}
+            aria-label={withCount(t('header.notifications'), counts.notifications)}
+          >
+            <Icon name="bell" />
+            <CountBadge count={counts.notifications} />
+          </Link>
+          <Link
+            to={paths.account.wishlist}
+            className={cx(styles.iconLink, styles.desktopOnly)}
+            aria-label={withCount(t('header.wishlist'), counts.wishlist)}
+          >
             <Icon name="heart" />
             <CountBadge count={counts.wishlist} />
           </Link>
           <Link
             to={paths.cart}
             className={styles.iconLink}
-            aria-label={withCount('السلة', counts.cart)}
+            aria-label={withCount(t('header.cart'), counts.cart)}
           >
             <Icon name="cart" />
-         <CountBadge count={counts.cart} />
+            <CountBadge count={counts.cart} />
           </Link>
           <LanguageSwitcher variant="menu" className={styles.desktopOnly} />
           <AccountPill />

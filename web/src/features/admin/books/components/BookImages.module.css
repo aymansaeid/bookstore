@@ -64,7 +64,7 @@
 
 .tool,
 .textTool {
-  min-block-size: 40px;
+  min-block-size: 44px;
   border: 1px solid var(--line2);
   border-radius: 10px;
   background: var(--card);

@@ -41,7 +41,7 @@
   box-shadow: var(--sh1);
 }
 
-.cover + .cover {
+.cover+.cover {
   margin-inline-start: -16px;
 }
 
@@ -66,6 +66,9 @@
 
 /* The whole card is clickable through the order number's link. */
 .number {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 44px;
   font-weight: 700;
   font-size: 15px;
 }

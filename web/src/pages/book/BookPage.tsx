@@ -17,6 +17,7 @@ import { Breadcrumbs, type Crumb } from '@/shared/ui/Breadcrumbs/Breadcrumbs';
 import { Button } from '@/shared/ui/Button/Button';
 import { DocumentTitle } from '@/shared/ui/DocumentTitle';
 import { SectionHeader } from '@/shared/ui/SectionHeader/SectionHeader';
+import { OriginalTitle } from '@/shared/ui/OriginalTitle/OriginalTitle';
 
 import styles from './BookPage.module.css';
 
@@ -42,7 +43,10 @@ function BookHeading({ book }: { book: PublicBook }) {
       <p className={styles.kicker}>
         {[book.category?.name, book.publisher].filter(Boolean).join(' · ')}
       </p>
-      <h1 className={styles.title}>{book.title}</h1>
+     <h1 className={styles.title}>
+        {book.title}
+        <OriginalTitle title={book.title} original={book.originalTitle} />
+      </h1>
       {book.subtitle && <p className={styles.subtitle}>{book.subtitle}</p>}
       <p className={styles.people}>
         تأليف: <b>{book.author}</b>

@@ -19,7 +19,7 @@
   align-items: center;
   gap: 6px;
   justify-self: start;
-  min-block-size: 36px;
+  min-block-size: 44px;
   color: var(--gray);
   font-size: 13px;
 }
@@ -106,7 +106,7 @@
   display: inline-flex;
   flex: none;
   align-items: center;
-  min-block-size: 40px;
+  min-block-size: 44px;
   padding-inline: 14px;
   border: 1px solid var(--line2);
   border-radius: var(--r-pill);

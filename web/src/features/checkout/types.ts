@@ -12,6 +12,7 @@ export interface QuoteRequest {
 export interface QuoteLine {
   bookId: number;
   title: string;
+    originalTitle?: string | null;
   slug: string;
   coverImageUrl: string | null;
   coverThumbnailUrl?: string | null;

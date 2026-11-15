@@ -1,5 +1,5 @@
 .nav {
-  padding-block: 16px 8px;
+  padding-block: 6px 0;
   font-size: 13px;
   color: var(--muted);
 }
@@ -21,6 +21,8 @@
   content: '/';
   color: var(--line2);
 }
+
+.list a { display: inline-flex; align-items: center; min-block-size: 44px; }
 
 .list a:hover {
   color: var(--ink);

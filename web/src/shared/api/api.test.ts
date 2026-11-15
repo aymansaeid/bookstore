@@ -14,7 +14,7 @@ const json = (status: number, body: unknown, headers: Record<string, string> = {
 
 function mockFetch(response: Response | Error) {
   const fn = vi.fn(() =>
-    response instanceof Error ? Promise.reject(response) : Promise.resolve(response),
+    response instanceof Error ? Promise.reject(response) : Promise.resolve(response.clone()),
   );
   vi.stubGlobal('fetch', fn);
   return fn;

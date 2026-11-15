@@ -7,7 +7,7 @@ import { WishlistButton } from '@/features/wishlist/WishlistButton';
 import { formatAmount, formatCount, formatMoney, volumesLabel } from '@/shared/lib/format';
 import { Icon } from '@/shared/ui/Icon/Icon';
 import { Spark } from '@/shared/ui/Spark/Spark';
-
+import { OriginalTitle } from '@/shared/ui/OriginalTitle/OriginalTitle';
 import { BookCover } from './BookCover';
 import styles from './ProductCard.module.css';
 
@@ -70,6 +70,7 @@ export function ProductCard({
           <Link to={href} className={styles.titleLink}>
             {book.title}
           </Link>
+                    <OriginalTitle title={book.title} original={book.originalTitle} />
         </h3>
         <p className={styles.author}>{book.author}</p>
         {(edition ?? publisher) && (

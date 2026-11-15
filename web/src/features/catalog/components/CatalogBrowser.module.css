@@ -69,7 +69,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  min-block-size: 36px;
+  min-block-size: 44px;
   padding-inline: 12px 8px;
   border-radius: var(--r-pill);
   background: var(--ink);
@@ -78,7 +78,7 @@
 }
 
 .clearAll {
-  min-block-size: 36px;
+  min-block-size: 44px;
   padding-inline: 8px;
   color: var(--red2);
   font-size: 13px;

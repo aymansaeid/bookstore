@@ -58,7 +58,7 @@
 
 .mode {
   flex: none;
-  min-block-size: 40px;
+  min-block-size: 44px;
   padding-inline: 16px;
   border: 1px solid var(--line2);
   border-radius: var(--r-pill);
@@ -186,7 +186,7 @@
 
 .suggestion {
   flex: none;
-  min-block-size: 40px;
+  min-block-size: 44px;
   padding-inline: 14px;
   border: 1px solid var(--line2);
   border-radius: var(--r-pill);

@@ -78,6 +78,11 @@ const storefrontRoutes: RouteObject[] = [
   // Account
   {
     path: 'account',
+    
+    // Tables, pagination and form buttons reach the bottom-left corner here,
+    // where the floating button sits. The account menu links to Efendi instead.
+    handle: { hideFab: true } satisfies ShellHandle,
+
     lazy: lazyComponent(() => import('@/layouts/AccountLayout')),
     children: [
       {

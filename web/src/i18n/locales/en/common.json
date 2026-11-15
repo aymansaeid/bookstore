@@ -120,5 +120,9 @@
     "addToHome": "Add it to your home screen",
     "copyright": "© {{year}} Kitap Efendi. All rights reserved.",
     "payments": "Accepted payment methods"
+  }, "checkoutClosed": {
+    "title": "Checkout in English isn't open yet",
+    "text": "The legal texts in this language haven't been published yet. You can complete your order in Arabic now.",
+    "action": "Continue in Arabic"
   }
 }

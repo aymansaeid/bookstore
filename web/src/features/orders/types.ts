@@ -3,6 +3,7 @@ import type { OrderStatus } from '@/shared/api/enums';
 /** API §6 PublicOrderDto: city and country only, never the street or phone. */
 export interface PublicOrderLine {
   title: string;
+    originalTitle?: string | null;
   quantity: number;
   unitPrice: number;
   lineTotal: number;
@@ -15,6 +16,7 @@ export interface PublicOrderLine {
 
 export interface PublicOrder {
   orderNumber: string;
+    language?: string;
   status: OrderStatus;
   lines: PublicOrderLine[];
   subtotal: number;

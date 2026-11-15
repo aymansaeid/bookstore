@@ -120,5 +120,9 @@
     "addToHome": "Ana ekranınıza ekleyin",
     "copyright": "© {{year}} Kitap Efendi. Tüm hakları saklıdır.",
     "payments": "Kabul edilen ödeme yöntemleri"
+  } ,   "checkoutClosed": {
+    "title": "Türkçe ödeme henüz açılmadı",
+    "text": "Bu dildeki yasal metinler henüz yayımlanmadı. Siparişinizi şimdi Arapça olarak tamamlayabilirsiniz.",
+    "action": "Arapça devam et"
   }
 }
