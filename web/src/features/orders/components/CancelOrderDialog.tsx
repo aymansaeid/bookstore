@@ -1,5 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 import { type RefObject, useState } from 'react';
+import { Trans, useTranslation } from 'react-i18next';
 
 import { ordersApi } from '@/features/orders/api';
 import type { OrderLookup, PublicOrder } from '@/features/orders/types';
@@ -34,6 +35,7 @@ export function CancelOrderDialog({
   onCancelled,
   onStale,
 }: CancelOrderDialogProps) {
+  const { t } = useTranslation('orders', { keyPrefix: 'cancel' });
   const [reason, setReason] = useState<CancelReason | null>(null);
   const [comment, setComment] = useState('');
 
@@ -46,11 +48,7 @@ export function CancelOrderDialog({
     onSuccess: (updated) => {
       onCancelled(updated);
       dialogRef.current?.close();
-      toast.success(
-        order.status === 'Paid'
-          ? 'أُلغي الطلب، وسيُعاد المبلغ إلى بطاقتك تلقائياً.'
-          : 'أُلغي الطلب.',
-      );
+      toast.success(order.status === 'Paid' ? t('doneRefund') : t('done'));
     },
     onError: (error) => {
       // Shipped or paid a moment ago: show the order as it is now.
@@ -74,12 +72,17 @@ export function CancelOrderDialog({
       >
         <div className={styles.head}>
           <h2 id="cancel-order-title" className={styles.title}>
-            إلغاء الطلب <span dir="ltr">{order.orderNumber}</span>
+            <Trans
+              t={t}
+              i18nKey="title"
+              values={{ number: order.orderNumber }}
+              components={{ n: <span dir="ltr" /> }}
+            />
           </h2>
           <button
             type="button"
             className={styles.close}
-            aria-label="إغلاق"
+            aria-label={t('close')}
             onClick={() => {
               dialogRef.current?.close();
             }}
@@ -89,12 +92,12 @@ export function CancelOrderDialog({
         </div>
 
         <p className={styles.warning}>
-          لا يمكن التراجع عن الإلغاء.
-          {order.status === 'Paid' && ' سيُعاد المبلغ المدفوع إلى بطاقتك تلقائياً.'}
+          {t('warning')}
+          {order.status === 'Paid' && t('refund')}
         </p>
 
         <fieldset className={styles.reasons}>
-          <legend className={styles.legend}>سبب الإلغاء</legend>
+          <legend className={styles.legend}>{t('reason')}</legend>
           {CANCEL_REASONS.map((value) => (
             <label key={value} className={styles.reason}>
               <input
@@ -111,8 +114,8 @@ export function CancelOrderDialog({
         </fieldset>
 
         <TextAreaField
-          label="ملاحظة (اختياري)"
-          hint={`حتى ${formatCount(COMMENT_MAX)} حرف.`}
+          label={t('note')}
+          hint={t('noteHint', { n: formatCount(COMMENT_MAX) })}
           maxLength={COMMENT_MAX}
           rows={3}
           value={comment}
@@ -125,7 +128,7 @@ export function CancelOrderDialog({
 
         <div className={styles.actions}>
           <Button type="submit" variant="red" disabled={!reason || cancel.isPending}>
-            {cancel.isPending ? 'جارٍ الإلغاء…' : 'تأكيد الإلغاء'}
+            {cancel.isPending ? t('cancelling') : t('confirm')}
           </Button>
           <Button
             variant="ghost"
@@ -133,7 +136,7 @@ export function CancelOrderDialog({
               dialogRef.current?.close();
             }}
           >
-            تراجع
+            {t('back')}
           </Button>
         </div>
       </form>

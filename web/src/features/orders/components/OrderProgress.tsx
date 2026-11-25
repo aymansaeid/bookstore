@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+
 import type { PublicOrder } from '@/features/orders/types';
 import { cx } from '@/shared/lib/cx';
 import { formatDate } from '@/shared/lib/format';
@@ -13,21 +15,22 @@ const FLOW = ['PendingPayment', 'Paid', 'Shipped', 'Delivered'] as const;
  * deliveredAtUtc. Side exits (cancelled, expired, refunded) show no bar.
  */
 export function OrderProgress({ order }: { order: PublicOrder }) {
+  const { t } = useTranslation('orders', { keyPrefix: 'progress' });
   const reached = FLOW.indexOf(order.status as (typeof FLOW)[number]);
   if (reached < 0) return null;
 
   const pickup = order.shippingMethodCode === 'pickup';
   const steps = [
-    { label: 'تم الطلب', date: order.createdAtUtc },
-    { label: 'قيد التجهيز', date: null },
-    { label: pickup ? 'جاهز للاستلام' : 'تم الشحن', date: order.shippedAtUtc },
-    { label: pickup ? 'تم الاستلام' : 'تم التسليم', date: order.deliveredAtUtc },
+    { label: t('ordered'), date: order.createdAtUtc },
+    { label: t('preparing'), date: null },
+    { label: pickup ? t('ready') : t('shipped'), date: order.shippedAtUtc },
+    { label: pickup ? t('collected') : t('delivered'), date: order.deliveredAtUtc },
   ];
   // PendingPayment has only been "ordered"; Paid reaches "being prepared", etc.
   const current = reached;
 
   return (
-    <ol className={styles.progress} aria-label="مراحل الطلب">
+    <ol className={styles.progress} aria-label={t('label')}>
       {steps.map((step, index) => {
         const done = index < current || (index === current && order.status === 'Delivered');
         return (

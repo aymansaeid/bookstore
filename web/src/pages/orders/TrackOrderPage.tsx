@@ -1,4 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Trans, useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 
 import { paths } from '@/app/paths';
@@ -19,6 +20,7 @@ const trackKey = (lookup: OrderLookup) => ['order-track', lookup] as const;
 
 /** /track?order=… (linked from every order email, API §11). */
 export default function TrackOrderPage() {
+  const { t } = useTranslation('orders', { keyPrefix: 'track' });
   const queryClient = useQueryClient();
   const { customer } = useSession();
   const { lookup, orderNumber, email, setLookup, clear } = useOrderLookup();
@@ -35,17 +37,17 @@ export default function TrackOrderPage() {
 
   return (
     <div className={cx('wrap', styles.page)}>
-      <DocumentTitle title="تتبّع الطلب" />
+      <DocumentTitle title={t('title')} />
       <header className={styles.header}>
-        <h1 className={styles.title}>تتبّع الطلب</h1>
-        <p className={styles.lead}>أدخل رقم الطلب والبريد الإلكتروني لمعرفة حالته ورقم الشحنة.</p>
+        <h1 className={styles.title}>{t('title')}</h1>
+        <p className={styles.lead}>{t('lead')}</p>
       </header>
 
       {showForm ? (
         <OrderLookupForm
           key={`${orderNumber}|${email}`}
           defaults={{ orderNumber, email: email || (customer?.email ?? '') }}
-          submitLabel="تتبّع الطلب"
+          submitLabel={t('submit')}
           busy={order.isFetching}
           error={order.isError ? errorMessage(order.error) : null}
           onLookup={(next) => {
@@ -58,7 +60,7 @@ export default function TrackOrderPage() {
           }}
         />
       ) : order.isPending ? (
-        <div className={styles.skeleton} aria-busy="true" aria-label="جارٍ البحث عن الطلب" />
+        <div className={styles.skeleton} aria-busy="true" aria-label={t('searching')} />
       ) : order.data ? (
         <div className={styles.result}>
           <OrderDetails
@@ -72,18 +74,18 @@ export default function TrackOrderPage() {
             }}
           />
           <button type="button" className={styles.another} onClick={clear}>
-            <Icon name="search" size={16} /> تتبّع طلباً آخر
+            <Icon name="search" size={16} /> {t('another')}
           </button>
         </div>
       ) : null}
 
       {customer && (
         <p className={styles.muted}>
-          كل طلباتك في صفحة{' '}
-          <Link to={paths.account.orders} className={styles.inlineLink}>
-            طلباتي
-          </Link>
-          .
+          <Trans
+            t={t}
+            i18nKey="allOrders"
+            components={{ a: <Link to={paths.account.orders} className={styles.inlineLink} /> }}
+          />
         </p>
       )}
     </div>

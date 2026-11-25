@@ -124,12 +124,13 @@
     "addToHome": "أضفه للشاشة الرئيسية",
     "copyright": "© {{year}} كتاب أفندي. جميع الحقوق محفوظة.",
     "payments": "طرق الدفع المقبولة"
-  }, "checkoutClosed": {
+  },
+  "checkoutClosed": {
     "title": "الطلب بهذه اللغة لم يُفتح بعد",
     "text": "لم تُنشر النصوص القانونية بهذه اللغة حتى الآن. يمكنك إتمام طلبك بالعربية.",
     "action": "أكمل الطلب بالعربية"
   },
-    "count": {
+  "count": {
     "countries_zero": "{{n}} دولة",
     "countries_one": "دولة واحدة",
     "countries_two": "دولتين",
@@ -172,15 +173,64 @@
     "copies_few": "{{n}} نسخ",
     "copies_many": "{{n}} نسخة",
     "copies_other": "{{n}} نسخة"
-  } ,
-    "enums": {
-    "orderStatus": { "PendingPayment": "بانتظار الدفع", "Paid": "قيد التجهيز", "Shipped": "تم الشحن", "Delivered": "تم التسليم", "Cancelled": "ملغى", "Expired": "انتهت مهلة الدفع", "Refunded": "مُسترد" },
-    "returnStatus": { "Requested": "بانتظار الموافقة", "Approved": "تمت الموافقة", "Completed": "تم الاسترداد", "Rejected": "مرفوض", "CancelledByCustomer": "أُلغي" },
-    "format": { "Paperback": "غلاف ورقي", "Hardcover": "مجلّد فاخر", "BoxSet": "مجموعة في علبة" },
-    "level": { "Beginner": "مبتدئ", "Intermediate": "متوسط", "Specialist": "متخصص" },
-    "badge": { "New": "جديد", "Deluxe": "طبعة فاخرة", "Bestseller": "الأكثر مبيعاً" },
-    "returnReason": { "ChangedMind": "غيّرت رأيي", "ArrivedDamaged": "وصل الكتاب تالفاً", "WrongItem": "وصلني كتاب غير الذي طلبته", "Other": "سبب آخر" },
-    "cancelReason": { "ChangedMind": "غيّرت رأيي", "OrderedByMistake": "طلبت بالخطأ", "FoundBetterPrice": "وجدت سعراً أفضل", "DeliveryTooSlow": "التوصيل بطيء", "Other": "سبب آخر" }
+  },
+  "enums": {
+    "orderStatus": {
+      "PendingPayment": "بانتظار الدفع",
+      "Paid": "قيد التجهيز",
+      "Shipped": "تم الشحن",
+      "Delivered": "تم التسليم",
+      "Cancelled": "ملغى",
+      "Expired": "انتهت مهلة الدفع",
+      "Refunded": "مُسترد"
+    },
+    "returnStatus": {
+      "Requested": "بانتظار الموافقة",
+      "Approved": "تمت الموافقة",
+      "Completed": "تم الاسترداد",
+      "Rejected": "مرفوض",
+      "CancelledByCustomer": "أُلغي"
+    },
+    "format": {
+      "Paperback": "غلاف ورقي",
+      "Hardcover": "مجلّد فاخر",
+      "BoxSet": "مجموعة في علبة"
+    },
+    "level": {
+      "Beginner": "مبتدئ",
+      "Intermediate": "متوسط",
+      "Specialist": "متخصص"
+    },
+    "badge": {
+      "New": "جديد",
+      "Deluxe": "طبعة فاخرة",
+      "Bestseller": "الأكثر مبيعاً"
+    },
+    "returnReason": {
+      "ChangedMind": "غيّرت رأيي",
+      "ArrivedDamaged": "وصل الكتاب تالفاً",
+      "WrongItem": "وصلني كتاب غير الذي طلبته",
+      "Other": "سبب آخر"
+    },
+    "cancelReason": {
+      "ChangedMind": "غيّرت رأيي",
+      "OrderedByMistake": "طلبت بالخطأ",
+      "FoundBetterPrice": "وجدت سعراً أفضل",
+      "DeliveryTooSlow": "التوصيل بطيء",
+      "Other": "سبب آخر"
+    }
+  },
+  "validation": {
+    "email": "أدخل بريداً إلكترونياً صحيحاً",
+    "passwordMin": "كلمة المرور {{n}} حرفاً على الأقل",
+    "passwordMax": "كلمة المرور أطول من المسموح",
+    "passwordRequired": "أدخل كلمة المرور",
+    "firstName": "أدخل الاسم",
+    "lastName": "أدخل اسم العائلة",
+    "nameTooLong": "الاسم أطول من المسموح",
+    "phone": "رقم الجوال غير صحيح",
+    "interests": "اختر {{n}} اهتمامات كحدٍّ أقصى",
+    "mismatch": "كلمتا المرور غير متطابقتين"
   },
   "ui": {
     "home": "الرئيسية",
@@ -192,7 +242,13 @@
     "page": "الصفحة {{n}}",
     "stars": "{{value}} من ٥",
     "seeAll": "عرض الكل",
-    "retry": "أعد المحاولة"
+    "retry": "أعد المحاولة",
+    "quantity": "الكمية",
+    "increase": "زيادة الكمية",
+    "decrease": "إنقاص الكمية",
+    "showPassword": "إظهار كلمة المرور",
+    "hidePassword": "إخفاء كلمة المرور",
+    "close": "إغلاق"
   },
   "addToCart": {
     "atMax": "وصلت إلى الحد الأقصى ({{n}} نسخ) من هذا الكتاب.",
@@ -210,7 +266,7 @@
     "followed": "تتابع هذا المحقّق الآن. سننبّهك بكل إصدار جديد.",
     "unfollowed": "ألغيت متابعة المحقّق."
   },
-   "delivery": {
+  "delivery": {
     "on": "يصلك {{date}}",
     "between": "يصلك بين {{from}} و{{to}}"
   }

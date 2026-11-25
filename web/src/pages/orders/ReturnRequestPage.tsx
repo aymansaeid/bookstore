@@ -1,4 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
+import type { TFunction } from 'i18next';
+import { Trans, useTranslation } from 'react-i18next';
 
 import { useSession } from '@/features/auth/session';
 import { OrderLookupForm } from '@/features/orders/components/OrderLookupForm';
@@ -20,19 +22,23 @@ import styles from './OrderPages.module.css';
 const EMPTY: OrderLookup = { orderNumber: '', email: '' };
 
 /** Why a return can't be requested (API §9 ReturnEligibilityDto.reason). */
-function notEligibleText(reason: ReturnEligibility['reason']): string {
+function notEligibleText(
+  t: TFunction<'orders', 'returns'>,
+  reason: ReturnEligibility['reason'],
+): string {
   switch (reason) {
     case 'WindowClosed':
-      return 'انتهت مهلة الإرجاع: ١٤ يوماً من استلام الطلب.';
+      return t('windowClosed');
     case 'AlreadyRequested':
-      return 'قُدّم طلب إرجاع لهذا الطلب من قبل.';
+      return t('alreadyRequested');
     default:
-      return 'لا يمكن إرجاع هذا الطلب: يصبح الإرجاع متاحاً بعد استلام الطلب، ولا يشمل الطلبات الملغاة أو المستردّة.';
+      return t('notEligible');
   }
 }
 
 /** /returns: the 14-day withdrawal right, for guests and customers alike (API §9). */
 export default function ReturnRequestPage() {
+  const { t } = useTranslation('orders', { keyPrefix: 'returns' });
   const { customer } = useSession();
   const { lookup, orderNumber, email, setLookup, clear } = useOrderLookup();
   const key = lookup ?? EMPTY;
@@ -61,19 +67,17 @@ export default function ReturnRequestPage() {
 
   return (
     <div className={cx('wrap', styles.page)}>
-      <DocumentTitle title="الإرجاع" />
+      <DocumentTitle title={t('tabTitle')} />
       <header className={styles.header}>
-        <h1 className={styles.title}>إرجاع الكتب</h1>
-        <p className={styles.lead}>
-          يحق لك إرجاع ما اشتريت خلال ١٤ يوماً من الاستلام. أدخل رقم الطلب والبريد الإلكتروني للبدء.
-        </p>
+        <h1 className={styles.title}>{t('title')}</h1>
+        <p className={styles.lead}>{t('lead')}</p>
       </header>
 
       {showForm ? (
         <OrderLookupForm
           key={`${orderNumber}|${email}`}
           defaults={{ orderNumber, email: email || (customer?.email ?? '') }}
-          submitLabel="متابعة"
+          submitLabel={t('continue')}
           busy={eligibility.isFetching || latest.isFetching}
           error={failed ? errorMessage(failed) : null}
           onLookup={(next) => {
@@ -85,18 +89,23 @@ export default function ReturnRequestPage() {
           }}
         />
       ) : loading ? (
-        <div className={styles.skeleton} aria-busy="true" aria-label="جارٍ التحقق من الطلب" />
+        <div className={styles.skeleton} aria-busy="true" aria-label={t('checking')} />
       ) : (
         <div className={styles.result}>
           <p className={styles.orderLine}>
-            الطلب <b dir="ltr">{lookup.orderNumber}</b>
+            <Trans
+              t={t}
+              i18nKey="order"
+              values={{ number: lookup.orderNumber }}
+              components={{ b: <b dir="ltr" /> }}
+            />
             <ButtonLink
               to={trackOrderUrl(lookup.orderNumber)}
               state={{ email: lookup.email }}
               variant="ghost"
               size="sm"
             >
-              عرض الطلب
+              {t('viewOrder')}
             </ButtonLink>
           </p>
 
@@ -111,12 +120,12 @@ export default function ReturnRequestPage() {
           ) : (
             eligibility.data &&
             !(latest.data && eligibility.data.reason === 'AlreadyRequested') && (
-              <p className={styles.note}>{notEligibleText(eligibility.data.reason)}</p>
+              <p className={styles.note}>{notEligibleText(t, eligibility.data.reason)}</p>
             )
           )}
 
           <button type="button" className={styles.another} onClick={clear}>
-            <Icon name="search" size={16} /> طلب آخر
+            <Icon name="search" size={16} /> {t('another')}
           </button>
         </div>
       )}

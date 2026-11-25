@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { type RefObject, useState } from 'react';
+import { Trans, useTranslation } from 'react-i18next';
 
 import { ordersApi } from '@/features/orders/api';
 import type { OrderLookup } from '@/features/orders/types';
@@ -11,6 +12,7 @@ import { Icon } from '@/shared/ui/Icon/Icon';
 import styles from './OrderDialogs.module.css';
 
 function Documents({ lookup }: { lookup: OrderLookup }) {
+  const { t } = useTranslation('orders', { keyPrefix: 'documents' });
   const [index, setIndex] = useState(0);
   const documents = useQuery({
     queryKey: ['order-documents', lookup] as const,
@@ -21,7 +23,7 @@ function Documents({ lookup }: { lookup: OrderLookup }) {
   if (documents.isPending) {
     return (
       <p className={styles.state} aria-busy="true">
-        جارٍ تحميل المستندات…
+        {t('loading')}
       </p>
     );
   }
@@ -33,7 +35,7 @@ function Documents({ lookup }: { lookup: OrderLookup }) {
     );
   }
   if (documents.data.length === 0) {
-    return <p className={styles.state}>لا توجد مستندات محفوظة لهذا الطلب.</p>;
+    return <p className={styles.state}>{t('none')}</p>;
   }
 
   const current = documents.data[Math.min(index, documents.data.length - 1)];
@@ -57,8 +59,12 @@ function Documents({ lookup }: { lookup: OrderLookup }) {
       {current && (
         <article className={styles.document} aria-label={current.title}>
           <p className={styles.meta}>
-            الإصدار <span dir="ltr">{current.version}</span> · وافقت عليه في{' '}
-            {formatDateTime(current.createdAtUtc)}
+            <Trans
+              t={t}
+              i18nKey="version"
+              values={{ version: current.version, date: formatDateTime(current.createdAtUtc) }}
+              components={{ v: <span dir="ltr" /> }}
+            />
           </p>
           {/*
             The stored record is a complete HTML file with its own <style> (the
@@ -88,17 +94,18 @@ interface OrderDocumentsDialogProps {
 
 /** «مستندات الطلب»: the exact contract and form this buyer accepted (API §6). */
 export function OrderDocumentsDialog({ dialogRef, lookup, opened }: OrderDocumentsDialogProps) {
+  const { t } = useTranslation('orders', { keyPrefix: 'documents' });
   return (
     <dialog ref={dialogRef} className={styles.dialog} aria-labelledby="order-documents-title">
       <div className={styles.body}>
         <div className={styles.head}>
           <h2 id="order-documents-title" className={styles.title}>
-            مستندات الطلب
+            {t('title')}
           </h2>
           <button
             type="button"
             className={styles.close}
-            aria-label="إغلاق"
+            aria-label={t('close')}
             onClick={() => {
               dialogRef.current?.close();
             }}

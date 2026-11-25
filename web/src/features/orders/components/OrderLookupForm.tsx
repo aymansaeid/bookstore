@@ -1,21 +1,31 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
 
 import type { OrderLookup } from '@/features/orders/types';
+import { i18n } from '@/i18n';
 import { Button } from '@/shared/ui/Button/Button';
 import { FormAlert, TextField } from '@/shared/ui/form/Field';
 
 import styles from './OrderLookupForm.module.css';
 
+/** Looked up when a check fails, so messages follow the page's language. */
+const say = (key: 'numberRequired' | 'numberInvalid' | 'email') => ({
+  error: () => i18n.t(`lookup.${key}`, { ns: 'orders' }),
+});
+
 const schema = z.object({
   orderNumber: z
     .string()
     .trim()
-    .min(1, 'أدخل رقم الطلب')
-    .max(50, 'رقم الطلب غير صحيح')
+    .min(1, say('numberRequired'))
+    .max(50, say('numberInvalid'))
     .transform((value) => value.toUpperCase()),
-  email: z.string().trim().pipe(z.email('أدخل بريداً إلكترونياً صحيحاً')),
+  email: z
+    .string()
+    .trim()
+    .pipe(z.email(say('email'))),
 });
 
 type LookupInput = z.input<typeof schema>;
@@ -36,6 +46,7 @@ export function OrderLookupForm({
   busy = false,
   error = null,
 }: OrderLookupFormProps) {
+  const { t } = useTranslation('orders', { keyPrefix: 'lookup' });
   const {
     register,
     handleSubmit,
@@ -57,30 +68,30 @@ export function OrderLookupForm({
       {error && <FormAlert>{error}</FormAlert>}
       <div className={styles.fields}>
         <TextField
-          label="رقم الطلب"
+          label={t('number')}
           dir="ltr"
           autoComplete="off"
           autoCapitalize="characters"
           spellCheck={false}
           placeholder="BK-3F9A1C22D0"
-          hint="تجده في رسالة تأكيد الطلب."
+          hint={t('numberHint')}
           error={errors.orderNumber?.message}
           {...register('orderNumber')}
         />
         <TextField
-          label="البريد الإلكتروني"
+          label={t('emailLabel')}
           type="email"
           dir="ltr"
           inputMode="email"
           autoComplete="email"
           placeholder="name@example.com"
-          hint="البريد الذي استخدمته عند الطلب."
+          hint={t('emailHint')}
           error={errors.email?.message}
           {...register('email')}
         />
       </div>
       <Button type="submit" variant="ink" disabled={busy} className={styles.submit}>
-        {busy ? 'جارٍ البحث…' : submitLabel}
+        {busy ? t('searching') : submitLabel}
       </Button>
     </form>
   );

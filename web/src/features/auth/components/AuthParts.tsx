@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 
+import { UI_LANGUAGE } from '@/app/locale';
 import { paths } from '@/app/paths';
 import { cx } from '@/shared/lib/cx';
 import { DocumentTitle } from '@/shared/ui/DocumentTitle';
@@ -9,11 +11,12 @@ import { Logo } from '@/shared/ui/Logo/Logo';
 import styles from './auth.module.css';
 
 export function AuthHeader({ title, subtitle }: { title: string; subtitle?: string }) {
+  const { t } = useTranslation('auth');
   return (
     <header className={styles.header}>
       <DocumentTitle title={title} />
       <Link to={paths.home} className={styles.logoLink}>
-        <Logo className={styles.logo} alt="كتاب أفندي، العودة إلى المتجر" />
+        <Logo className={styles.logo} alt={t('header.logoAlt')} />
       </Link>
       <h1 className={styles.title}>{title}</h1>
       {subtitle && <p className={styles.subtitle}>{subtitle}</p>}
@@ -29,14 +32,15 @@ export function AuthTabs({
   active: 'login' | 'register';
   returnTo: string | null;
 }) {
+  const { t } = useTranslation('auth', { keyPrefix: 'tabs' });
   const suffix = returnTo ? `?${new URLSearchParams({ returnTo }).toString()}` : '';
   const tabs = [
-    { id: 'login', label: 'تسجيل الدخول', to: `${paths.login}${suffix}` },
-    { id: 'register', label: 'حساب جديد', to: `${paths.register}${suffix}` },
+    { id: 'login', label: t('login'), to: `${paths.login}${suffix}` },
+    { id: 'register', label: t('register'), to: `${paths.register}${suffix}` },
   ] as const;
 
   return (
-    <nav className={styles.tabs} aria-label="نوع الدخول">
+    <nav className={styles.tabs} aria-label={t('label')}>
       {tabs.map((tab) => (
         <Link
           key={tab.id}
@@ -54,17 +58,18 @@ export function AuthTabs({
 
 /** Spec shows WhatsApp and social sign-in; the backend doesn't support them yet. */
 export function SocialSignIn() {
+  const { t } = useTranslation('auth', { keyPrefix: 'social' });
   return (
     <div className={styles.socialBlock}>
-      <p className={styles.divider}>أو</p>
+      <p className={styles.divider}>{t('or')}</p>
       <button type="button" className={cx(styles.socialBtn, styles.wide)} disabled>
-        📱 ادخل برمز يصلك على واتساب <small>قريباً</small>
+        {t('whatsapp')} <small>{t('soon')}</small>
       </button>
       <div className={styles.social}>
         {['Google', 'Apple', 'Facebook'].map((name) => (
           <button key={name} type="button" className={styles.socialBtn} disabled lang="en">
             {name}
-            <small lang="ar">قريباً</small>
+            <small lang={UI_LANGUAGE}>{t('soon')}</small>
           </button>
         ))}
       </div>

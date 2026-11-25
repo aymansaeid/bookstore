@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import type { OrderLookup } from '@/features/orders/types';
 import { returnKeys, returnsApi } from '@/features/returns/api';
@@ -24,6 +25,7 @@ export function ReturnForm({
   lookup: OrderLookup;
   eligibility: ReturnEligibility;
 }) {
+  const { t } = useTranslation('orders', { keyPrefix: 'returns' });
   const queryClient = useQueryClient();
   const single = eligibility.lines.length === 1 ? eligibility.lines[0] : undefined;
   // One book bought once: preselect it, there is nothing else to choose.
@@ -46,7 +48,7 @@ export function ReturnForm({
     onSuccess: (created) => {
       queryClient.setQueryData(returnKeys.status(lookup), created);
       void queryClient.invalidateQueries({ queryKey: returnKeys.eligibility(lookup) });
-      toast.success('أرسلنا طلب الإرجاع، وستصلك رسالة بالتفاصيل.');
+      toast.success(t('sent'));
     },
   });
 
@@ -60,31 +62,28 @@ export function ReturnForm({
       }}
     >
       <h2 id="return-form-title" className={styles.cardTitle}>
-        طلب إرجاع
+        {t('formTitle')}
       </h2>
       {eligibility.deadline && (
-        <p className={styles.muted}>
-          يمكنك طلب الإرجاع حتى {formatDate(eligibility.deadline)} (١٤ يوماً من الاستلام).
-        </p>
+        <p className={styles.muted}>{t('deadline', { date: formatDate(eligibility.deadline) })}</p>
       )}
 
       <fieldset className={styles.group}>
-        <legend className={styles.legend}>الكتب التي تريد إرجاعها</legend>
+        <legend className={styles.legend}>{t('books')}</legend>
         <ul className={styles.pickLines}>
           {eligibility.lines.map((line) => (
             <li key={line.bookId} className={styles.pickLine}>
               <span className={styles.lineTitle}>
                 {line.title}
                 <span className={styles.muted}>
-                  {' '}
-                  (اشتريت {formatCount(line.purchasedQuantity)})
+                  {t('bought', { n: formatCount(line.purchasedQuantity) })}
                 </span>
               </span>
               <QuantityStepper
                 value={quantities[line.bookId] ?? 0}
                 min={0}
                 max={line.purchasedQuantity}
-                label={`عدد نسخ «${line.title}» المرتجعة`}
+                label={t('copies', { title: line.title })}
                 onChange={(value) => {
                   setQuantities((current) => ({ ...current, [line.bookId]: value }));
                 }}
@@ -95,7 +94,7 @@ export function ReturnForm({
       </fieldset>
 
       <fieldset className={styles.group}>
-        <legend className={styles.legend}>سبب الإرجاع</legend>
+        <legend className={styles.legend}>{t('reason')}</legend>
         <div className={styles.reasons}>
           {RETURN_REASONS.map((value) => (
             <label key={value} className={styles.reason}>
@@ -114,8 +113,8 @@ export function ReturnForm({
       </fieldset>
 
       <TextAreaField
-        label="تفاصيل إضافية (اختياري)"
-        hint={`مثلاً: وصف التلف. حتى ${formatCount(COMMENT_MAX)} حرف.`}
+        label={t('details')}
+        hint={t('detailsHint', { n: formatCount(COMMENT_MAX) })}
         maxLength={COMMENT_MAX}
         rows={4}
         value={comment}
@@ -132,11 +131,9 @@ export function ReturnForm({
         className={styles.submit}
         disabled={items.length === 0 || !reason || submit.isPending}
       >
-        {submit.isPending ? 'جارٍ الإرسال…' : 'إرسال طلب الإرجاع'}
+        {submit.isPending ? t('sending') : t('submit')}
       </Button>
-      <p className={styles.muted}>
-        بعد موافقتنا نرسل إليك تعليمات الإرسال، ونعيد المبلغ فور وصول الكتب.
-      </p>
+      <p className={styles.muted}>{t('after')}</p>
     </form>
   );
 }

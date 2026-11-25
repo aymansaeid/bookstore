@@ -151,6 +151,18 @@
     "returnReason": { "ChangedMind": "Fikrimi değiştirdim", "ArrivedDamaged": "Kitap hasarlı geldi", "WrongItem": "Sipariş ettiğimden farklı bir kitap geldi", "Other": "Başka bir sebep" },
     "cancelReason": { "ChangedMind": "Fikrimi değiştirdim", "OrderedByMistake": "Yanlışlıkla sipariş verdim", "FoundBetterPrice": "Daha uygun fiyat buldum", "DeliveryTooSlow": "Teslimat çok yavaş", "Other": "Başka bir sebep" }
   },
+    "validation": {
+    "email": "Geçerli bir e-posta adresi girin",
+    "passwordMin": "Şifre en az {{n}} karakter olmalı",
+    "passwordMax": "Şifre çok uzun",
+    "passwordRequired": "Şifrenizi girin",
+    "firstName": "Adınızı girin",
+    "lastName": "Soyadınızı girin",
+    "nameTooLong": "Ad çok uzun",
+    "phone": "Telefon numarası geçersiz",
+    "interests": "En fazla {{n}} ilgi alanı seçin",
+    "mismatch": "Şifreler eşleşmiyor"
+  },
   "ui": {
     "home": "Ana sayfa",
     "library": "Kütüphane",
@@ -161,7 +173,13 @@
     "page": "Sayfa {{n}}",
     "stars": "5 üzerinden {{value}}",
     "seeAll": "Tümünü gör",
-    "retry": "Tekrar deneyin"
+    "retry": "Tekrar deneyin",
+      "quantity": "Adet",
+    "increase": "Adedi artır",
+    "decrease": "Adedi azalt",
+    "showPassword": "Şifreyi göster",
+    "hidePassword": "Şifreyi gizle",
+    "close": "Kapat"
   },
   "addToCart": {
     "atMax": "Bu kitap için sınıra ulaştınız ({{n}} adet).",

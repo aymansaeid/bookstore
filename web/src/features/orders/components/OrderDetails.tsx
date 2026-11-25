@@ -1,4 +1,6 @@
+import type { TFunction } from 'i18next';
 import { useRef, useState } from 'react';
+import { Trans, useTranslation } from 'react-i18next';
 
 import { returnsUrl } from '@/features/orders/links';
 import type { OrderLookup, PublicOrder } from '@/features/orders/types';
@@ -15,31 +17,27 @@ import { OrderProgress } from './OrderProgress';
 import { OrderSummary } from './OrderSummary';
 
 /** What happened, in one sentence, for each status (API §6). */
-function statusNote(order: PublicOrder): string | null {
+function statusNote(t: TFunction<'orders'>, order: PublicOrder): string | null {
+  if (order.status === 'Shipped' && order.shippingMethodCode === 'pickup') {
+    return t('status.ShippedPickup');
+  }
   switch (order.status) {
     case 'PendingPayment':
-      return 'لم يكتمل الدفع بعد. إن دفعت للتو فقد يستغرق التأكيد لحظات.';
     case 'Paid':
-      return 'نجهّز طلبك الآن، وسنراسلك برقم التتبّع عند الشحن.';
     case 'Shipped':
-      return order.shippingMethodCode === 'pickup'
-        ? 'طلبك جاهز للاستلام من مكتبتنا.'
-        : 'خرج طلبك مع شركة الشحن. قد يظهر رقم التتبّع على موقعها خلال ٢٤ ساعة.';
     case 'Delivered':
-      return 'سُلّم طلبك. نتمنى لك قراءة نافعة.';
     case 'Cancelled':
-      return 'أُلغي هذا الطلب. إن كان مدفوعاً فقد أُعيد المبلغ إلى بطاقتك.';
     case 'Expired':
-      return 'انتهت مهلة الدفع قبل إتمامه، فأُلغي الطلب ولم يُخصم أي مبلغ.';
     case 'Refunded':
-      return 'أُرجع الطلب وأُعيد المبلغ كاملاً.';
+      return t(`status.${order.status}`);
   }
 }
 
 function TrackingNumber({ carrier, number }: { carrier: string | null; number: string }) {
+  const { t } = useTranslation('orders', { keyPrefix: 'details' });
   return (
     <div className={styles.tracking}>
-      <span className={styles.trackingLabel}>{carrier ?? 'رقم التتبّع'}</span>
+      <span className={styles.trackingLabel}>{carrier ?? t('trackingNumber')}</span>
       <code dir="ltr" className={styles.trackingNumber}>
         {number}
       </code>
@@ -49,15 +47,15 @@ function TrackingNumber({ carrier, number }: { carrier: string | null; number: s
         onClick={() => {
           navigator.clipboard.writeText(number).then(
             () => {
-              toast.success('نُسخ رقم التتبّع.');
+              toast.success(t('copied'));
             },
             () => {
-              toast.error('تعذّر النسخ، انسخ الرقم يدوياً.');
+              toast.error(t('copyFailed'));
             },
           );
         }}
       >
-        نسخ
+        {t('copy')}
       </Button>
     </div>
   );
@@ -76,20 +74,28 @@ interface OrderDetailsProps {
  * the API allows. Used by /track and «طلباتي».
  */
 export function OrderDetails({ order, lookup, onCancelled, onStale }: OrderDetailsProps) {
+  const { t } = useTranslation('orders');
   const cancelRef = useRef<HTMLDialogElement>(null);
   const documentsRef = useRef<HTMLDialogElement>(null);
   const [documentsOpened, setDocumentsOpened] = useState(false);
   const status = orderStatusInfo(order.status);
-  const note = statusNote(order);
+  const note = statusNote(t, order);
 
   return (
     <div className={styles.details}>
       <div className={styles.head}>
         <div>
           <h2 className={styles.title}>
-            طلب رقم <span dir="ltr">{order.orderNumber}</span>
+            <Trans
+              t={t}
+              i18nKey="details.title"
+              values={{ number: order.orderNumber }}
+              components={{ n: <span dir="ltr" /> }}
+            />
           </h2>
-          <p className={styles.muted}>بتاريخ {formatDate(order.createdAtUtc)}</p>
+          <p className={styles.muted}>
+            {t('details.placed', { date: formatDate(order.createdAtUtc) })}
+          </p>
         </div>
         <StatusBadge label={status.label} tone={status.tone} />
       </div>
@@ -110,7 +116,7 @@ export function OrderDetails({ order, lookup, onCancelled, onStale }: OrderDetai
             state={{ email: lookup.email }}
             variant="ink"
           >
-            طلب إرجاع
+            {t('details.return')}
           </ButtonLink>
         )}
         {order.canBeCancelled && (
@@ -120,7 +126,7 @@ export function OrderDetails({ order, lookup, onCancelled, onStale }: OrderDetai
               cancelRef.current?.showModal();
             }}
           >
-            إلغاء الطلب
+            {t('details.cancel')}
           </Button>
         )}
         <Button
@@ -130,11 +136,11 @@ export function OrderDetails({ order, lookup, onCancelled, onStale }: OrderDetai
             documentsRef.current?.showModal();
           }}
         >
-          مستندات الطلب
+          {t('details.documents')}
         </Button>
       </div>
       {order.status === 'Shipped' && order.shippingMethodCode !== 'pickup' && (
-        <p className={styles.muted}>يمكنك طلب الإرجاع خلال ١٤ يوماً من استلام الطلب.</p>
+        <p className={styles.muted}>{t('details.returnWindow')}</p>
       )}
 
       {order.canBeCancelled && (

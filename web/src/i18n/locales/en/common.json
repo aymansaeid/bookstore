@@ -151,6 +151,18 @@
     "returnReason": { "ChangedMind": "I changed my mind", "ArrivedDamaged": "The book arrived damaged", "WrongItem": "I received a different book", "Other": "Another reason" },
     "cancelReason": { "ChangedMind": "I changed my mind", "OrderedByMistake": "I ordered by mistake", "FoundBetterPrice": "I found a better price", "DeliveryTooSlow": "Delivery is too slow", "Other": "Another reason" }
   },
+    "validation": {
+    "email": "Enter a valid email address",
+    "passwordMin": "The password needs at least {{n}} characters",
+    "passwordMax": "The password is too long",
+    "passwordRequired": "Enter your password",
+    "firstName": "Enter your first name",
+    "lastName": "Enter your last name",
+    "nameTooLong": "The name is too long",
+    "phone": "This phone number isn't valid",
+    "interests": "Choose at most {{n}} interests",
+    "mismatch": "The passwords don't match"
+  },
   "ui": {
     "home": "Home",
     "library": "Library",
@@ -161,7 +173,13 @@
     "page": "Page {{n}}",
     "stars": "{{value}} out of 5",
     "seeAll": "See all",
-    "retry": "Try again"
+    "retry": "Try again",
+     "quantity": "Quantity",
+    "increase": "Increase quantity",
+    "decrease": "Decrease quantity",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "close": "Close"
   },
   "addToCart": {
     "atMax": "You've reached the limit ({{n}} copies) for this book.",

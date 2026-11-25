@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router';
 
 import { paths } from '@/app/paths';
@@ -21,6 +22,7 @@ import { FormAlert, PasswordField } from '@/shared/ui/form/Field';
 
 /** Link from the reset email (valid 30 min, once). A reset signs out every device. */
 export default function ResetPasswordPage() {
+  const { t } = useTranslation('auth');
   const [params] = useSearchParams();
   const token = params.get('token') ?? '';
   const [done, setDone] = useState(false);
@@ -40,12 +42,12 @@ export default function ResetPasswordPage() {
   if (done) {
     return (
       <>
-        <AuthHeader title="كلمة مرور جديدة" />
-        <AuthStatus title="تم تغيير كلمة المرور" tone="success">
-          <p>سجّلنا خروجك من كل الأجهزة حفاظاً على حسابك. سجّل الدخول بكلمة المرور الجديدة.</p>
+        <AuthHeader title={t('reset.title')} />
+        <AuthStatus title={t('reset.doneTitle')} tone="success">
+          <p>{t('reset.doneText')}</p>
           <div className={styles.actions}>
             <ButtonLink to={paths.login} variant="ink">
-              تسجيل الدخول
+              {t('login.submit')}
             </ButtonLink>
           </div>
         </AuthStatus>
@@ -56,12 +58,12 @@ export default function ResetPasswordPage() {
   if (linkInvalid) {
     return (
       <>
-        <AuthHeader title="كلمة مرور جديدة" />
-        <AuthStatus title="الرابط غير صالح أو انتهت صلاحيته" tone="error">
-          <p>روابط الاستعادة صالحة ٣٠ دقيقة ولمرة واحدة. اطلب رابطاً جديداً.</p>
+        <AuthHeader title={t('reset.title')} />
+        <AuthStatus title={t('reset.invalidTitle')} tone="error">
+          <p>{t('reset.invalidText')}</p>
           <div className={styles.actions}>
             <ButtonLink to={paths.forgotPassword} variant="ink">
-              اطلب رابطاً جديداً
+              {t('reset.newLink')}
             </ButtonLink>
           </div>
         </AuthStatus>
@@ -83,7 +85,7 @@ export default function ResetPasswordPage() {
 
   return (
     <>
-      <AuthHeader title="كلمة مرور جديدة" subtitle="اختر كلمة مرور قوية لم تستخدمها من قبل." />
+      <AuthHeader title={t('reset.title')} subtitle={t('reset.subtitle')} />
       <form
         noValidate
         onSubmit={(event) => {
@@ -92,14 +94,14 @@ export default function ResetPasswordPage() {
       >
         {serverError && <FormAlert>{serverError}</FormAlert>}
         <PasswordField
-          label="كلمة المرور الجديدة"
+          label={t('fields.newPassword')}
           autoComplete="new-password"
-          hint={`${formatCount(PASSWORD_MIN)} حرفاً على الأقل`}
+          hint={t('fields.passwordHint', { n: formatCount(PASSWORD_MIN) })}
           error={errors.newPassword?.message}
           {...register('newPassword')}
         />
         <PasswordField
-          label="تأكيد كلمة المرور"
+          label={t('fields.confirmPassword')}
           autoComplete="new-password"
           error={errors.confirmPassword?.message}
           {...register('confirmPassword')}
@@ -111,7 +113,7 @@ export default function ResetPasswordPage() {
           disabled={isSubmitting}
           aria-busy={isSubmitting}
         >
-          {isSubmitting ? 'جارٍ الحفظ…' : 'حفظ كلمة المرور'}
+          {isSubmitting ? t('reset.saving') : t('reset.save')}
         </Button>
       </form>
     </>

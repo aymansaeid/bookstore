@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { authApi } from '@/features/auth/api';
 import { errorMessage } from '@/shared/api/errorMessages';
@@ -15,6 +16,7 @@ const COOLDOWN_SECONDS = 60;
  * repeats within 60 s send nothing (API §7), so the button cools down too.
  */
 export function ResendVerification({ email, sentAt = 0 }: { email: string; sentAt?: number }) {
+  const { t } = useTranslation('auth', { keyPrefix: 'resend' });
   const cooldown = useCooldown(COOLDOWN_SECONDS, sentAt);
   const [sending, setSending] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -24,7 +26,7 @@ export function ResendVerification({ email, sentAt = 0 }: { email: string; sentA
     setMessage(null);
     try {
       await authApi.resendVerification(email);
-      setMessage('أرسلنا رابط تفعيل جديداً. تحقّق من صندوق الوارد ومجلد الرسائل غير المرغوب فيها.');
+      setMessage(t('sent'));
       cooldown.start();
     } catch (error) {
       setMessage(errorMessage(error));
@@ -43,9 +45,7 @@ export function ResendVerification({ email, sentAt = 0 }: { email: string; sentA
           void send();
         }}
       >
-        {cooldown.remaining > 0
-          ? `أعد الإرسال بعد ${formatCount(cooldown.remaining)} ثانية`
-          : 'أعد إرسال رابط التفعيل'}
+        {cooldown.remaining > 0 ? t('wait', { n: formatCount(cooldown.remaining) }) : t('resend')}
       </button>
       {message && <p role="status">{message}</p>}
     </div>

@@ -1,4 +1,5 @@
 import { type ComponentProps, type ReactNode, useId, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { cx } from '@/shared/lib/cx';
 import { Icon } from '@/shared/ui/Icon/Icon';
@@ -58,6 +59,7 @@ export function TextField({ label, error, hint, id, className, ...input }: Field
 
 /** Password with a show/hide toggle. */
 export function PasswordField({ label, error, hint, id, className, ...input }: FieldProps) {
+  const { t } = useTranslation();
   const autoId = useId();
   const inputId = id ?? autoId;
   const [visible, setVisible] = useState(false);
@@ -79,7 +81,7 @@ export function PasswordField({ label, error, hint, id, className, ...input }: F
         <button
           type="button"
           className={styles.reveal}
-          aria-label={visible ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور'}
+          aria-label={visible ? t('ui.hidePassword') : t('ui.showPassword')}
           aria-pressed={visible}
           onClick={() => {
             setVisible((value) => !value);

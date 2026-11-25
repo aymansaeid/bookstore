@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { Trans, useTranslation } from 'react-i18next';
 
 import { paths } from '@/app/paths';
 import { authApi } from '@/features/auth/api';
@@ -15,6 +16,7 @@ import { FormAlert, TextField } from '@/shared/ui/form/Field';
 
 /** POST /forgot-password: always 204, so the reply never reveals whether the email exists. */
 export default function ForgotPasswordPage() {
+  const { t } = useTranslation('auth');
   const [sentTo, setSentTo] = useState<string | null>(null);
   const [serverError, setServerError] = useState<string | null>(null);
   const cooldown = useCooldown(60);
@@ -42,11 +44,15 @@ export default function ForgotPasswordPage() {
   if (sentTo) {
     return (
       <>
-        <AuthHeader title="استعادة كلمة المرور" />
-        <AuthStatus title="تحقّق من بريدك">
+        <AuthHeader title={t('forgot.title')} />
+        <AuthStatus title={t('forgot.checkTitle')}>
           <p>
-            إن كان <b dir="ltr">{sentTo}</b> مسجّلاً لدينا، فستصلك رسالة فيها رابط لتعيين كلمة مرور
-            جديدة، صالح لمدة ٣٠ دقيقة.
+            <Trans
+              t={t}
+              i18nKey="forgot.sent"
+              values={{ email: sentTo }}
+              components={{ b: <b dir="ltr" /> }}
+            />
           </p>
           {serverError && <FormAlert>{serverError}</FormAlert>}
           <div className={styles.actions}>
@@ -58,11 +64,11 @@ export default function ForgotPasswordPage() {
               }}
             >
               {cooldown.remaining > 0
-                ? `أعد الإرسال بعد ${formatCount(cooldown.remaining)} ثانية`
-                : 'أعد إرسال الرابط'}
+                ? t('forgot.wait', { n: formatCount(cooldown.remaining) })
+                : t('forgot.resend')}
             </Button>
             <ButtonLink to={paths.login} variant="ink">
-              العودة إلى تسجيل الدخول
+              {t('register.backToLogin')}
             </ButtonLink>
           </div>
         </AuthStatus>
@@ -72,10 +78,7 @@ export default function ForgotPasswordPage() {
 
   return (
     <>
-      <AuthHeader
-        title="نسيت كلمة المرور؟"
-        subtitle="أدخل بريدك الإلكتروني وسنرسل لك رابطاً لتعيين كلمة مرور جديدة."
-      />
+      <AuthHeader title={t('forgot.formTitle')} subtitle={t('forgot.subtitle')} />
       <form
         noValidate
         onSubmit={(event) => {
@@ -84,7 +87,7 @@ export default function ForgotPasswordPage() {
       >
         {serverError && <FormAlert>{serverError}</FormAlert>}
         <TextField
-          label="البريد الإلكتروني"
+          label={t('fields.email')}
           type="email"
           dir="ltr"
           inputMode="email"
@@ -100,12 +103,12 @@ export default function ForgotPasswordPage() {
           disabled={isSubmitting}
           aria-busy={isSubmitting}
         >
-          {isSubmitting ? 'جارٍ الإرسال…' : 'أرسل الرابط'}
+          {isSubmitting ? t('forgot.sending') : t('forgot.send')}
         </Button>
       </form>
       <div className={styles.row}>
         <ButtonLink to={paths.login} variant="ghost" size="sm">
-          العودة إلى تسجيل الدخول
+          {t('register.backToLogin')}
         </ButtonLink>
       </div>
     </>

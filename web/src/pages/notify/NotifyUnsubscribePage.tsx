@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router';
 
 import { paths } from '@/app/paths';
@@ -10,6 +11,7 @@ import { DocumentTitle } from '@/shared/ui/DocumentTitle';
 
 /** Always 204 (§8), so success is shown whenever the request completes. */
 export default function NotifyUnsubscribePage() {
+  const { t } = useTranslation('auth', { keyPrefix: 'notify' });
   const [params] = useSearchParams();
   const token = params.get('token') ?? '';
   const unsubscribe = useQuery({
@@ -23,23 +25,23 @@ export default function NotifyUnsubscribePage() {
 
   return (
     <div className="wrap" style={{ maxInlineSize: 520, paddingBlock: 48 }}>
-      <DocumentTitle title="إلغاء تنبيه التوفّر" />
+      <DocumentTitle title={t('unsubscribeTitle')} />
       {unsubscribe.isError || token === '' ? (
-        <AuthStatus title="تعذّر إلغاء التنبيه" tone="error">
-          <p>تحقّق من الرابط في الرسالة وحاول مجدداً.</p>
+        <AuthStatus title={t('unsubscribeFailed')} tone="error">
+          <p>{t('unsubscribeFailedText')}</p>
         </AuthStatus>
       ) : unsubscribe.isSuccess ? (
-        <AuthStatus title="تم إلغاء التنبيه" tone="success">
-          <p>لن نراسلك بشأن هذا الكتاب بعد الآن.</p>
+        <AuthStatus title={t('unsubscribed')} tone="success">
+          <p>{t('unsubscribedText')}</p>
           <div className={styles.actions}>
             <ButtonLink to={paths.home} variant="ink">
-              العودة إلى المتجر
+              {t('backToStore')}
             </ButtonLink>
           </div>
         </AuthStatus>
       ) : (
-        <AuthStatus title="جارٍ الإلغاء…">
-          <p>لحظة من فضلك.</p>
+        <AuthStatus title={t('unsubscribing')}>
+          <p>{t('wait')}</p>
         </AuthStatus>
       )}
     </div>

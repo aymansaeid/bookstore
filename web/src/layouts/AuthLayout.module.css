@@ -15,6 +15,11 @@
   max-inline-size: 440px;
 }
 
+.languages {
+  justify-content: center;
+  margin-block-start: 28px;
+}
+
 .panel {
   display: none;
 }

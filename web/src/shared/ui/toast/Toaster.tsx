@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 
 import { cx } from '@/shared/lib/cx';
@@ -8,6 +9,7 @@ import { useToastStore } from './toastStore';
 
 /** Spec 5.1 «✓ أُضيف إلى السلة». Above the bottom nav on mobile, bottom-right on desktop. */
 export function Toaster() {
+  const { t } = useTranslation();
   const toasts = useToastStore((state) => state.toasts);
   const dismiss = useToastStore((state) => state.dismiss);
 
@@ -27,7 +29,7 @@ export function Toaster() {
           <button
             type="button"
             className={styles.close}
-            aria-label="إغلاق"
+            aria-label={t('ui.close')}
             onClick={() => {
               dismiss(item.id);
             }}

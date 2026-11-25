@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router';
 
 import { searchUrl } from '@/app/navigation';
@@ -12,6 +13,7 @@ import { DocumentTitle } from '@/shared/ui/DocumentTitle';
 
 /** Link from the confirmation email (§8). Single-use: one request even under StrictMode. */
 export default function NotifyConfirmPage() {
+  const { t } = useTranslation('auth', { keyPrefix: 'notify' });
   const [params] = useSearchParams();
   const token = params.get('token') ?? '';
   const confirm = useQuery({
@@ -25,26 +27,26 @@ export default function NotifyConfirmPage() {
 
   return (
     <div className={cx('wrap')} style={{ maxInlineSize: 520, paddingBlock: 48 }}>
-      <DocumentTitle title="تأكيد تنبيه التوفّر" />
+      <DocumentTitle title={t('confirmTitle')} />
       {token !== '' && confirm.isPending ? (
-        <AuthStatus title="جارٍ التأكيد…">
-          <p>لحظة من فضلك.</p>
+        <AuthStatus title={t('confirming')}>
+          <p>{t('wait')}</p>
         </AuthStatus>
       ) : confirm.isSuccess ? (
-        <AuthStatus title="تم تفعيل التنبيه" tone="success">
-          <p>سنراسلك فور عودة «{confirm.data.bookTitle}» إلى المخزون.</p>
+        <AuthStatus title={t('confirmed')} tone="success">
+          <p>{t('confirmedText', { title: confirm.data.bookTitle })}</p>
           <div className={styles.actions}>
             <ButtonLink to={searchUrl(confirm.data.bookTitle)} variant="ink">
-              عرض الكتاب
+              {t('viewBook')}
             </ButtonLink>
           </div>
         </AuthStatus>
       ) : (
-        <AuthStatus title="الرابط غير صالح أو استُخدم من قبل" tone="error">
-          <p>يمكنك طلب تنبيه جديد من صفحة الكتاب.</p>
+        <AuthStatus title={t('invalidTitle')} tone="error">
+          <p>{t('invalidText')}</p>
           <div className={styles.actions}>
             <ButtonLink to={paths.home} variant="ink">
-              العودة إلى المتجر
+              {t('backToStore')}
             </ButtonLink>
           </div>
         </AuthStatus>

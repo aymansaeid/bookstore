@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { Link, Navigate, useSearchParams } from 'react-router';
 
 import { safeReturnTo } from '@/app/navigation';
@@ -16,6 +17,7 @@ import { Button } from '@/shared/ui/Button/Button';
 import { FormAlert, PasswordField, TextField } from '@/shared/ui/form/Field';
 
 export default function LoginPage() {
+  const { t } = useTranslation('auth');
   const { status } = useSession();
   const [params] = useSearchParams();
   const rawReturnTo = params.get('returnTo');
@@ -51,7 +53,7 @@ export default function LoginPage() {
 
   return (
     <>
-      <AuthHeader title="أهلاً بعودتك" subtitle="سجّل دخولك لتكمل مسار قراءتك وتتابع طلباتك." />
+      <AuthHeader title={t('login.title')} subtitle={t('login.subtitle')} />
       <AuthTabs active="login" returnTo={rawReturnTo} />
 
       <form
@@ -63,13 +65,13 @@ export default function LoginPage() {
         {serverError && <FormAlert>{serverError}</FormAlert>}
         {unverifiedEmail && (
           <FormAlert>
-            فعّل حسابك من الرابط المرسل إلى بريدك أولاً.
+            {t('login.verifyFirst')}
             <ResendVerification email={unverifiedEmail} />
           </FormAlert>
         )}
 
         <TextField
-          label="البريد الإلكتروني"
+          label={t('fields.email')}
           type="email"
           dir="ltr"
           inputMode="email"
@@ -79,7 +81,7 @@ export default function LoginPage() {
           {...register('email', { setValueAs: trimValue })}
         />
         <PasswordField
-          label="كلمة المرور"
+          label={t('fields.password')}
           autoComplete="current-password"
           error={errors.password?.message}
           {...register('password')}
@@ -87,7 +89,7 @@ export default function LoginPage() {
 
         <div className={styles.row}>
           <Link to={paths.forgotPassword} className={styles.textLink}>
-            نسيت كلمة المرور؟
+            {t('login.forgot')}
           </Link>
         </div>
 
@@ -98,7 +100,7 @@ export default function LoginPage() {
           disabled={isSubmitting}
           aria-busy={isSubmitting}
         >
-          {isSubmitting ? 'جارٍ تسجيل الدخول…' : 'تسجيل الدخول'}
+          {isSubmitting ? t('login.submitting') : t('login.submit')}
         </Button>
       </form>
 

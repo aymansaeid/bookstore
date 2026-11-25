@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+
 import { formatCount } from '@/shared/lib/format';
 import { Icon } from '@/shared/ui/Icon/Icon';
 
@@ -17,13 +19,15 @@ export function QuantityStepper({
   onChange,
   min = 1,
   max = 10,
-  label = 'الكمية',
+  label,
 }: QuantityStepperProps) {
+  const { t } = useTranslation();
+
   return (
-    <div className={styles.stepper} role="group" aria-label={label}>
+    <div className={styles.stepper} role="group" aria-label={label ?? t('ui.quantity')}>
       <button
         type="button"
-        aria-label="زيادة الكمية"
+        aria-label={t('ui.increase')}
         disabled={value >= max}
         onClick={() => {
           onChange(Math.min(max, value + 1));
@@ -34,7 +38,7 @@ export function QuantityStepper({
       <output aria-live="polite">{formatCount(value)}</output>
       <button
         type="button"
-        aria-label="إنقاص الكمية"
+        aria-label={t('ui.decrease')}
         disabled={value <= min}
         onClick={() => {
           onChange(Math.max(min, value - 1));

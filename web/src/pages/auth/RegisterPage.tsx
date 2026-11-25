@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
+import { Trans, useTranslation } from 'react-i18next';
 import { Link, Navigate, useSearchParams } from 'react-router';
 
 import { legalSlugs } from '@/app/legal';
@@ -34,6 +35,7 @@ const LEVELS: ReaderLevel[] = ['Beginner', 'Intermediate', 'Specialist'];
 const SERVER_FIELDS = ['firstName', 'lastName', 'email', 'phone', 'password'] as const;
 
 export default function RegisterPage() {
+  const { t } = useTranslation('auth');
   const { status } = useSession();
   const [params] = useSearchParams();
   const rawReturnTo = params.get('returnTo');
@@ -67,16 +69,20 @@ export default function RegisterPage() {
   if (sent) {
     return (
       <>
-        <AuthHeader title="تحقّق من بريدك" />
-        <AuthStatus title="خطوة أخيرة">
+        <AuthHeader title={t('register.checkTitle')} />
+        <AuthStatus title={t('register.lastStep')}>
           <p>
-            أرسلنا رسالة إلى <b dir="ltr">{sent.email}</b>. افتح الرابط فيها لتفعيل حسابك، وهو صالح
-            لمدة ٢٤ ساعة.
+            <Trans
+              t={t}
+              i18nKey="register.sent"
+              values={{ email: sent.email }}
+              components={{ b: <b dir="ltr" /> }}
+            />
           </p>
           <ResendVerification email={sent.email} sentAt={sent.at} />
           <div className={styles.actions}>
             <ButtonLink to={paths.login} variant="ink">
-              العودة إلى تسجيل الدخول
+              {t('register.backToLogin')}
             </ButtonLink>
           </div>
         </AuthStatus>
@@ -110,10 +116,7 @@ export default function RegisterPage() {
 
   return (
     <>
-      <AuthHeader
-        title="حساب جديد"
-        subtitle="أنشئ حسابك ليتذكّر أفندي ما تحب، وتتابع طلباتك ومكتبتك في مكان واحد."
-      />
+      <AuthHeader title={t('register.title')} subtitle={t('register.subtitle')} />
       <AuthTabs active="register" returnTo={rawReturnTo} />
 
       <form
@@ -126,20 +129,20 @@ export default function RegisterPage() {
 
         <div className={styles.twoCols}>
           <TextField
-            label="الاسم"
+            label={t('fields.firstName')}
             autoComplete="given-name"
             error={errors.firstName?.message}
             {...register('firstName')}
           />
           <TextField
-            label="اسم العائلة"
+            label={t('fields.lastName')}
             autoComplete="family-name"
             error={errors.lastName?.message}
             {...register('lastName')}
           />
         </div>
         <TextField
-          label="البريد الإلكتروني"
+          label={t('fields.email')}
           type="email"
           dir="ltr"
           inputMode="email"
@@ -149,7 +152,7 @@ export default function RegisterPage() {
           {...register('email', { setValueAs: trimValue })}
         />
         <TextField
-          label="رقم الجوال (اختياري)"
+          label={t('fields.phoneOptional')}
           type="tel"
           dir="ltr"
           inputMode="tel"
@@ -159,16 +162,16 @@ export default function RegisterPage() {
           {...register('phone')}
         />
         <PasswordField
-          label="كلمة المرور"
+          label={t('fields.password')}
           autoComplete="new-password"
-          hint={`${formatCount(PASSWORD_MIN)} حرفاً على الأقل`}
+          hint={t('fields.passwordHint', { n: formatCount(PASSWORD_MIN) })}
           error={errors.password?.message}
           {...register('password')}
         />
 
         <fieldset className={styles.group}>
           <legend className={styles.groupLabel}>
-            مستواك في القراءة <span className={styles.groupHint}>(اختياري)</span>
+            {t('register.level')} <span className={styles.groupHint}>{t('register.optional')}</span>
           </legend>
           <div className={styles.pills}>
             {LEVELS.map((level) => (
@@ -183,8 +186,8 @@ export default function RegisterPage() {
         {topCategories.length > 0 && (
           <fieldset className={styles.group}>
             <legend className={styles.groupLabel}>
-              اهتماماتك{' '}
-              <span className={styles.groupHint}>(اختياري، يساعد أفندي على اقتراحاتك)</span>
+              {t('register.interests')}{' '}
+              <span className={styles.groupHint}>{t('register.interestsHint')}</span>
             </legend>
             <Controller
               control={control}
@@ -220,13 +223,17 @@ export default function RegisterPage() {
           </fieldset>
         )}
 
-        <Checkbox {...register('acceptsMarketingEmails')}>
-          أرسلوا لي الإصدارات الجديدة والعروض بالبريد الإلكتروني
-        </Checkbox>
+        <Checkbox {...register('acceptsMarketingEmails')}>{t('register.marketing')}</Checkbox>
 
         <p className={styles.legal}>
-          بإنشاء حسابك فإنك توافق على <Link to={paths.legal(legalSlugs.terms)}>شروط الاستخدام</Link>{' '}
-          و<Link to={paths.legal(legalSlugs.privacy)}>سياسة الخصوصية</Link>.
+          <Trans
+            t={t}
+            i18nKey="register.legal"
+            components={{
+              terms: <Link to={paths.legal(legalSlugs.terms)} />,
+              privacy: <Link to={paths.legal(legalSlugs.privacy)} />,
+            }}
+          />
         </p>
 
         <Button
@@ -236,7 +243,7 @@ export default function RegisterPage() {
           disabled={isSubmitting}
           aria-busy={isSubmitting}
         >
-          {isSubmitting ? 'جارٍ إنشاء الحساب…' : 'إنشاء الحساب'}
+          {isSubmitting ? t('register.submitting') : t('register.submit')}
         </Button>
       </form>
 

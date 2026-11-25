@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 
 import { paths } from '@/app/paths';
@@ -9,6 +10,7 @@ import styles from './OrderSummary.module.css';
 
 /** Lines, totals and destination of a PublicOrderDto (API §6). */
 export function OrderSummary({ order }: { order: PublicOrder }) {
+  const { t } = useTranslation('orders', { keyPrefix: 'summary' });
   const money = (amount: number) => formatMoney(amount, order.currency);
   const pickup = order.shippingMethodCode === 'pickup';
   return (
@@ -36,41 +38,44 @@ export function OrderSummary({ order }: { order: PublicOrder }) {
       </ul>
       <dl className={styles.totals}>
         <div>
-          <dt>المجموع</dt>
+          <dt>{t('subtotal')}</dt>
           <dd>{money(order.subtotal)}</dd>
         </div>
         {order.pathDiscountAmount > 0 && (
           <div className={styles.saving}>
-            <dt>خصم المسار</dt>
+            <dt>{t('pathDiscount')}</dt>
             <dd>−{money(order.pathDiscountAmount)}</dd>
           </div>
         )}
         {order.discountAmount > 0 && (
           <div className={styles.saving}>
-            <dt>كود الخصم</dt>
+            <dt>{t('coupon')}</dt>
             <dd>−{money(order.discountAmount)}</dd>
           </div>
         )}
         <div>
-          <dt>الشحن</dt>
-          <dd>{order.shippingCost === 0 ? 'مجاني' : money(order.shippingCost)}</dd>
+          <dt>{t('shipping')}</dt>
+          <dd>{order.shippingCost === 0 ? t('free') : money(order.shippingCost)}</dd>
         </div>
         {order.giftWrap && (
           <div>
-            <dt>تغليف الهدية</dt>
+            <dt>{t('giftWrap')}</dt>
             <dd>{money(order.giftWrapFee)}</dd>
           </div>
         )}
         <div className={styles.total}>
-          <dt>الإجمالي</dt>
+          <dt>{t('total')}</dt>
           <dd>{money(order.total)}</dd>
         </div>
       </dl>
       <p className={styles.destination}>
         <Icon name={pickup ? 'pin' : 'truck'} size={16} />
         {pickup
-          ? 'الاستلام من مكتبتنا في إسطنبول'
-          : `الشحن إلى ${order.shipToCity}، ${countryName(order.shipToCountryCode)}`}
+          ? t('pickup')
+          : t('shipTo', {
+              city: order.shipToCity,
+              country: countryName(order.shipToCountryCode),
+            })}
       </p>
     </div>
   );

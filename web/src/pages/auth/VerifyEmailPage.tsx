@@ -2,6 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router';
 
 import { paths } from '@/app/paths';
@@ -19,6 +20,7 @@ import { TextField } from '@/shared/ui/form/Field';
  * remount share ONE request (API guide §11).
  */
 export default function VerifyEmailPage() {
+  const { t } = useTranslation('auth');
   const [params] = useSearchParams();
   const token = params.get('token') ?? '';
 
@@ -34,9 +36,9 @@ export default function VerifyEmailPage() {
   if (token !== '' && verify.isPending) {
     return (
       <>
-        <AuthHeader title="تفعيل الحساب" />
-        <AuthStatus title="جارٍ تفعيل حسابك…">
-          <p>لحظة من فضلك.</p>
+        <AuthHeader title={t('verify.title')} />
+        <AuthStatus title={t('verify.verifying')}>
+          <p>{t('verify.wait')}</p>
         </AuthStatus>
       </>
     );
@@ -45,12 +47,12 @@ export default function VerifyEmailPage() {
   if (verify.isSuccess) {
     return (
       <>
-        <AuthHeader title="تفعيل الحساب" />
-        <AuthStatus title="تم تفعيل حسابك" tone="success">
-          <p>أهلاً بك في كتاب أفندي. يمكنك الآن تسجيل الدخول.</p>
+        <AuthHeader title={t('verify.title')} />
+        <AuthStatus title={t('verify.doneTitle')} tone="success">
+          <p>{t('verify.doneText')}</p>
           <div className={styles.actions}>
             <ButtonLink to={paths.login} variant="ink">
-              تسجيل الدخول
+              {t('login.submit')}
             </ButtonLink>
           </div>
         </AuthStatus>
@@ -60,9 +62,9 @@ export default function VerifyEmailPage() {
 
   return (
     <>
-      <AuthHeader title="تفعيل الحساب" />
-      <AuthStatus title="الرابط غير صالح أو انتهت صلاحيته" tone="error">
-        <p>روابط التفعيل صالحة ٢٤ ساعة ولمرة واحدة. أدخل بريدك لنرسل لك رابطاً جديداً.</p>
+      <AuthHeader title={t('verify.title')} />
+      <AuthStatus title={t('verify.invalidTitle')} tone="error">
+        <p>{t('verify.invalidText')}</p>
         <ResendForm />
       </AuthStatus>
     </>
@@ -70,6 +72,7 @@ export default function VerifyEmailPage() {
 }
 
 function ResendForm() {
+  const { t } = useTranslation('auth');
   const [email, setEmail] = useState<string | null>(null);
   const {
     register,
@@ -93,7 +96,7 @@ function ResendForm() {
       }}
     >
       <TextField
-        label="البريد الإلكتروني"
+        label={t('fields.email')}
         type="email"
         dir="ltr"
         autoComplete="email"
@@ -101,7 +104,7 @@ function ResendForm() {
         {...register('email', { setValueAs: trimValue })}
       />
       <Button type="submit" variant="ink">
-        متابعة
+        {t('verify.continue')}
       </Button>
     </form>
   );
