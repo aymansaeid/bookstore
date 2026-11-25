@@ -43,8 +43,13 @@ export interface AdminBook {
   badges: BookBadge[];
   editionLabel: string | null;
   editionGroupId: number | null;
-  relatedBookIds: number[];
+   relatedBookIds: number[];
+  /** API §2b: Latin spelling of the Arabic title, searched in every language. */
+  transliteratedTitle: string | null;
+  /** Languages with a translation, e.g. ['en']. Arabic is the book itself. */
+  translations: ('en' | 'tr')[];
 }
+
 
 /** PUT /books/{id}: everything but slug, ISBN and stock. */
 export interface BookDetailsInput {

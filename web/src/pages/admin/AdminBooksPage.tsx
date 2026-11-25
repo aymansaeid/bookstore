@@ -15,7 +15,11 @@ import { arabicFold as fold } from '@/shared/lib/arabicFold';
 
 import local from './AdminBooksPage.module.css';
 
-type Filter = 'all' | 'visible' | 'hidden' | 'low' | 'out';
+type Filter = 'all' | 'visible' | 'hidden' | 'low' | 'out' | 'needs-en' | 'needs-tr' | 'incomplete';
+
+/** A book a visitor would find thin: no cover, no description, no section. */
+const incomplete = (book: AdminBook) =>
+  book.images.length === 0 || book.description.trim() === '' || book.categoryId === null;
 
 const FILTERS: { id: Filter; label: string; test: (book: AdminBook) => boolean }[] = [
   { id: 'all', label: 'الكل', test: () => true },
@@ -23,8 +27,16 @@ const FILTERS: { id: Filter; label: string; test: (book: AdminBook) => boolean }
   { id: 'hidden', label: 'مخفية', test: (book) => !book.isActive },
   { id: 'low', label: 'مخزون منخفض', test: (book) => book.isLowStock && book.availableToSell > 0 },
   { id: 'out', label: 'نفدت', test: (book) => book.availableToSell === 0 },
+  { id: 'incomplete', label: 'صفحة ناقصة', test: incomplete },
+  { id: 'needs-en', label: 'بلا إنجليزية', test: (book) => !book.translations.includes('en') },
+  { id: 'needs-tr', label: 'بلا تركية', test: (book) => !book.translations.includes('tr') },
 ];
 
+/** Where a filter's row link opens: straight into the missing translation. */
+const linkFor = (book: AdminBook, filter: Filter) =>
+  filter === 'needs-en' || filter === 'needs-tr'
+    ? `${paths.admin.book(book.id)}?lang=${filter.slice(-2)}#translations`
+    : paths.admin.book(book.id);
 
 
 /** Books (API §10): every book, hidden ones too, with exact stock. Filtered here. */
@@ -41,7 +53,9 @@ export default function AdminBooksPage() {
     .filter(
       (book) =>
         term === '' ||
-        fold(`${book.title} ${book.author} ${book.isbn} ${book.slug}`).includes(term),
+        fold(
+          `${book.title} ${book.author} ${book.isbn} ${book.slug} ${book.transliteratedTitle ?? ''}`,
+        ).includes(term),
     )
     .sort((a, b) => a.title.localeCompare(b.title, 'ar'));
 
@@ -120,6 +134,7 @@ export default function AdminBooksPage() {
                 <th scope="col">الكتاب</th>
                 <th scope="col">السعر</th>
                 <th scope="col">متاح / في المستودع</th>
+                   <th scope="col">الترجمة</th>
                 <th scope="col">الحالة</th>
               </tr>
             </thead>
@@ -134,8 +149,7 @@ export default function AdminBooksPage() {
                           {cover && <img src={cover.url} alt="" loading="lazy" />}
                         </span>
                         <span className={local.bookText}>
-                          <Link to={paths.admin.book(book.id)} className={styles.rowLink}>
-                            {book.title}
+                          <Link to={linkFor(book, filter?.id ?? 'all')} className={styles.rowLink}>                            {book.title}
                           </Link>
                           <span className={styles.sub}>
                             {book.author}
@@ -165,6 +179,23 @@ export default function AdminBooksPage() {
                         {formatCount(book.availableToSell)}
                       </b>{' '}
                       / {formatCount(book.stockQuantity)}
+                    </td>
+                      <td data-label="الترجمة">
+                      <span className={local.langs}>
+                        {(['en', 'tr'] as const).map((code) => {
+                          const done = book.translations.includes(code);
+                          return (
+                            <Link
+                              key={code}
+                              to={`${paths.admin.book(book.id)}?lang=${code}#translations`}
+                              className={done ? local.langDone : local.langTodo}
+                              aria-label={`${code === 'en' ? 'الإنجليزية' : 'التركية'}: ${done ? 'مترجمة' : 'ناقصة'}`}
+                            >
+                              {code.toUpperCase()} {done ? '✓' : '—'}
+                            </Link>
+                          );
+                        })}
+                      </span>
                     </td>
                     <td data-label="الحالة">
                       <StatusBadge

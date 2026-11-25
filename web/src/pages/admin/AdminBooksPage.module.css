@@ -34,3 +34,55 @@
 .out {
   color: var(--red2);
 }
+
+/* EN ✓ / TR — chips: each opens that translation. */
+.langs {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.langDone,
+.langTodo {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 44px;
+  padding-inline: 10px;
+  border-radius: 12px;
+  font-size: 12.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.langDone {
+  color: #1f6b35;
+}
+
+.langTodo {
+  background: var(--goldl);
+  color: #8a6418;
+}/* EN ✓ / TR — chips: each opens that translation. */
+.langs {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.langDone,
+.langTodo {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 44px;
+  padding-inline: 10px;
+  border-radius: 12px;
+  font-size: 12.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.langDone {
+  color: #1f6b35;
+}
+
+.langTodo {
+  background: var(--goldl);
+  color: #8a6418;
+}

@@ -58,7 +58,9 @@ const MESSAGES: Readonly<Record<string, string>> = {
   'Return.IncompleteInspection': 'حدّد حالة كل كتاب مرتجع قبل إكمال الإرجاع.',
   'StockNotification.AlreadyInStock': 'الكتاب متوفر الآن، يمكنك إضافته إلى السلة.',
   'Library.NotInLibrary': 'هذا الكتاب ليس في مكتبتك.',
-
+ 'Translation.NotFound': 'لا توجد ترجمة بهذه اللغة بعد.',
+  'Translation.Invalid': 'بعض نصوص الترجمة غير مقبولة. راجع الأطوال.',
+  'Translation.UnsupportedLanguage': 'لغة الترجمة غير مدعومة. الترجمة للإنجليزية والتركية فقط.',
     'Book.NotFound': 'لم نعثر على هذا الكتاب.',
   'Book.DuplicateIsbn': 'يوجد كتاب آخر بهذا الرقم ISBN.',
   'Book.DuplicateSlug': 'يوجد كتاب آخر بهذا الرابط. غيّر الرابط أو العنوان.',

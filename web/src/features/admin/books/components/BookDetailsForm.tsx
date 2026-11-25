@@ -1,6 +1,8 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { type ReactNode, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 
+import { useSaveShortcut } from '@/features/admin/lib/useSaveShortcut';
 import { formatLabel } from '@/shared/api/enums';
 import { serverFieldErrors } from '@/shared/api/formErrors';
 import { Button } from '@/shared/ui/Button/Button';
@@ -17,6 +19,10 @@ interface BookDetailsFormProps {
   /** Field errors from the server land on their fields; anything else is a toast. */
   error: unknown;
   onSave: (values: BookDetailsValues) => void;
+  /** Tells the page about unsaved edits, so leaving it can ask first. */
+  onDirtyChange?: (dirty: boolean) => void;
+  /** Shown above the save button (the new-book page puts «create hidden» here). */
+  extra?: ReactNode;
 }
 
 /**
@@ -29,7 +35,10 @@ export function BookDetailsForm({
   pending,
   error,
   onSave,
+  onDirtyChange,
+  extra,
 }: BookDetailsFormProps) {
+  const formRef = useRef<HTMLFormElement>(null);
   const {
     register,
     handleSubmit,
@@ -43,8 +52,14 @@ export function BookDetailsForm({
   const fieldError = (name: keyof BookDetailsValues) => errors[name]?.message ?? server[name];
   const creating = mode === 'create';
 
+  useEffect(() => {
+    onDirtyChange?.(isDirty);
+  }, [isDirty, onDirtyChange]);
+  useSaveShortcut(formRef, creating || isDirty);
+
   return (
     <form
+      ref={formRef}
       noValidate
       className={styles.form}
       onSubmit={(event) => {
@@ -188,16 +203,17 @@ export function BookDetailsForm({
         </div>
       </fieldset>
 
+      {extra}
+
       <div className={styles.actions}>
         <Button type="submit" variant="ink" disabled={pending || (!creating && !isDirty)}>
           {pending ? 'جارٍ الحفظ…' : creating ? 'إنشاء الكتاب' : 'حفظ التفاصيل'}
         </Button>
-        {creating && (
-          <p className={styles.note}>
-            يظهر الكتاب في المتجر فور إنشائه. أضف الصور والقسم والمحققين بعدها مباشرة، أو أخفِه حتى
-            تكتمل صفحته.
-          </p>
-        )}
+        <p className={styles.note}>
+          {creating
+            ? 'بعد الإنشاء تنتقل إلى صفحة الكتاب لتكمل الصور والقسم والترجمات.'
+            : 'Ctrl+S للحفظ من أي حقل.'}
+        </p>
       </div>
     </form>
   );

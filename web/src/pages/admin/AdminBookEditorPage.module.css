@@ -1,0 +1,42 @@
+/* Section jump bar: sticks under the admin top bar (60px). */
+.jump {
+  position: sticky;
+  inset-block-start: 60px;
+  z-index: 20;
+  display: flex;
+  gap: 6px;
+  margin-block-end: 16px;
+  padding-block: 8px;
+  overflow-x: auto;
+  background: var(--paper);
+  scrollbar-width: none;
+}
+
+.jump a {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  min-block-size: 44px;
+  padding-inline: 14px;
+  border: 1px solid var(--line);
+  border-radius: 40px;
+  background: #fff;
+  font-size: 13.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.jump a:hover {
+  border-color: var(--ink);
+}
+
+/* Jumped-to sections land below the top bar and the jump bar. */
+.anchor {
+  scroll-margin-block-start: 136px;
+}
+
+.hint {
+  color: var(--gray);
+  font-size: 12.5px;
+  line-height: 1.8;
+}
