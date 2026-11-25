@@ -1,5 +1,7 @@
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 
+import { UI_DIRECTION } from '@/app/locale';
 import { cx } from '@/shared/lib/cx';
 import { formatCount } from '@/shared/lib/format';
 import { Icon } from '@/shared/ui/Icon/Icon';
@@ -26,18 +28,23 @@ interface PaginationProps {
   hrefFor: (page: number) => string;
 }
 
+// Back points against the reading direction: right in Arabic, left in English and Turkish.
+const BACK = UI_DIRECTION === 'rtl' ? 'arrowr' : 'arrow';
+const FORWARD = UI_DIRECTION === 'rtl' ? 'arrow' : 'arrowr';
+
 export function Pagination({ page, totalPages, hrefFor }: PaginationProps) {
+  const { t } = useTranslation();
   if (totalPages <= 1) return null;
 
   return (
-    <nav className={styles.nav} aria-label="الصفحات">
+    <nav className={styles.nav} aria-label={t('ui.pages')}>
       {page > 1 ? (
-        <Link to={hrefFor(page - 1)} className={styles.step} aria-label="الصفحة السابقة">
-          <Icon name="arrowr" size={18} />
+        <Link to={hrefFor(page - 1)} className={styles.step} aria-label={t('ui.previousPage')}>
+          <Icon name={BACK} size={18} />
         </Link>
       ) : (
         <span className={cx(styles.step, styles.disabled)} aria-hidden="true">
-          <Icon name="arrowr" size={18} />
+          <Icon name={BACK} size={18} />
         </span>
       )}
 
@@ -53,7 +60,7 @@ export function Pagination({ page, totalPages, hrefFor }: PaginationProps) {
                 to={hrefFor(item)}
                 className={cx(styles.page, item === page && styles.current)}
                 aria-current={item === page ? 'page' : undefined}
-                aria-label={`الصفحة ${formatCount(item)}`}
+                aria-label={t('ui.page', { n: formatCount(item) })}
               >
                 {formatCount(item)}
               </Link>
@@ -63,12 +70,12 @@ export function Pagination({ page, totalPages, hrefFor }: PaginationProps) {
       </ol>
 
       {page < totalPages ? (
-        <Link to={hrefFor(page + 1)} className={styles.step} aria-label="الصفحة التالية">
-          <Icon name="arrow" size={18} />
+        <Link to={hrefFor(page + 1)} className={styles.step} aria-label={t('ui.nextPage')}>
+          <Icon name={FORWARD} size={18} />
         </Link>
       ) : (
         <span className={cx(styles.step, styles.disabled)} aria-hidden="true">
-          <Icon name="arrow" size={18} />
+          <Icon name={FORWARD} size={18} />
         </span>
       )}
     </nav>

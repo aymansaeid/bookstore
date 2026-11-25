@@ -1,5 +1,8 @@
 import type { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
+
+import { ForwardArrow } from '@/shared/ui/ForwardArrow/ForwardArrow';
 
 import styles from './SectionHeader.module.css';
 
@@ -14,8 +17,9 @@ interface SectionHeaderProps {
   aside?: ReactNode;
 }
 
-/** Gold kicker with a dash, Amiri title, grey description, action on the left. */
+/** Gold kicker with a dash, Amiri title, grey description, action at the end. */
 export function SectionHeader({ id, kicker, title, description, more, aside }: SectionHeaderProps) {
+  const { t } = useTranslation();
   return (
     <div className={styles.header}>
       <div>
@@ -28,7 +32,7 @@ export function SectionHeader({ id, kicker, title, description, more, aside }: S
       {aside}
       {more && (
         <Link to={more.to} className={styles.more}>
-          {more.label ?? 'عرض الكل'} <span aria-hidden="true">←</span>
+          {more.label ?? t('ui.seeAll')} <ForwardArrow />
         </Link>
       )}
     </div>

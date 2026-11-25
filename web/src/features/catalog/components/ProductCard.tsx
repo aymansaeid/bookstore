@@ -1,13 +1,22 @@
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 
+import { UI_LANGUAGE } from '@/app/locale';
 import { paths } from '@/app/paths';
 import { addToCartWithFeedback } from '@/features/catalog/addToCart';
 import type { BookCardData } from '@/features/catalog/types';
 import { WishlistButton } from '@/features/wishlist/WishlistButton';
-import { formatAmount, formatCount, formatMoney, volumesLabel } from '@/shared/lib/format';
+import {
+  formatAmount,
+  formatCount,
+  formatMoney,
+  formatPercent,
+  volumesLabel,
+} from '@/shared/lib/format';
 import { Icon } from '@/shared/ui/Icon/Icon';
-import { Spark } from '@/shared/ui/Spark/Spark';
 import { OriginalTitle } from '@/shared/ui/OriginalTitle/OriginalTitle';
+import { Spark } from '@/shared/ui/Spark/Spark';
+
 import { BookCover } from './BookCover';
 import styles from './ProductCard.module.css';
 
@@ -26,6 +35,7 @@ export function ProductCard({
   imageSizes = '(max-width: 767px) 45vw, 220px',
   priority = false,
 }: ProductCardProps) {
+  const { t } = useTranslation('catalog', { keyPrefix: 'card' });
   const href = paths.book(book.slug);
   const badges = book.badges ?? [];
   const discount = book.savingsPercent ?? null;
@@ -47,10 +57,10 @@ export function ProductCard({
 
         <div className={styles.tags}>
           {discount !== null && discount > 0 && (
-            <span className={styles.sale}>-{formatCount(discount)}٪</span>
+            <span className={styles.sale}>-{formatPercent(discount)}</span>
           )}
-          {badges.includes('New') && <span className={styles.new}>جديد</span>}
-          {badges.includes('Deluxe') && <span className={styles.deluxe}>طبعة فاخرة</span>}
+          {badges.includes('New') && <span className={styles.new}>{t('new')}</span>}
+          {badges.includes('Deluxe') && <span className={styles.deluxe}>{t('deluxe')}</span>}
         </div>
 
         <WishlistButton book={book} className={styles.fav} />
@@ -58,7 +68,7 @@ export function ProductCard({
         {match !== null && (
           <span className={styles.match}>
             <Spark size={12} />
-            تطابق {formatCount(match)}٪
+            {t('match', { percent: formatPercent(match) })}
           </span>
         )}
       </div>
@@ -70,7 +80,7 @@ export function ProductCard({
           <Link to={href} className={styles.titleLink}>
             {book.title}
           </Link>
-                    <OriginalTitle title={book.title} original={book.originalTitle} />
+          <OriginalTitle title={book.title} original={book.originalTitle} />
         </h3>
         <p className={styles.author}>{book.author}</p>
         {(edition ?? publisher) && (
@@ -86,35 +96,43 @@ export function ProductCard({
             {book.averageRating !== null && book.reviewCount > 0 && (
               <p className={styles.rating}>
                 <b aria-hidden="true">★</b>
-                <span className="sr-only">التقييم</span>
+                <span className="sr-only">{t('rating')}</span>
                 {formatAmount(book.averageRating)}
                 <span>({formatCount(book.reviewCount)})</span>
               </p>
             )}
             <p className={styles.price}>
               {book.currency === 'TRY' ? (
-                <>
-                  {formatAmount(book.price)}
-                  <small>₺</small>
-                </>
+                // English writes the sign first (₺2,400); Arabic and Turkish after.
+                UI_LANGUAGE === 'en' ? (
+                  <>
+                    <small>₺</small>
+                    {formatAmount(book.price)}
+                  </>
+                ) : (
+                  <>
+                    {formatAmount(book.price)}
+                    <small>₺</small>
+                  </>
+                )
               ) : (
                 formatMoney(book.price, book.currency)
               )}
               {book.oldPrice !== null && (
                 <s className={styles.old}>
-                  <span className="sr-only">بدلاً من </span>
+                  <span className="sr-only">{t('insteadOf')}</span>
                   {formatAmount(book.oldPrice)}
                 </s>
               )}
             </p>
-            {!book.inStock && <p className={styles.soldOut}>غير متوفر حالياً</p>}
+            {!book.inStock && <p className={styles.soldOut}>{t('soldOut')}</p>}
           </div>
 
           {book.inStock ? (
             <button
               type="button"
               className={styles.add}
-              aria-label={`أضف «${book.title}» إلى السلة`}
+              aria-label={t('add', { title: book.title })}
               onClick={() => {
                 addToCartWithFeedback(book);
               }}
@@ -122,11 +140,7 @@ export function ProductCard({
               <Icon name="cart" size={18} />
             </button>
           ) : (
-            <Link
-              to={href}
-              className={styles.add}
-              aria-label={`«${book.title}» غير متوفر: نبّهني عند توفّره`}
-            >
+            <Link to={href} className={styles.add} aria-label={t('notify', { title: book.title })}>
               <Icon name="bell" size={18} />
             </Link>
           )}

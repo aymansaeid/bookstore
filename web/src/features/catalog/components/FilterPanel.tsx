@@ -1,5 +1,5 @@
 import { useState } from 'react';
-
+import { useTranslation } from 'react-i18next';
 import {
   CLEARED_FILTERS,
   type HiddenFacets,
@@ -8,7 +8,7 @@ import {
 } from '@/features/catalog/searchParams';
 import type { CatalogFacets, CatalogSearchParams } from '@/features/catalog/types';
 import { levelLabel, type ReaderLevel } from '@/shared/api/enums';
-import { formatAmount, formatCount } from '@/shared/lib/format';
+import { formatAmount, formatCount, formatMoney } from '@/shared/lib/format';
 import { Checkbox } from '@/shared/ui/form/Field';
 
 import styles from './FilterPanel.module.css';
@@ -41,6 +41,7 @@ function PriceRange({
   value: [number | undefined, number | undefined];
   onCommit: (low: number | undefined, high: number | undefined) => void;
 }) {
+  const { t } = useTranslation('catalog', { keyPrefix: 'panel' });
   const [low, setLow] = useState(Math.max(min, value[0] ?? min));
   const [high, setHigh] = useState(Math.min(max, value[1] ?? max));
   const span = max - min;
@@ -73,8 +74,8 @@ function PriceRange({
           max={max}
           step={step}
           value={low}
-          aria-label="أقل سعر"
-          aria-valuetext={`${formatAmount(low)} ليرة`}
+          aria-label={t('minPrice')}
+          aria-valuetext={t('lira', { amount: formatAmount(low) })}
           onChange={(event) => {
             setLow(Math.min(Number(event.target.value), high));
           }}
@@ -86,8 +87,8 @@ function PriceRange({
           max={max}
           step={step}
           value={high}
-          aria-label="أعلى سعر"
-          aria-valuetext={`${formatAmount(high)} ليرة`}
+          aria-label={t('maxPrice')}
+          aria-valuetext={t('lira', { amount: formatAmount(high) })}
           onChange={(event) => {
             setHigh(Math.max(Number(event.target.value), low));
           }}
@@ -95,14 +96,15 @@ function PriceRange({
         />
       </div>
       <p className={styles.prices}>
-        <span>{formatAmount(low)} ₺</span>
-        <span>{formatAmount(high)} ₺</span>
+        <span>{formatMoney(low)}</span>
+        <span>{formatMoney(high)}</span>
       </p>
     </div>
   );
 }
 
 export function FilterPanel({ filters, facets, onChange, hide = {} }: FilterPanelProps) {
+  const { t } = useTranslation('catalog');
   const [showAllMuhaqqiqs, setShowAllMuhaqqiqs] = useState(false);
   const selectedMuhaqqiqs = new Set(filters.muhaqqiq ?? []);
   const selectedLevels = new Set(filters.level ?? []);
@@ -134,13 +136,13 @@ export function FilterPanel({ filters, facets, onChange, hide = {} }: FilterPane
             onChange(CLEARED_FILTERS);
           }}
         >
-          مسح كل الفلاتر
+          {t('panel.clear')}
         </button>
       )}
 
       {hide.category !== true && facets && facets.categories.length > 0 && (
         <fieldset className={styles.group}>
-          <legend className={styles.legend}>العلم</legend>
+          <legend className={styles.legend}>{t('panel.category')}</legend>
           <ul className={styles.list}>
             {facets.categories.map((category) => {
               const open =
@@ -191,7 +193,7 @@ export function FilterPanel({ filters, facets, onChange, hide = {} }: FilterPane
       )}
 
       <fieldset className={styles.group}>
-        <legend className={styles.legend}>مستوى القارئ</legend>
+        <legend className={styles.legend}>{t('panel.level')}</legend>
         {ALL_LEVELS.map((level) => (
           <div key={level} className={styles.checkRow}>
             <Checkbox
@@ -209,7 +211,7 @@ export function FilterPanel({ filters, facets, onChange, hide = {} }: FilterPane
 
       {hide.muhaqqiq !== true && muhaqqiqs.length > 0 && (
         <fieldset className={styles.group}>
-          <legend className={styles.legend}>المحقّق</legend>
+          <legend className={styles.legend}>{t('panel.muhaqqiq')}</legend>
           {visibleMuhaqqiqs.map((muhaqqiq) => (
             <div key={muhaqqiq.id} className={styles.checkRow}>
               <Checkbox
@@ -232,7 +234,9 @@ export function FilterPanel({ filters, facets, onChange, hide = {} }: FilterPane
                 setShowAllMuhaqqiqs((value) => !value);
               }}
             >
-              {showAllMuhaqqiqs ? 'عرض أقل' : `عرض الكل (${formatCount(muhaqqiqs.length)})`}
+              {showAllMuhaqqiqs
+                ? t('panel.showLess')
+                : t('panel.showAll', { n: formatCount(muhaqqiqs.length) })}
             </button>
           )}
         </fieldset>
@@ -240,7 +244,7 @@ export function FilterPanel({ filters, facets, onChange, hide = {} }: FilterPane
 
       {priceMin !== null && priceMax !== null && priceMax > priceMin && (
         <fieldset className={styles.group}>
-          <legend className={styles.legend}>السعر</legend>
+          <legend className={styles.legend}>{t('panel.price')}</legend>
           <PriceRange
             key={`${filters.minPrice ?? ''}-${filters.maxPrice ?? ''}-${priceMin}-${priceMax}`}
             min={priceMin}
@@ -254,13 +258,13 @@ export function FilterPanel({ filters, facets, onChange, hide = {} }: FilterPane
       )}
 
       <fieldset className={styles.group}>
-        <legend className={styles.legend}>عدد المجلدات</legend>
+        <legend className={styles.legend}>{t('panel.volumes')}</legend>
         <div className={styles.pills}>
           {VOLUME_OPTIONS.map((option) => {
             const active = filters.minVolumes === option.min && filters.maxVolumes === option.max;
             return (
               <button
-                key={option.label}
+                key={option.key}
                 type="button"
                 className={styles.pill}
                 aria-pressed={active}
@@ -272,7 +276,7 @@ export function FilterPanel({ filters, facets, onChange, hide = {} }: FilterPane
                   );
                 }}
               >
-                {option.label}
+                {t(`volumes.${option.key}`)}
               </button>
             );
           })}
@@ -280,7 +284,7 @@ export function FilterPanel({ filters, facets, onChange, hide = {} }: FilterPane
       </fieldset>
 
       <fieldset className={styles.group}>
-        <legend className={styles.legend}>التوفّر والدفع</legend>
+        <legend className={styles.legend}>{t('panel.availability')}</legend>
         <div className={styles.checkRow}>
           <Checkbox
             checked={filters.inStock === true}
@@ -288,7 +292,7 @@ export function FilterPanel({ filters, facets, onChange, hide = {} }: FilterPane
               onChange({ inStock: event.target.checked ? true : undefined });
             }}
           >
-            متوفر الآن
+            {t('panel.inStock')}
           </Checkbox>
           {facets && <Count value={facets.inStockCount} />}
         </div>
@@ -298,7 +302,7 @@ export function FilterPanel({ filters, facets, onChange, hide = {} }: FilterPane
             onChange({ installments: event.target.checked ? true : undefined });
           }}
         >
-          متاح التقسيط
+          {t('panel.installments')}
         </Checkbox>
         <Checkbox
           checked={filters.badge === 'Deluxe'}
@@ -306,7 +310,7 @@ export function FilterPanel({ filters, facets, onChange, hide = {} }: FilterPane
             onChange({ badge: event.target.checked ? 'Deluxe' : undefined });
           }}
         >
-          طبعات فاخرة
+          {t('panel.deluxe')}
         </Checkbox>
       </fieldset>
     </div>

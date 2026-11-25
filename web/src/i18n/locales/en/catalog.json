@@ -1,0 +1,84 @@
+{
+  "card": {
+    "new": "New",
+    "deluxe": "Deluxe edition",
+    "match": "{{percent}} match",
+    "rating": "Rating",
+    "insteadOf": "was ",
+    "soldOut": "Currently unavailable",
+    "add": "Add \"{{title}}\" to cart",
+    "notify": "\"{{title}}\" is unavailable: notify me when it's back"
+  },
+  "list": {
+    "empty": "No books here yet.",
+    "error": "We couldn't load the books."
+  },
+  "browser": {
+    "filters": "Filters",
+    "filtersCount": "Filters ({{n}})",
+    "sortBy": "Sort by",
+    "applied": "Applied filters",
+    "remove": "Remove filter {{label}}",
+    "clearAll": "Clear all",
+    "noMatch": "No books match these filters. Try removing some.",
+    "noResults": "We found no books here. Try other words or browse the categories.",
+    "closeFilters": "Close filters",
+    "show": "Show {{results}}",
+    "showResults": "Show results",
+    "volumes": "Number of volumes",
+    "inStock": "In stock",
+    "installments": "Instalments available"
+  },
+  "sort": {
+    "Relevance": "Best match",
+    "Bestselling": "Bestselling",
+    "Newest": "Newest",
+    "PriceAsc": "Price: low to high",
+    "PriceDesc": "Price: high to low",
+    "TopRated": "Top rated"
+  },
+  "volumes": {
+    "one": "1 volume",
+    "few": "2–5 volumes",
+    "several": "6–9 volumes",
+    "many": "10+ volumes"
+  },
+  "panel": {
+    "clear": "Clear all filters",
+    "category": "Discipline",
+    "level": "Reader level",
+    "muhaqqiq": "Editor",
+    "showLess": "Show less",
+    "showAll": "Show all ({{n}})",
+    "price": "Price",
+    "minPrice": "Minimum price",
+    "maxPrice": "Maximum price",
+    "lira": "{{amount}} lira",
+    "volumes": "Number of volumes",
+    "availability": "Availability and payment",
+    "inStock": "In stock",
+    "installments": "Instalments available",
+    "deluxe": "Deluxe editions"
+  },
+  "search": {
+    "resultsFor": "Results for \"{{q}}\"",
+    "encyclopedias": "Encyclopedias and complete sets",
+    "library": "Library",
+    "searchLead": "We search titles, authors, editors and categories, in Arabic or Latin script.",
+    "encyclopediasLead": "The great classics in their complete volumes, with trusted scholarly editing.",
+    "libraryLead": "Browse Al-Risalah Publishers' editions and the great edited classics.",
+    "tabTitle": "Search: {{q}}",
+    "kickerSearch": "Search",
+    "kicker": "Kitap Efendi"
+  },
+  "category": {
+    "title": "Category",
+    "kicker": "Browse by discipline",
+    "subcategories": "Subcategories"
+  },
+  "muhaqqiq": {
+    "title": "Editor",
+    "kicker": "Leading editors",
+    "specialties": "Specialties"
+  }
+}

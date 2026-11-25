@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router';
 
 import { paths } from '@/app/paths';
@@ -9,6 +10,7 @@ import { useFollowedIds, useToggleFollow } from './follows';
 
 /** «تابع المحقّق» (spec 5.9 «تنبيهات المحققين»). Guests go to login and come back. */
 export function FollowButton({ muhaqqiqId }: { muhaqqiqId: number }) {
+  const { t } = useTranslation();
   const { status } = useSession();
   const navigate = useNavigate();
   const location = useLocation();
@@ -30,7 +32,7 @@ export function FollowButton({ muhaqqiqId }: { muhaqqiqId: number }) {
       }}
     >
       <Icon name={following ? 'check' : 'bell'} size={18} />
-      {following ? 'تتابعه' : 'تابع المحقّق'}
+      {following ? t('follow.following') : t('follow.follow')}
     </Button>
   );
 }

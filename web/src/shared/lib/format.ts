@@ -22,6 +22,8 @@ const arabicDateTime = new Intl.DateTimeFormat(UI_LOCALE, {
   dateStyle: 'long',
   timeStyle: 'short',
 });
+
+const percent = new Intl.NumberFormat(UI_LOCALE, { style: 'percent', maximumFractionDigits: 0 });
 const arabicPlainDate = new Intl.DateTimeFormat(UI_LOCALE, { timeZone: 'UTC', dateStyle: 'long' });
 const regionNames = new Intl.DisplayNames([UI_LANGUAGE], { type: 'region' });
 
@@ -51,6 +53,9 @@ export function formatMoney(amount: number, currency = 'TRY'): string {
   }
   return new Intl.NumberFormat(UI_LOCALE, { style: 'currency', currency }).format(amount);
 }
+
+/** 15 → "١٥٪" / "15%" / "%15". */
+export const formatPercent = (value: number): string => percent.format(value / 100);
 
 /** ISO 8601 timestamp (UTC) → date in Istanbul. */
 export const formatDate = (iso: string): string => arabicDate.format(new Date(iso));

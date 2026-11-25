@@ -1,5 +1,5 @@
 import 'i18next';
-
+import type arCatalog from './locales/ar/catalog.json';
 import type arCommon from './locales/ar/common.json';
 import type arHome from './locales/ar/home.json';
 
@@ -12,6 +12,7 @@ declare module 'i18next' {
   interface CustomTypeOptions {
     defaultNS: 'common';
     resources: {
+      catalog: typeof arCatalog;
       common: typeof arCommon;
       home: typeof arHome;
     };

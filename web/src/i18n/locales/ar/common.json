@@ -172,5 +172,42 @@
     "copies_few": "{{n}} نسخ",
     "copies_many": "{{n}} نسخة",
     "copies_other": "{{n}} نسخة"
+  } ,
+    "enums": {
+    "orderStatus": { "PendingPayment": "بانتظار الدفع", "Paid": "قيد التجهيز", "Shipped": "تم الشحن", "Delivered": "تم التسليم", "Cancelled": "ملغى", "Expired": "انتهت مهلة الدفع", "Refunded": "مُسترد" },
+    "returnStatus": { "Requested": "بانتظار الموافقة", "Approved": "تمت الموافقة", "Completed": "تم الاسترداد", "Rejected": "مرفوض", "CancelledByCustomer": "أُلغي" },
+    "format": { "Paperback": "غلاف ورقي", "Hardcover": "مجلّد فاخر", "BoxSet": "مجموعة في علبة" },
+    "level": { "Beginner": "مبتدئ", "Intermediate": "متوسط", "Specialist": "متخصص" },
+    "badge": { "New": "جديد", "Deluxe": "طبعة فاخرة", "Bestseller": "الأكثر مبيعاً" },
+    "returnReason": { "ChangedMind": "غيّرت رأيي", "ArrivedDamaged": "وصل الكتاب تالفاً", "WrongItem": "وصلني كتاب غير الذي طلبته", "Other": "سبب آخر" },
+    "cancelReason": { "ChangedMind": "غيّرت رأيي", "OrderedByMistake": "طلبت بالخطأ", "FoundBetterPrice": "وجدت سعراً أفضل", "DeliveryTooSlow": "التوصيل بطيء", "Other": "سبب آخر" }
+  },
+  "ui": {
+    "home": "الرئيسية",
+    "library": "المكتبة",
+    "breadcrumbs": "مسار التصفّح",
+    "pages": "الصفحات",
+    "previousPage": "الصفحة السابقة",
+    "nextPage": "الصفحة التالية",
+    "page": "الصفحة {{n}}",
+    "stars": "{{value}} من ٥",
+    "seeAll": "عرض الكل",
+    "retry": "أعد المحاولة"
+  },
+  "addToCart": {
+    "atMax": "وصلت إلى الحد الأقصى ({{n}} نسخ) من هذا الكتاب.",
+    "cappedAt": "صار في سلتك {{n}} نسخ، وهو الحد الأقصى.",
+    "added": "أُضيف «{{title}}» إلى السلة",
+    "viewCart": "عرض السلة"
+  },
+  "wishlist": {
+    "add": "أضف «{{title}}» إلى المفضلة",
+    "remove": "أزل «{{title}}» من المفضلة"
+  },
+  "follow": {
+    "follow": "تابع المحقّق",
+    "following": "تتابعه",
+    "followed": "تتابع هذا المحقّق الآن. سننبّهك بكل إصدار جديد.",
+    "unfollowed": "ألغيت متابعة المحقّق."
   }
 }

@@ -1,21 +1,23 @@
+import type { TFunction } from 'i18next';
 import { useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router';
 
+import { useCatalogFacets, useCatalogSearch } from '@/features/catalog/queries';
 import {
+  activeFilterCount,
   CLEARED_FILTERS,
   type HiddenFacets,
   PAGE_SIZE,
-  SORT_LABELS,
-  VOLUME_OPTIONS,
-  activeFilterCount,
   readFilters,
+  SORTS,
+  VOLUME_OPTIONS,
   writeFilters,
 } from '@/features/catalog/searchParams';
-import { useCatalogFacets, useCatalogSearch } from '@/features/catalog/queries';
 import type { CatalogFacets, CatalogSearchParams, CatalogSort } from '@/features/catalog/types';
 import { badgeLabel, levelLabel } from '@/shared/api/enums';
 import { cx } from '@/shared/lib/cx';
-import { formatAmount, formatCount, resultsPhrase } from '@/shared/lib/format';
+import { formatCount, formatMoney, resultsPhrase } from '@/shared/lib/format';
 import { Button } from '@/shared/ui/Button/Button';
 import { Icon } from '@/shared/ui/Icon/Icon';
 import { Pagination } from '@/shared/ui/Pagination/Pagination';
@@ -33,6 +35,7 @@ interface Chip {
 }
 
 function chipsFor(
+  t: TFunction<'catalog'>,
   filters: CatalogSearchParams,
   facets: CatalogFacets | null | undefined,
   hide: HiddenFacets,
@@ -74,11 +77,11 @@ function chipsFor(
     });
   }
   if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
-    const low = filters.minPrice !== undefined ? formatAmount(filters.minPrice) : '…';
-    const high = filters.maxPrice !== undefined ? formatAmount(filters.maxPrice) : '…';
+    const low = filters.minPrice !== undefined ? formatMoney(filters.minPrice) : '…';
+    const high = filters.maxPrice !== undefined ? formatMoney(filters.maxPrice) : '…';
     chips.push({
       key: 'price',
-      label: `${low} – ${high} ₺`,
+      label: `${low} – ${high}`,
       patch: { minPrice: undefined, maxPrice: undefined },
     });
   }
@@ -88,14 +91,18 @@ function chipsFor(
     );
     chips.push({
       key: 'volumes',
-      label: option?.label ?? 'عدد المجلدات',
+      label: option ? t(`volumes.${option.key}`) : t('browser.volumes'),
       patch: { minVolumes: undefined, maxVolumes: undefined },
     });
   }
   if (filters.inStock === true)
-    chips.push({ key: 'stock', label: 'متوفر الآن', patch: { inStock: undefined } });
+    chips.push({ key: 'stock', label: t('browser.inStock'), patch: { inStock: undefined } });
   if (filters.installments === true) {
-    chips.push({ key: 'inst', label: 'متاح التقسيط', patch: { installments: undefined } });
+    chips.push({
+      key: 'inst',
+      label: t('browser.installments'),
+      patch: { installments: undefined },
+    });
   }
   if (filters.badge)
     chips.push({ key: 'badge', label: badgeLabel(filters.badge), patch: { badge: undefined } });
@@ -109,6 +116,7 @@ interface CatalogBrowserProps {
 }
 
 export function CatalogBrowser({ fixed = {}, hide = {} }: CatalogBrowserProps) {
+  const { t } = useTranslation('catalog');
   const [searchParams, setSearchParams] = useSearchParams();
   const filters = readFilters(searchParams);
   const params: CatalogSearchParams = { ...filters, ...fixed };
@@ -136,17 +144,15 @@ export function CatalogBrowser({ fixed = {}, hide = {} }: CatalogBrowserProps) {
   const data = results.data;
   const total = data?.results.totalCount ?? 0;
   const activeCount = activeFilterCount(filters, hide);
-  const chips = chipsFor(filters, facets.data, hide);
+  const chips = chipsFor(t, filters, facets.data, hide);
   const sort: CatalogSort = filters.sort ?? data?.sort ?? (filters.q ? 'Relevance' : 'Bestselling');
-  const sortOptions = (Object.keys(SORT_LABELS) as CatalogSort[]).filter(
-    (option) => option !== 'Relevance' || filters.q !== undefined,
-  );
+  const sortOptions = SORTS.filter((option) => option !== 'Relevance' || filters.q !== undefined);
 
   const panel = <FilterPanel filters={params} facets={facets.data} onChange={update} hide={hide} />;
 
   return (
     <div className={styles.layout}>
-      <aside className={styles.sidebar} aria-label="الفلاتر">
+      <aside className={styles.sidebar} aria-label={t('browser.filters')}>
         {panel}
       </aside>
 
@@ -161,7 +167,9 @@ export function CatalogBrowser({ fixed = {}, hide = {} }: CatalogBrowserProps) {
             }}
           >
             <Icon name="sliders" size={18} />
-            الفلاتر{activeCount > 0 && ` (${formatCount(activeCount)})`}
+            {activeCount > 0
+              ? t('browser.filtersCount', { n: formatCount(activeCount) })
+              : t('browser.filters')}
           </button>
 
           <p className={styles.count} role="status">
@@ -169,7 +177,7 @@ export function CatalogBrowser({ fixed = {}, hide = {} }: CatalogBrowserProps) {
           </p>
 
           <label className={styles.sort}>
-            <span>مرتّبة حسب</span>
+            <span>{t('browser.sortBy')}</span>
             <select
               value={sort}
               onChange={(event) => {
@@ -184,7 +192,7 @@ export function CatalogBrowser({ fixed = {}, hide = {} }: CatalogBrowserProps) {
             >
               {sortOptions.map((option) => (
                 <option key={option} value={option}>
-                  {SORT_LABELS[option]}
+                  {t(`sort.${option}`)}
                 </option>
               ))}
             </select>
@@ -192,13 +200,13 @@ export function CatalogBrowser({ fixed = {}, hide = {} }: CatalogBrowserProps) {
         </div>
 
         {chips.length > 0 && (
-          <ul className={styles.chips} aria-label="الفلاتر المطبّقة">
+          <ul className={styles.chips} aria-label={t('browser.applied')}>
             {chips.map((chip) => (
               <li key={chip.key}>
                 <button
                   type="button"
                   className={styles.chip}
-                  aria-label={`إزالة فلتر ${chip.label}`}
+                  aria-label={t('browser.remove', { label: chip.label })}
                   onClick={() => {
                     update(chip.patch);
                   }}
@@ -217,7 +225,7 @@ export function CatalogBrowser({ fixed = {}, hide = {} }: CatalogBrowserProps) {
                     update(CLEARED_FILTERS);
                   }}
                 >
-                  مسح الكل
+                  {t('browser.clearAll')}
                 </button>
               </li>
             )}
@@ -234,11 +242,7 @@ export function CatalogBrowser({ fixed = {}, hide = {} }: CatalogBrowserProps) {
               void results.refetch();
             }}
             skeletonCount={8}
-            emptyText={
-              activeCount > 0
-                ? 'لا توجد كتب تطابق هذه الفلاتر. جرّب إزالة بعضها.'
-                : 'لم نجد كتباً هنا. جرّب كلمات أخرى أو تصفّح الأقسام.'
-            }
+            emptyText={activeCount > 0 ? t('browser.noMatch') : t('browser.noResults')}
           />
         </div>
 
@@ -253,11 +257,11 @@ export function CatalogBrowser({ fixed = {}, hide = {} }: CatalogBrowserProps) {
 
       <dialog ref={sheetRef} className={styles.sheet} aria-labelledby="filters-sheet-title">
         <div className={styles.sheetHead}>
-          <h2 id="filters-sheet-title">الفلاتر</h2>
+          <h2 id="filters-sheet-title">{t('browser.filters')}</h2>
           <button
             type="button"
             className={styles.sheetClose}
-            aria-label="إغلاق الفلاتر"
+            aria-label={t('browser.closeFilters')}
             onClick={() => {
               sheetRef.current?.close();
             }}
@@ -274,7 +278,7 @@ export function CatalogBrowser({ fixed = {}, hide = {} }: CatalogBrowserProps) {
               sheetRef.current?.close();
             }}
           >
-            عرض {data ? resultsPhrase(total) : 'النتائج'}
+            {data ? t('browser.show', { results: resultsPhrase(total) }) : t('browser.showResults')}
           </Button>
         </div>
       </dialog>

@@ -141,5 +141,42 @@
     "books_other": "{{n}} books",
     "copies_one": "1 copy",
     "copies_other": "{{n}} copies"
+  } ,
+    "enums": {
+    "orderStatus": { "PendingPayment": "Awaiting payment", "Paid": "Being prepared", "Shipped": "Shipped", "Delivered": "Delivered", "Cancelled": "Cancelled", "Expired": "Payment time expired", "Refunded": "Refunded" },
+    "returnStatus": { "Requested": "Awaiting approval", "Approved": "Approved", "Completed": "Refunded", "Rejected": "Rejected", "CancelledByCustomer": "Cancelled" },
+    "format": { "Paperback": "Paperback", "Hardcover": "Hardcover", "BoxSet": "Boxed set" },
+    "level": { "Beginner": "Beginner", "Intermediate": "Intermediate", "Specialist": "Specialist" },
+    "badge": { "New": "New", "Deluxe": "Deluxe edition", "Bestseller": "Bestseller" },
+    "returnReason": { "ChangedMind": "I changed my mind", "ArrivedDamaged": "The book arrived damaged", "WrongItem": "I received a different book", "Other": "Another reason" },
+    "cancelReason": { "ChangedMind": "I changed my mind", "OrderedByMistake": "I ordered by mistake", "FoundBetterPrice": "I found a better price", "DeliveryTooSlow": "Delivery is too slow", "Other": "Another reason" }
+  },
+  "ui": {
+    "home": "Home",
+    "library": "Library",
+    "breadcrumbs": "Breadcrumb",
+    "pages": "Pages",
+    "previousPage": "Previous page",
+    "nextPage": "Next page",
+    "page": "Page {{n}}",
+    "stars": "{{value}} out of 5",
+    "seeAll": "See all",
+    "retry": "Try again"
+  },
+  "addToCart": {
+    "atMax": "You've reached the limit ({{n}} copies) for this book.",
+    "cappedAt": "Your cart now has {{n}} copies, the most allowed.",
+    "added": "\"{{title}}\" was added to your cart",
+    "viewCart": "View cart"
+  },
+  "wishlist": {
+    "add": "Add \"{{title}}\" to your wishlist",
+    "remove": "Remove \"{{title}}\" from your wishlist"
+  },
+  "follow": {
+    "follow": "Follow this editor",
+    "following": "Following",
+    "followed": "You now follow this editor. We'll tell you about every new edition.",
+    "unfollowed": "You no longer follow this editor."
   }
 }

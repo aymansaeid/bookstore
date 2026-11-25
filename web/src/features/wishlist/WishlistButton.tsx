@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router';
 
 import { paths } from '@/app/paths';
@@ -11,6 +12,7 @@ import styles from './WishlistButton.module.css';
 
 /** Heart toggle (API §8). Guests are sent to login and come back to this page. */
 export function WishlistButton({ book, className }: { book: BookCardData; className?: string }) {
+  const { t } = useTranslation();
   const { status } = useSession();
   const navigate = useNavigate();
   const location = useLocation();
@@ -23,7 +25,7 @@ export function WishlistButton({ book, className }: { book: BookCardData; classN
       type="button"
       className={cx(styles.button, saved && styles.saved, className)}
       aria-pressed={signedIn ? saved : undefined}
-      aria-label={saved ? `أزل «${book.title}» من المفضلة` : `أضف «${book.title}» إلى المفضلة`}
+      aria-label={t(saved ? 'wishlist.remove' : 'wishlist.add', { title: book.title })}
       disabled={toggle.isPending}
       onClick={() => {
         if (!signedIn) {

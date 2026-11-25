@@ -19,6 +19,7 @@ import {
 } from '@/shared/lib/format';
 import { useNow } from '@/shared/lib/useNow';
 import { ButtonLink } from '@/shared/ui/Button/Button';
+import { ForwardArrow } from '@/shared/ui/ForwardArrow/ForwardArrow';
 import { Icon } from '@/shared/ui/Icon/Icon';
 import type { IconName } from '@/shared/ui/Icon/icons';
 import { SectionHeader } from '@/shared/ui/SectionHeader/SectionHeader';
@@ -350,7 +351,7 @@ export function ReaderShelves() {
           variant="ghost"
           size="sm"
         >
-          {t('more')} <span aria-hidden="true">←</span>
+          {t('more')} <ForwardArrow />
         </ButtonLink>
       </div>
     </section>

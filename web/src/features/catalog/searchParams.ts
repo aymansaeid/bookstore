@@ -10,7 +10,8 @@ import type { CatalogSearchParams, CatalogSort } from './types';
 export const PAGE_SIZE = 24;
 
 const LEVELS: readonly ReaderLevel[] = ['Beginner', 'Intermediate', 'Specialist'];
-const SORTS: readonly CatalogSort[] = [
+/** In the order the sort menu lists them. Labels: catalog.json → sort. */
+export const SORTS: readonly CatalogSort[] = [
   'Relevance',
   'Bestselling',
   'Newest',
@@ -21,17 +22,18 @@ const SORTS: readonly CatalogSort[] = [
 const BADGES: readonly BookBadge[] = ['New', 'Deluxe', 'Bestseller'];
 
 export interface VolumeOption {
-  label: string;
+  /** catalog.json → volumes.<key> */
+  key: 'one' | 'few' | 'several' | 'many';
   min?: number;
   max?: number;
 }
 
 /** Guide §4d volume pills. "10+" matches the «الموسوعات» nav link (?minVolumes=10). */
 export const VOLUME_OPTIONS: readonly VolumeOption[] = [
-  { label: 'مجلد واحد', max: 1 },
-  { label: '٢–٥ مجلدات', min: 2, max: 5 },
-  { label: '٦–٩ مجلدات', min: 6, max: 9 },
-  { label: '١٠ مجلدات فأكثر', min: 10 },
+  { key: 'one', max: 1 },
+  { key: 'few', min: 2, max: 5 },
+  { key: 'several', min: 6, max: 9 },
+  { key: 'many', min: 10 },
 ];
 
 export const SORT_LABELS: Readonly<Record<CatalogSort, string>> = {

@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 
 import { useCustomerId } from '@/features/account/queries';
 import { customerRequest } from '@/features/auth/session';
+import { i18n } from '@/i18n';
 import type { PublicMuhaqqiq } from '@/features/catalog/types';
 import { errorMessage } from '@/shared/api/errorMessages';
 import { toast } from '@/shared/ui/toast/toastStore';
@@ -42,9 +43,7 @@ export function useToggleFollow() {
     mutationFn: ({ id, following }: { id: number; following: boolean }) =>
       following ? followsApi.unfollow(id) : followsApi.follow(id),
     onSuccess: (_data, { following }) => {
-      toast.success(
-        following ? 'ألغيت متابعة المحقّق.' : 'تتابع هذا المحقّق الآن. سننبّهك بكل إصدار جديد.',
-      );
+         toast.success(i18n.t(following ? 'follow.unfollowed' : 'follow.followed'));
     },
     onError: (error) => {
       toast.error(errorMessage(error));

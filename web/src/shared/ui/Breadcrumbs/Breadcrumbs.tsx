@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 
 import styles from './Breadcrumbs.module.css';
@@ -8,8 +9,9 @@ export interface Crumb {
 }
 
 export function Breadcrumbs({ items }: { items: Crumb[] }) {
+  const { t } = useTranslation();
   return (
-    <nav aria-label="مسار التصفّح" className={styles.nav}>
+    <nav aria-label={t('ui.breadcrumbs')} className={styles.nav}>
       <ol className={styles.list}>
         {items.map((item, index) => (
           <li key={`${item.label}-${index}`}>

@@ -6,3 +6,8 @@
   font-weight: 400;
   line-height: 1.6;
 }
+
+/* The Arabic line reads right to left but sits at the start of an English or Turkish block. */
+:global(html[dir='ltr']) .original {
+  text-align: left;
+}

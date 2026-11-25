@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router';
 
 import { paths } from '@/app/paths';
@@ -12,6 +13,8 @@ import { Breadcrumbs, type Crumb } from '@/shared/ui/Breadcrumbs/Breadcrumbs';
 import { DocumentTitle } from '@/shared/ui/DocumentTitle';
 
 export default function CategoryPage() {
+  const { t } = useTranslation('catalog', { keyPrefix: 'category' });
+  const { t: tc } = useTranslation();
   const { slug = '' } = useParams();
   const query = useCategory(slug);
 
@@ -26,8 +29,8 @@ export default function CategoryPage() {
 
   const category = query.data;
   const crumbs: Crumb[] = [
-    { label: 'الرئيسية', to: paths.home },
-    { label: 'المكتبة', to: paths.search },
+    { label: tc('ui.home'), to: paths.home },
+    { label: tc('ui.library'), to: paths.search },
   ];
   if (category?.parent) {
     crumbs.push({ label: category.parent.name, to: paths.category(category.parent.slug) });
@@ -36,7 +39,7 @@ export default function CategoryPage() {
 
   return (
     <div className="wrap">
-      <DocumentTitle title={category?.name ?? 'القسم'} />
+      <DocumentTitle title={category?.name ?? t('title')} />
       <Breadcrumbs items={crumbs} />
 
       <header className={styles.header}>
@@ -45,12 +48,12 @@ export default function CategoryPage() {
             {category.letter}
           </span>
         )}
-        <p className={styles.kicker}>تصفّح بحسب العلم</p>
-        <h1 className={styles.title}>{category?.name ?? 'جارٍ التحميل…'}</h1>
+        <p className={styles.kicker}>{t('kicker')}</p>
+        <h1 className={styles.title}>{category?.name ?? tc('loading')}</h1>
         {category?.description && <p className={styles.lead}>{category.description}</p>}
         {category && <p className={styles.meta}>{editionsPhrase(category.bookCount)}</p>}
         {category && category.children.length > 0 && (
-          <ul className={styles.chips} aria-label="الأقسام الفرعية">
+          <ul className={styles.chips} aria-label={t('subcategories')}>
             {category.children.map((child) => (
               <li key={child.id}>
                 <Link to={paths.category(child.slug)} className={styles.chip}>

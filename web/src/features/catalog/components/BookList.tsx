@@ -1,7 +1,7 @@
 import type { BookCardData } from '@/features/catalog/types';
 import { cx } from '@/shared/lib/cx';
 import { Button } from '@/shared/ui/Button/Button';
-
+import { useTranslation } from 'react-i18next';
 import styles from './BookList.module.css';
 import { ProductCard } from './ProductCard';
 
@@ -11,8 +11,8 @@ interface BookListProps {
   isError: boolean;
   onRetry: () => void;
   /**
-   * row: swipes sideways on mobile, 3 / 4 / 6 columns from 768 / 1024 / 1280.
-   * grid: 2 / 3 / 4 columns (listing pages).
+   * - row: swipes sideways on mobile, 3 / 4 / 6 columns from 768 / 1024 / 1280.
+   * - grid: 2 / 3 / 4 columns (listing pages).
    */
   layout?: 'row' | 'grid' | 'gridNarrow';
   skeletonCount?: number;
@@ -29,15 +29,18 @@ export function BookList({
   onRetry,
   layout = 'row',
   skeletonCount = 6,
-  emptyText = 'لا توجد كتب هنا بعد.',
+  emptyText,
   matches,
 }: BookListProps) {
+  const { t } = useTranslation('catalog', { keyPrefix: 'list' });
+  const { t: tc } = useTranslation();
+
   if (isError && !books) {
     return (
       <div className={styles.message} role="alert">
-        <p>تعذّر تحميل الكتب.</p>
+        <p>{t('error')}</p>
         <Button variant="ghost" size="sm" onClick={onRetry}>
-          أعد المحاولة
+          {tc('ui.retry')}
         </Button>
       </div>
     );
@@ -45,7 +48,7 @@ export function BookList({
 
   if (isLoading || !books) {
     return (
-      <ul className={cx(styles.list, styles[layout])} aria-busy="true" aria-label="جارٍ التحميل">
+      <ul className={cx(styles.list, styles[layout])} aria-busy="true" aria-label={tc('loading')}>
         {Array.from({ length: skeletonCount }, (_, index) => (
           <li key={index} className={styles.item}>
             <div className={styles.skeleton} aria-hidden="true">
@@ -60,7 +63,7 @@ export function BookList({
   }
 
   if (books.length === 0) {
-    return <p className={styles.message}>{emptyText}</p>;
+    return <p className={styles.message}>{emptyText ?? t('empty')}</p>;
   }
 
   return (

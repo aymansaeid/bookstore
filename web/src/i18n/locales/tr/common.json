@@ -141,5 +141,42 @@
     "books_other": "{{n}} kitap",
     "copies_one": "1 nüsha",
     "copies_other": "{{n}} nüsha"
+  },
+    "enums": {
+    "orderStatus": { "PendingPayment": "Ödeme bekleniyor", "Paid": "Hazırlanıyor", "Shipped": "Kargoya verildi", "Delivered": "Teslim edildi", "Cancelled": "İptal edildi", "Expired": "Ödeme süresi doldu", "Refunded": "İade edildi" },
+    "returnStatus": { "Requested": "Onay bekleniyor", "Approved": "Onaylandı", "Completed": "Ücret iade edildi", "Rejected": "Reddedildi", "CancelledByCustomer": "İptal edildi" },
+    "format": { "Paperback": "Karton kapak", "Hardcover": "Ciltli", "BoxSet": "Kutulu set" },
+    "level": { "Beginner": "Başlangıç", "Intermediate": "Orta", "Specialist": "İleri" },
+    "badge": { "New": "Yeni", "Deluxe": "Lüks baskı", "Bestseller": "Çok satan" },
+    "returnReason": { "ChangedMind": "Fikrimi değiştirdim", "ArrivedDamaged": "Kitap hasarlı geldi", "WrongItem": "Sipariş ettiğimden farklı bir kitap geldi", "Other": "Başka bir sebep" },
+    "cancelReason": { "ChangedMind": "Fikrimi değiştirdim", "OrderedByMistake": "Yanlışlıkla sipariş verdim", "FoundBetterPrice": "Daha uygun fiyat buldum", "DeliveryTooSlow": "Teslimat çok yavaş", "Other": "Başka bir sebep" }
+  },
+  "ui": {
+    "home": "Ana sayfa",
+    "library": "Kütüphane",
+    "breadcrumbs": "Sayfa yolu",
+    "pages": "Sayfalar",
+    "previousPage": "Önceki sayfa",
+    "nextPage": "Sonraki sayfa",
+    "page": "Sayfa {{n}}",
+    "stars": "5 üzerinden {{value}}",
+    "seeAll": "Tümünü gör",
+    "retry": "Tekrar deneyin"
+  },
+  "addToCart": {
+    "atMax": "Bu kitap için sınıra ulaştınız ({{n}} adet).",
+    "cappedAt": "Sepetinizde artık {{n}} adet var, izin verilen en fazla miktar.",
+    "added": "«{{title}}» sepetinize eklendi",
+    "viewCart": "Sepeti gör"
+  },
+  "wishlist": {
+    "add": "«{{title}}» kitabını favorilere ekle",
+    "remove": "«{{title}}» kitabını favorilerden çıkar"
+  },
+  "follow": {
+    "follow": "Muhakkiki takip et",
+    "following": "Takip ediliyor",
+    "followed": "Bu muhakkiki artık takip ediyorsunuz. Her yeni baskısını size bildireceğiz.",
+    "unfollowed": "Muhakkik takibi bırakıldı."
   }
 }

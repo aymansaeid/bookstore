@@ -1,0 +1,84 @@
+{
+  "card": {
+    "new": "Yeni",
+    "deluxe": "Lüks baskı",
+    "match": "{{percent}} uyum",
+    "rating": "Puan",
+    "insteadOf": "önceki fiyat ",
+    "soldOut": "Şu anda mevcut değil",
+    "add": "«{{title}}» kitabını sepete ekle",
+    "notify": "«{{title}}» mevcut değil: gelince haber ver"
+  },
+  "list": {
+    "empty": "Burada henüz kitap yok.",
+    "error": "Kitaplar yüklenemedi."
+  },
+  "browser": {
+    "filters": "Filtreler",
+    "filtersCount": "Filtreler ({{n}})",
+    "sortBy": "Sırala",
+    "applied": "Uygulanan filtreler",
+    "remove": "{{label}} filtresini kaldır",
+    "clearAll": "Tümünü temizle",
+    "noMatch": "Bu filtrelere uyan kitap yok. Bazılarını kaldırmayı deneyin.",
+    "noResults": "Burada kitap bulamadık. Başka kelimeler deneyin ya da bölümlere göz atın.",
+    "closeFilters": "Filtreleri kapat",
+    "show": "{{results}} göster",
+    "showResults": "Sonuçları göster",
+    "volumes": "Cilt sayısı",
+    "inStock": "Stokta var",
+    "installments": "Taksit imkânı"
+  },
+  "sort": {
+    "Relevance": "En uygun",
+    "Bestselling": "Çok satanlar",
+    "Newest": "En yeniler",
+    "PriceAsc": "Fiyat: düşükten yükseğe",
+    "PriceDesc": "Fiyat: yüksekten düşüğe",
+    "TopRated": "En yüksek puan"
+  },
+  "volumes": {
+    "one": "1 cilt",
+    "few": "2–5 cilt",
+    "several": "6–9 cilt",
+    "many": "10 cilt ve üzeri"
+  },
+  "panel": {
+    "clear": "Tüm filtreleri temizle",
+    "category": "İlim dalı",
+    "level": "Okur seviyesi",
+    "muhaqqiq": "Muhakkik",
+    "showLess": "Daha az göster",
+    "showAll": "Tümünü göster ({{n}})",
+    "price": "Fiyat",
+    "minPrice": "En düşük fiyat",
+    "maxPrice": "En yüksek fiyat",
+    "lira": "{{amount}} lira",
+    "volumes": "Cilt sayısı",
+    "availability": "Stok ve ödeme",
+    "inStock": "Stokta var",
+    "installments": "Taksit imkânı",
+    "deluxe": "Lüks baskılar"
+  },
+  "search": {
+    "resultsFor": "«{{q}}» için sonuçlar",
+    "encyclopedias": "Ansiklopediler ve tam setler",
+    "library": "Kütüphane",
+    "searchLead": "Başlıklarda, yazarlarda, muhakkiklerde ve bölümlerde, Arap ya da Latin harfleriyle arıyoruz.",
+    "encyclopediasLead": "Temel eserler tam ciltleriyle, güvenilir tahkiklerle.",
+    "libraryLead": "Risâle Yayınları'nın baskılarına ve tahkikli temel eserlere göz atın.",
+    "tabTitle": "Arama: {{q}}",
+    "kickerSearch": "Arama",
+    "kicker": "Kitap Efendi"
+  },
+  "category": {
+    "title": "Bölüm",
+    "kicker": "İlim dalına göre göz atın",
+    "subcategories": "Alt bölümler"
+  },
+  "muhaqqiq": {
+    "title": "Muhakkik",
+    "kicker": "Önde gelen muhakkikler",
+    "specialties": "Uzmanlık alanları"
+  }
+}

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router';
 
 import { paths } from '@/app/paths';
@@ -13,6 +14,8 @@ import { Breadcrumbs } from '@/shared/ui/Breadcrumbs/Breadcrumbs';
 import { DocumentTitle } from '@/shared/ui/DocumentTitle';
 
 export default function MuhaqqiqPage() {
+  const { t } = useTranslation('catalog', { keyPrefix: 'muhaqqiq' });
+  const { t: tc } = useTranslation();
   const { slug = '' } = useParams();
   const query = useMuhaqqiq(slug);
 
@@ -30,11 +33,11 @@ export default function MuhaqqiqPage() {
 
   return (
     <div className="wrap">
-      <DocumentTitle title={muhaqqiq?.name ?? 'المحقّق'} />
+      <DocumentTitle title={muhaqqiq?.name ?? t('title')} />
       <Breadcrumbs
         items={[
-          { label: 'الرئيسية', to: paths.home },
-          { label: 'المكتبة', to: paths.search },
+          { label: tc('ui.home'), to: paths.home },
+          { label: tc('ui.library'), to: paths.search },
           { label: muhaqqiq?.name ?? '…' },
         ]}
       />
@@ -45,8 +48,8 @@ export default function MuhaqqiqPage() {
             {initial}
           </span>
           <div>
-            <p className={styles.kicker}>أعلام المحققين</p>
-            <h1 className={styles.title}>{muhaqqiq?.name ?? 'جارٍ التحميل…'}</h1>
+            <p className={styles.kicker}>{t('kicker')}</p>
+            <h1 className={styles.title}>{muhaqqiq?.name ?? tc('loading')}</h1>
           </div>
         </div>
         {muhaqqiq?.bio && <p className={styles.lead}>{muhaqqiq.bio}</p>}
@@ -57,7 +60,7 @@ export default function MuhaqqiqPage() {
           </div>
         )}
         {muhaqqiq && muhaqqiq.specialties.length > 0 && (
-          <ul className={styles.chips} aria-label="التخصصات">
+          <ul className={styles.chips} aria-label={t('specialties')}>
             {muhaqqiq.specialties.map((item) => (
               <li key={item} className={styles.chip}>
                 {item}
