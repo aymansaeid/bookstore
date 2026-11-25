@@ -4,6 +4,9 @@ import { MuhaqqiqForm } from '@/features/admin/catalog/components/MuhaqqiqForm';
 import { useAdminMuhaqqiqs } from '@/features/admin/catalog/queries';
 import styles from '@/features/admin/components/admin.module.css';
 import { AdminPageHeader } from '@/features/admin/components/AdminPageHeader';
+import { useUnsavedChanges } from '@/features/admin/lib/useUnsavedChanges';
+import { MuhaqqiqTranslations } from '@/features/admin/translations/panels';
+import { TranslationFlags } from '@/features/admin/translations/TranslationFlags';
 import { useEditParam } from '@/features/admin/useEditParam';
 import { errorMessage } from '@/shared/api/errorMessages';
 import { arabicFold } from '@/shared/lib/arabicFold';
@@ -21,6 +24,9 @@ const peoplePhrase = (count: number) =>
 export default function AdminMuhaqqiqsPage() {
   const muhaqqiqs = useAdminMuhaqqiqs();
   const { edit, open, replace, close } = useEditParam();
+    const [translationDirty, setTranslationDirty] = useState(false);
+  // Picking another muhaqqiq (?edit=) with an unsaved translation asks first.
+  useUnsavedChanges(translationDirty, true);
   const [query, setQuery] = useState('');
   const editorRef = useRef<HTMLElement>(null);
   const all = muhaqqiqs.data ?? [];
@@ -80,6 +86,16 @@ export default function AdminMuhaqqiqsPage() {
               onSaved={replace}
               onDeleted={close}
             />
+             {selected && (
+              <>
+                <h3 className={styles.cardTitle}>الترجمات</h3>
+                <MuhaqqiqTranslations
+                  key={selected.id}
+                  muhaqqiq={selected}
+                  onDirtyChange={setTranslationDirty}
+                />
+              </>
+            )}
           </section>
         ) : (
           <aside className={cx(styles.card, local.hint)}>
@@ -134,6 +150,7 @@ export default function AdminMuhaqqiqsPage() {
                     <th scope="col">المحقق</th>
                     <th scope="col">الأعمال</th>
                     <th scope="col">الترتيب</th>
+                    <th scope="col">الترجمة</th>
                     <th scope="col">الحالة</th>
                   </tr>
                 </thead>
@@ -162,6 +179,9 @@ export default function AdminMuhaqqiqsPage() {
                       </td>
                       <td data-label="الترتيب" className={styles.num}>
                         {formatCount(m.displayOrder)}
+                      </td>
+                          <td data-label="الترجمة">
+                        <TranslationFlags translations={m.translations} />
                       </td>
                       <td data-label="الحالة">
                         <span className={local.badges}>

@@ -4,6 +4,7 @@ import { paths } from '@/app/paths';
 import styles from '@/features/admin/components/admin.module.css';
 import { AdminPageHeader } from '@/features/admin/components/AdminPageHeader';
 import { useAdminPaths } from '@/features/admin/paths/queries';
+import { TranslationFlags } from '@/features/admin/translations/TranslationFlags';
 import { durationPhrase } from '@/features/paths/format';
 import { levelLabel } from '@/shared/api/enums';
 import { errorMessage } from '@/shared/api/errorMessages';
@@ -63,6 +64,7 @@ export default function AdminReadingPathsPage() {
                 <th scope="col">الكتب</th>
                 <th scope="col">الخصم</th>
                 <th scope="col">القرّاء</th>
+                <th scope="col">الترجمة</th>
                 <th scope="col">الحالة</th>
               </tr>
             </thead>
@@ -87,6 +89,9 @@ export default function AdminReadingPathsPage() {
                   </td>
                   <td data-label="القرّاء" className={styles.num}>
                     {formatCount(path.enrollmentCount)}
+                  </td>
+                  <td data-label="الترجمة">
+                    <TranslationFlags translations={path.translations} />
                   </td>
                   <td data-label="الحالة">
                     <span className={local.badges}>

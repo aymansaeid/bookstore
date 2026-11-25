@@ -1,10 +1,11 @@
 import { STORE_TIME_ZONE, UI_LANGUAGE, UI_LOCALE } from '@/app/locale';
+import { i18n } from '@/i18n';
 
 /**
- * Spec §8.5 and API guide §2: numbers and dates in the page's language
- * (Eastern Arabic digits in Arabic, Latin digits in English and Turkish), ₺,
- * Istanbul time. The language is fixed per page load, so formatters are
- * created once; Intl constructors are expensive.
+- Spec §8.5 and API guide §2: numbers and dates in the page's language
+- (Eastern Arabic digits in Arabic, Latin digits in English and Turkish), ₺,
+- Istanbul time. The language is fixed per page load, so formatters are
+- created once; Intl constructors are expensive.
  */
 const arabic = new Intl.NumberFormat(UI_LOCALE);
 const arabicPlain = new Intl.NumberFormat(UI_LOCALE, { useGrouping: false });
@@ -39,8 +40,8 @@ export const formatYear = (year: number): string => arabicPlain.format(year);
 export const formatAmount = (amount: number): string => arabicAmount.format(amount);
 
 /**
- * "٢٬٤٠٠ ₺". The store currency is TRY; anything else falls back to Intl's
- * own currency display so a wrong symbol is never shown.
+- "٢٬٤٠٠ ₺". The store currency is TRY; anything else falls back to Intl's
+- own currency display so a wrong symbol is never shown.
  */
 export function formatMoney(amount: number, currency = 'TRY'): string {
   if (currency === 'TRY') {
@@ -70,21 +71,22 @@ export function countryName(code: string): string {
   }
 }
 
-/** Arabic number agreement for countries: دولة واحدة، دولتان، ٥ دول، ٦٢ دولة. */
-export function countriesPhrase(count: number): string {
-  if (count === 1) return 'دولة واحدة';
-  if (count === 2) return 'دولتين';
-  if (count >= 3 && count <= 10) return `${formatCount(count)} دول`;
-  return `${formatCount(count)} دولة`;
-}
+/** Nouns counted in the page's language (common.json → count). */
+type Counted = 'countries' | 'volumes' | 'results' | 'editions' | 'works' | 'books' | 'copies';
 
-/** Arabic number agreement: مجلد واحد، مجلدان، ٦ مجلدات، ٥٠ مجلداً. */
-export function volumesLabel(count: number): string {
-  if (count <= 1) return 'مجلد واحد';
-  if (count === 2) return 'مجلدان';
-  if (count <= 10) return `${formatCount(count)} مجلدات`;
-  return `${formatCount(count)} مجلداً`;
-}
+/**
+- "٥ دول" / "5 countries" / "5 ülke". Arabic has six plural forms (zero,
+- one, two, few 3–10, many 11–99, other), English and Turkish two; i18next
+- picks the form from `count`, and `n` is the number in the page's digits.
+ */
+const counted = (noun: Counted, count: number): string =>
+  i18n.t(`count.${noun}`, { count, n: formatCount(count) });
+
+/** دولة واحدة، دولتين، ٥ دول، ٦٢ دولة. */
+export const countriesPhrase = (count: number): string => counted('countries', count);
+
+/** مجلد واحد، مجلدان، ٦ مجلدات، ٥٠ مجلداً. */
+export const volumesLabel = (count: number): string => counted('volumes', Math.max(count, 1));
 
 interface PluralForms {
   one: string;
@@ -103,24 +105,12 @@ export function arabicPlural(count: number, forms: PluralForms): string {
   return `${formatCount(count)} ${forms.many}`;
 }
 
-export const resultsPhrase = (count: number): string =>
-  count === 0
-    ? 'لا توجد نتائج'
-    : arabicPlural(count, { one: 'نتيجة واحدة', two: 'نتيجتان', few: 'نتائج', many: 'نتيجة' });
+export const resultsPhrase = (count: number): string => counted('results', count);
 
-export const editionsPhrase = (count: number): string =>
-  arabicPlural(count, { one: 'إصدار واحد', two: 'إصداران', few: 'إصدارات', many: 'إصداراً' });
+export const editionsPhrase = (count: number): string => counted('editions', count);
 
-export const worksPhrase = (count: number): string =>
-  arabicPlural(count, {
-    one: 'عمل محقّق',
-    two: 'عملان محقّقان',
-    few: 'أعمال محقّقة',
-    many: 'عملاً محقّقاً',
-  });
+export const worksPhrase = (count: number): string => counted('works', count);
 
-export const booksPhrase = (count: number): string =>
-  arabicPlural(count, { one: 'كتاب واحد', two: 'كتابان', few: 'كتب', many: 'كتاباً' });
+export const booksPhrase = (count: number): string => counted('books', count);
 
-export const copiesPhrase = (count: number): string =>
-  arabicPlural(count, { one: 'نسخة واحدة', two: 'نسختان', few: 'نسخ', many: 'نسخة' });
+export const copiesPhrase = (count: number): string => counted('copies', count);

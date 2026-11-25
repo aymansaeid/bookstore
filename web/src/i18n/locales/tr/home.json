@@ -1,0 +1,100 @@
+{
+  "hero": {
+    "badge": "Risâle Yayınları'ndan tahkikli klasik eserler",
+    "title": "Tahkikli klasik eserlerin hazineleri, <em>Efendi sizin için seçiyor</em>",
+    "lead": "Müessesetü'r-Risâle Nâşirûn'un baskıları ve temel eserler, güvenilir tahkiklerle. Aradığınızı kendi cümlelerinizle anlatın, Efendi seviyenize en uygun baskıyı göstersin.",
+    "ask": "Efendi'ye sorun",
+    "placeholder": "Yeni başlayan bir öğrenciyim, güvenilir tahkikli bir siyer kitabı arıyorum",
+    "photo": "Kapak fotoğrafıyla arayın",
+    "voice": "Sesinizle sorun",
+    "suggestionsLabel": "Önerilen sorular",
+    "suggestion1": "Müsned'in baskıları arasındaki fark nedir?",
+    "suggestion2": "500 ₺ bütçeyle ilim talebesine hediye",
+    "suggestion3": "Arnaût'un hadis tahkikleri",
+    "bestThisMonth": "Bu ayın en çok sipariş edileni"
+  },
+  "figures": {
+    "books": "tahkikli eser",
+    "muhaqqiqs": "muhakkik ve âlim",
+    "reviews": "{{n}} değerlendirmeden",
+    "countries": "ülkeye gönderim"
+  },
+  "strip": {
+    "label": "Mağaza hakkında",
+    "publisherTitle": "Müessesetü'r-Risâle Nâşirûn'un yetkili distribütörü",
+    "publisherSub": "Doğrudan yayınevinden orijinal baskılar, güvenilir tahkiklerle",
+    "freeShippingTitle": "Türkiye içi ücretsiz kargo",
+    "freeShippingSub": "{{amount}} üzeri siparişlerde",
+    "shippingTitle": "Türkiye içi ve yurt dışı kargo",
+    "shippingSub": "Ücret sepette hesaplanır",
+    "originalTitle": "%100 orijinal baskılar",
+    "originalSub": "Doğrudan yayınevinden",
+    "shipTo": "{{n}} ülkeye gönderim yapıyoruz",
+    "packingTitle": "Kitapları koruyan ambalaj",
+    "packingSub": "Ciltleri koruyan sağlam ambalaj"
+  },
+  "picks": {
+    "kicker": "Sizin için seçildi",
+    "morning": "Günaydın",
+    "evening": "İyi akşamlar",
+    "hello": "Hoş geldiniz",
+    "title": "{{greeting}} {{name}}, işte bugünün önerileri",
+    "description": "Kitaplığınıza, takip ettiğiniz muhakkiklere ve ilgi alanlarınıza göre.",
+    "reasonsLabel": "Neden bu öneriler",
+    "bought": "{{label}} aldığınız için",
+    "boughtFallback": "benzer bir kitap",
+    "follows": "{{label}} takip ettiğiniz için",
+    "followsFallback": "bir muhakkiki",
+    "interest": "İlgi alanlarınızdan: {{label}}",
+    "popular": "En çok sipariş edilen"
+  },
+  "paths": {
+    "kicker": "Okuma yolları",
+    "title": "Nereden başlayacağınızı bilmiyor musunuz? Çizilmiş bir yolu izleyin",
+    "description": "Uzman ilim talebelerinin hazırladığı kademeli yollar; yolun tamamını alınca indirimli.",
+    "more": "Tüm yollar"
+  },
+  "categories": {
+    "kicker": "Kütüphane bölümleri",
+    "title": "İlim dalına göre göz atın",
+    "more": "Tüm bölümler"
+  },
+  "efendi": {
+    "kicker": "Efendi · Claude ile çalışır · Yakında",
+    "title": "Âlim bir kitapçı, 24 saat hizmetinizde",
+    "text": "Ona, uzman bir sahafa sorar gibi baskıları, muhakkikleri ve kitabın seviyesini sorun; size önersin, karşılaştırsın ve sepetinize eklesin. Onu özenle hazırlıyoruz ve yalnızca kütüphanemizde gerçekten bulunanları önerecek.",
+    "cta": "Efendi'yi tanıyın",
+    "soon": "Yakında",
+    "searchTitle": "Anlama göre arama",
+    "searchText": "Başlığı birebir yazmak yerine «ilim talebesinin âdâbı üzerine bir kitap»",
+    "compareTitle": "Baskıları karşılaştırma",
+    "compareText": "Tahkik, cilt ve fiyat farkları tek tabloda",
+    "photoTitle": "Fotoğrafla arama",
+    "photoText": "Bir kapağın ya da sayfanın fotoğrafını çekin, kitabı bulalım",
+    "summaryTitle": "Akıllı özet",
+    "summaryText": "Satın almadan önce her kitabın tanıtımı, içindekileri ve seviyesi"
+  },
+  "shelves": {
+    "kicker": "En çok sipariş edilenler",
+    "title": "Bu ay okurların rafları",
+    "tabsLabel": "Bölüm",
+    "all": "Tümü",
+    "empty": "Bu bölümde henüz kitap yok.",
+    "more": "Daha fazla göster"
+  },
+  "muhaqqiqs": {
+    "kicker": "Güvenebileceğiniz tahkikler",
+    "title": "Önde gelen muhakkikler",
+    "description": "Sevdiğiniz muhakkiki takip edin, her yeni tahkikinden haberdar olun."
+  },
+  "encyclopedia": {
+    "kicker": "Tam ansiklopediler",
+    "fullEdition": "Tam baskı, {{volumes}}",
+    "volumes": "cilt",
+    "edition": "Tahkik",
+    "pages": "sayfa",
+    "order": "Seti sipariş edin",
+    "out": "Şu anda mevcut değil",
+    "details": "Set ayrıntıları"
+  }
+}

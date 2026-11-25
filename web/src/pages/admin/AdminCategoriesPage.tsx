@@ -1,10 +1,13 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react'; 677
 
 import type { AdminCategory } from '@/features/admin/catalog/api';
 import { CategoryForm } from '@/features/admin/catalog/components/CategoryForm';
 import { useAdminCategories } from '@/features/admin/catalog/queries';
 import styles from '@/features/admin/components/admin.module.css';
 import { AdminPageHeader } from '@/features/admin/components/AdminPageHeader';
+import { useUnsavedChanges } from '@/features/admin/lib/useUnsavedChanges';
+import { CategoryTranslations } from '@/features/admin/translations/panels';
+import { TranslationFlags } from '@/features/admin/translations/TranslationFlags';
 import { useEditParam } from '@/features/admin/useEditParam';
 import { errorMessage } from '@/shared/api/errorMessages';
 import { cx } from '@/shared/lib/cx';
@@ -37,6 +40,9 @@ function asTree(all: AdminCategory[]): { category: AdminCategory; child: boolean
 export default function AdminCategoriesPage() {
   const categories = useAdminCategories();
   const { edit, open, replace, close } = useEditParam();
+  const [translationDirty, setTranslationDirty] = useState(false);
+  // Picking another category (?edit=) with an unsaved translation asks first.
+  useUnsavedChanges(translationDirty, true);
   const editorRef = useRef<HTMLElement>(null);
   const all = categories.data ?? [];
   const selected = typeof edit === 'number' ? all.find((c) => c.id === edit) : undefined;
@@ -90,6 +96,16 @@ export default function AdminCategoriesPage() {
               onSaved={replace}
               onDeleted={close}
             />
+            {selected && (
+              <>
+                <h3 className={styles.cardTitle}>الترجمات</h3>
+                <CategoryTranslations
+                  key={selected.id}
+                  category={selected}
+                  onDirtyChange={setTranslationDirty}
+                />
+              </>
+            )}
           </section>
         ) : (
           <aside className={cx(styles.card, local.hint)}>
@@ -126,6 +142,7 @@ export default function AdminCategoriesPage() {
                   <th scope="col">القسم</th>
                   <th scope="col">الترتيب</th>
                   <th scope="col">الكتب</th>
+                  <th scope="col">الترجمة</th>
                   <th scope="col">الحالة</th>
                 </tr>
               </thead>
@@ -163,6 +180,9 @@ export default function AdminCategoriesPage() {
                     </td>
                     <td data-label="الكتب" className={styles.num}>
                       {formatCount(category.bookCount)}
+                    </td>
+                    <td data-label="الترجمة">
+                      <TranslationFlags translations={category.translations} />
                     </td>
                     <td data-label="الحالة">
                       <StatusBadge

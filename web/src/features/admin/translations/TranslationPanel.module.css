@@ -1,0 +1,205 @@
+/* Translations card: Arabic beside each field from 900px, above it on phones. */
+.root {
+  display: grid;
+  gap: 16px;
+}
+
+.translit {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 10px;
+  padding-block-end: 12px;
+  border-block-end: 1px solid var(--line);
+}
+
+.translit > button {
+  margin-block-start: 28px;
+}
+
+.tabs {
+  display: flex;
+  gap: 8px;
+}
+
+.tab {
+  display: inline-flex;
+  flex: 1 1 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-block-size: 48px;
+  padding-inline: 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fff;
+  font-weight: 700;
+}
+
+.tabOn {
+  border-color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--ink);
+}
+
+.status {
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.done {
+  background: #e4f2e7;
+  color: #1f6b35;
+}
+
+.todo {
+  background: var(--goldl);
+  color: #8a6418;
+}
+
+.form {
+  display: grid;
+  gap: 14px;
+}
+
+.form[hidden] {
+  display: none;
+}
+
+.row {
+  display: grid;
+  gap: 6px;
+  padding-block-end: 14px;
+  border-block-end: 1px dashed var(--line);
+}
+
+.source {
+  display: grid;
+  gap: 4px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--paper);
+}
+
+.sourceLabel {
+  color: var(--gray);
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+.sourceText {
+  max-block-size: 220px;
+  overflow-y: auto;
+  font-family: var(--font-serif);
+  font-size: 15px;
+  line-height: 1.9;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.sourceList {
+  padding-inline-start: 18px;
+  list-style: decimal;
+}
+
+.none {
+  color: var(--gray);
+  font-size: 13px;
+}
+
+.target {
+  min-inline-size: 0;
+}
+
+@media (min-width: 900px) {
+  .row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+    gap: 16px;
+  }
+
+  /* Line the Arabic up with the input, below the field's label. */
+  .source {
+    margin-block-start: 26px;
+  }
+}
+
+.bar {
+  position: sticky;
+  inset-block-end: 0;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-inline: -4px;
+  padding: 12px 4px calc(12px + env(safe-area-inset-bottom));
+  border-block-start: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(8px);
+}
+
+.state {
+  color: var(--gray);
+  font-size: 13px;
+}
+
+.dirty {
+  color: #a5541b;
+}
+
+.barButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.confirm {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+.kbd {
+  margin-inline-start: 8px;
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.16);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 400;
+}
+
+@media (max-width: 767px) {
+  .kbd {
+    display: none;
+  }
+}
+
+.next a {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 44px;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.loading {
+  block-size: 260px;
+  border-radius: 14px;
+  background: var(--paper);
+}
+
+.problem {
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+}
+
+.empty {
+  color: var(--gray);
+  font-size: 13.5px;
+  line-height: 1.8;
+}

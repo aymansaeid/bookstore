@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 
 import { paths } from '@/app/paths';
@@ -6,6 +7,7 @@ import { BookCover } from '@/features/catalog/components/BookCover';
 import { useCatalogSearch } from '@/features/catalog/queries';
 import { formatCount, formatMoney, volumesLabel } from '@/shared/lib/format';
 import { Button, ButtonLink } from '@/shared/ui/Button/Button';
+import { OriginalTitle } from '@/shared/ui/OriginalTitle/OriginalTitle';
 
 import styles from './EncyclopediaBanner.module.css';
 
@@ -16,6 +18,7 @@ const MAX_SPINES = 18;
  * set (10+ volumes) from the catalog; hidden when there is none.
  */
 export function EncyclopediaBanner() {
+  const { t } = useTranslation('home', { keyPrefix: 'encyclopedia' });
   const query = useCatalogSearch({ sort: 'Bestselling', minVolumes: 10, pageSize: 1 });
   const book = query.data?.results.items[0];
   if (!book) return null;
@@ -23,20 +26,22 @@ export function EncyclopediaBanner() {
   const volumes = book.volumes ?? 0;
   const muhaqqiq = book.muhaqqiqs[0]?.name ?? null;
   const facts: { value: string; label: string }[] = [];
-  if (volumes > 0) facts.push({ value: formatCount(volumes), label: 'مجلداً' });
-  if (muhaqqiq) facts.push({ value: muhaqqiq, label: 'التحقيق' });
-  if (book.pageCount > 0) facts.push({ value: formatCount(book.pageCount), label: 'صفحة' });
+  if (volumes > 0) facts.push({ value: formatCount(volumes), label: t('volumes') });
+  if (muhaqqiq) facts.push({ value: muhaqqiq, label: t('edition') });
+  if (book.pageCount > 0) facts.push({ value: formatCount(book.pageCount), label: t('pages') });
 
   return (
     <section className={`wrap ${styles.wrap}`} aria-labelledby="encyclopedia-title">
       <div className={styles.banner}>
         <div className={styles.copy}>
-          <p className={styles.kicker}>الموسوعات الكاملة</p>
+          <p className={styles.kicker}>{t('kicker')}</p>
           <h2 id="encyclopedia-title" className={styles.title}>
             <Link to={paths.book(book.slug)}>{book.title}</Link>
+            <OriginalTitle title={book.title} original={book.originalTitle} />
           </h2>
           <p className={styles.subtitle}>
-            {book.editionLabel ?? (volumes > 1 ? `الطبعة الكاملة، ${volumesLabel(volumes)}` : '')}
+            {book.editionLabel ??
+              (volumes > 1 ? t('fullEdition', { volumes: volumesLabel(volumes) }) : '')}
           </p>
           {book.description && <p className={styles.description}>{book.description}</p>}
           {facts.length > 0 && (
@@ -64,13 +69,13 @@ export function EncyclopediaBanner() {
                     addToCartWithFeedback(book);
                   }}
                 >
-                  اطلب المجموعة
+                  {t('order')}
                 </Button>
               ) : (
-                <span className={styles.out}>غير متوفرة حالياً</span>
+                <span className={styles.out}>{t('out')}</span>
               )}
               <ButtonLink to={paths.book(book.slug)} variant="glass">
-                تفاصيل المجموعة
+                {t('details')}
               </ButtonLink>
             </div>
           </div>

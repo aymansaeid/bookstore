@@ -1,0 +1,101 @@
+{
+  "hero": {
+    "badge": "Critical editions of the Islamic classics from Al-Risalah Publishers",
+    "title": "Treasures of the classical tradition, <em>chosen for you by Efendi</em>",
+    "lead": "Al-Risalah Publishers' editions of the great classics, edited by trusted scholars. Describe what you're looking for in your own words, and Efendi will point you to the edition that suits your level.",
+    "ask": "Ask Efendi",
+    "placeholder": "I'm a beginner and want a reliable edition of the Prophet's biography",
+    "photo": "Search with a photo of the cover",
+    "voice": "Ask with your voice",
+    "suggestionsLabel": "Suggested questions",
+    "suggestion1": "How do the editions of the Musnad differ?",
+    "suggestion2": "A gift for a student of knowledge, budget ₺500",
+    "suggestion3": "Al-Arna'ut's hadith editions",
+    "bestThisMonth": "Most ordered this month"
+  },
+  "figures": {
+    "books": "edited titles",
+    "muhaqqiqs": "editors and scholars",
+    "reviews_one": "from {{n}} review",
+    "reviews_other": "from {{n}} reviews",
+    "countries": "countries we ship to"
+  },
+  "strip": {
+    "label": "About the store",
+    "publisherTitle": "Authorised distributor of Al-Risalah Publishers",
+    "publisherSub": "Original editions straight from the publisher, with trusted scholarly editing",
+    "freeShippingTitle": "Free shipping within Turkey",
+    "freeShippingSub": "On orders over {{amount}}",
+    "shippingTitle": "Shipping in Turkey and abroad",
+    "shippingSub": "The cost is shown in your cart",
+    "originalTitle": "100% original editions",
+    "originalSub": "Directly from the publisher",
+    "shipTo": "We ship to {{countries}}",
+    "packingTitle": "Packed to protect your books",
+    "packingSub": "Rigid packaging that protects every volume"
+  },
+  "picks": {
+    "kicker": "Picked for you",
+    "morning": "Good morning",
+    "evening": "Good evening",
+    "hello": "Welcome",
+    "title": "{{greeting}}, {{name}}: today's picks for you",
+    "description": "Based on your library, the editors you follow and your interests.",
+    "reasonsLabel": "Why these picks",
+    "bought": "Because you bought {{label}}",
+    "boughtFallback": "a related book",
+    "follows": "Because you follow {{label}}",
+    "followsFallback": "an editor",
+    "interest": "From your interests: {{label}}",
+    "popular": "Most ordered"
+  },
+  "paths": {
+    "kicker": "Reading paths",
+    "title": "Not sure where to start? Follow a mapped-out path",
+    "description": "Step-by-step paths arranged by specialist students of knowledge, with a discount when you buy the whole path.",
+    "more": "All paths"
+  },
+  "categories": {
+    "kicker": "The library",
+    "title": "Browse by discipline",
+    "more": "All categories"
+  },
+  "efendi": {
+    "kicker": "Efendi · powered by Claude · coming soon",
+    "title": "A learned bookseller, there for you around the clock",
+    "text": "Ask him as you would ask an expert bookseller about editions, editors and a book's level, and he'll suggest, compare and add to your cart. We're preparing him carefully, and he will only ever suggest what's actually in our library.",
+    "cta": "Meet Efendi",
+    "soon": "Coming soon",
+    "searchTitle": "Search by meaning",
+    "searchText": "\"A book on the etiquette of the student of knowledge\" instead of the exact title",
+    "compareTitle": "Compare editions",
+    "compareText": "The differences in editing, binding and price in one table",
+    "photoTitle": "Search with a photo",
+    "photoText": "Photograph a cover or a page and we'll find the book",
+    "summaryTitle": "Smart summary",
+    "summaryText": "An overview, contents and level of every book before you buy it"
+  },
+  "shelves": {
+    "kicker": "Most ordered",
+    "title": "Readers' shelves this month",
+    "tabsLabel": "Category",
+    "all": "All",
+    "empty": "No books in this category yet.",
+    "more": "Show more"
+  },
+  "muhaqqiqs": {
+    "kicker": "Editions you can trust",
+    "title": "Leading editors",
+    "description": "Follow your favourite editor to hear about every new edition of theirs."
+  },
+  "encyclopedia": {
+    "kicker": "Complete encyclopedias",
+    "fullEdition": "The complete edition, {{volumes}}",
+    "volumes": "volumes",
+    "edition": "Edited by",
+    "pages": "pages",
+    "order": "Order the set",
+    "out": "Currently unavailable",
+    "details": "Set details"
+  }
+}

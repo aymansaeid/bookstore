@@ -1,5 +1,5 @@
 import { adminRequest } from '../session';
-
+import type { TranslationFlags } from '../translations/api';
 /** API §4b admin DTOs: flat lists, hidden entries included. */
 export interface AdminCategory {
   id: number;
@@ -12,6 +12,7 @@ export interface AdminCategory {
   isActive: boolean;
   /** Hidden books included. */
   bookCount: number;
+  translations: TranslationFlags;
 }
 
 export interface AdminMuhaqqiq {
@@ -24,6 +25,7 @@ export interface AdminMuhaqqiq {
   displayOrder: number;
   isActive: boolean;
   worksCount: number;
+    translations: TranslationFlags;
 }
 
 /** PUT /categories/{id}. The slug is fixed after creation. */

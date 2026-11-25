@@ -1,6 +1,7 @@
 import 'i18next';
 
 import type arCommon from './locales/ar/common.json';
+import type arHome from './locales/ar/home.json';
 
 /**
  * Arabic is the source of truth for keys: t('…') is type-checked against the
@@ -12,6 +13,7 @@ declare module 'i18next' {
     defaultNS: 'common';
     resources: {
       common: typeof arCommon;
+      home: typeof arHome;
     };
   }
 }

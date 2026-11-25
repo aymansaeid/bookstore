@@ -1,4 +1,5 @@
 import { adminRequest } from '../session';
+import type { TranslationFlags } from '../translations/api';
 
 /** A paid extra next to standard delivery, e.g. express. */
 export interface ShippingOption {
@@ -25,6 +26,8 @@ export interface AdminShippingZone {
   standardMaxDays: number | null;
   freeShippingThreshold: number | null;
   options: ShippingOption[];
+  /** API §2b: languages with a translation. */
+  translations: TranslationFlags;
 }
 
 /** POST and PUT /shipping-zones. */

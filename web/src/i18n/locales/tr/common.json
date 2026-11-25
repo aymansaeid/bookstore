@@ -124,5 +124,22 @@
     "title": "Türkçe ödeme henüz açılmadı",
     "text": "Bu dildeki yasal metinler henüz yayımlanmadı. Siparişinizi şimdi Arapça olarak tamamlayabilirsiniz.",
     "action": "Arapça devam et"
+  },
+    "count": {
+    "countries_one": "1 ülke",
+    "countries_other": "{{n}} ülke",
+    "volumes_one": "1 cilt",
+    "volumes_other": "{{n}} cilt",
+    "results_zero": "Sonuç yok",
+    "results_one": "1 sonuç",
+    "results_other": "{{n}} sonuç",
+    "editions_one": "1 baskı",
+    "editions_other": "{{n}} baskı",
+    "works_one": "1 tahkikli eser",
+    "works_other": "{{n}} tahkikli eser",
+    "books_one": "1 kitap",
+    "books_other": "{{n}} kitap",
+    "copies_one": "1 nüsha",
+    "copies_other": "{{n}} nüsha"
   }
 }

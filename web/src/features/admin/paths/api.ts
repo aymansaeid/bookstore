@@ -1,7 +1,7 @@
 import type { ReaderLevel } from '@/shared/api/enums';
 
 import { adminRequest } from '../session';
-
+import type { TranslationFlags } from '../translations/api';
 export interface AdminPathStage {
   stageNumber: number;
   bookId: number;
@@ -25,6 +25,7 @@ export interface AdminReadingPath {
   stages: AdminPathStage[];
   /** Readers following it; a path with any can't be deleted. */
   enrollmentCount: number;
+  translations: TranslationFlags;
 }
 
 /** POST and PUT share it: a full replacement, stages in order. PUT ignores the slug. */

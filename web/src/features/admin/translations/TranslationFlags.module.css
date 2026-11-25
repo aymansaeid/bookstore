@@ -1,0 +1,25 @@
+.flags {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.done,
+.todo {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.done {
+  color: #1f6b35;
+}
+
+.todo {
+  background: var(--goldl);
+  color: #8a6418;
+}

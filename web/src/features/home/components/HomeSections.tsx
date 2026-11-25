@@ -1,4 +1,6 @@
+import type { TFunction } from 'i18next';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 
 import { paths } from '@/app/paths';
@@ -8,7 +10,13 @@ import { useCatalogSearch, useCategories } from '@/features/catalog/queries';
 import { PathCard } from '@/features/paths/components/PathCard';
 import { useShippingSummary } from '@/features/store/queries';
 import { cx } from '@/shared/lib/cx';
-import { countriesPhrase, editionsPhrase, formatMoney, worksPhrase } from '@/shared/lib/format';
+import {
+  countriesPhrase,
+  editionsPhrase,
+  formatCount,
+  formatMoney,
+  worksPhrase,
+} from '@/shared/lib/format';
 import { useNow } from '@/shared/lib/useNow';
 import { ButtonLink } from '@/shared/ui/Button/Button';
 import { Icon } from '@/shared/ui/Icon/Icon';
@@ -23,34 +31,38 @@ import styles from './HomeSections.module.css';
 
 /** Spec 5.1 §2: the publisher seal and three promises (only true ones). */
 export function PublisherStrip() {
+  const { t } = useTranslation('home', { keyPrefix: 'strip' });
   const { freeShippingThreshold, countries } = useShippingSummary();
   const perks: { icon: IconName; title: string; sub: string }[] = [
     freeShippingThreshold !== undefined
       ? {
           icon: 'truck',
-          title: 'شحن مجاني داخل تركيا',
-          sub: `للطلبات فوق ${formatMoney(freeShippingThreshold)}`,
+          title: t('freeShippingTitle'),
+          sub: t('freeShippingSub', { amount: formatMoney(freeShippingThreshold) }),
         }
-      : { icon: 'truck', title: 'شحن داخل تركيا وخارجها', sub: 'تُحسب التكلفة في السلة' },
-    { icon: 'shield', title: 'طبعات أصلية ١٠٠٪', sub: 'من الناشر مباشرة' },
+      : { icon: 'truck', title: t('shippingTitle'), sub: t('shippingSub') },
+    { icon: 'shield', title: t('originalTitle'), sub: t('originalSub') },
     {
       icon: 'box',
-      title: countries ? `نشحن إلى ${countriesPhrase(countries)}` : 'تغليف يحمي الكتب',
-      sub: 'تغليف مقوّى يحمي المجلدات',
+      title: countries
+        ? t('shipTo', { countries: countriesPhrase(countries), n: formatCount(countries) })
+        : t('packingTitle'),
+      sub: t('packingSub'),
     },
   ];
 
   return (
-    <section className={styles.strip} aria-label="عن المتجر">
+    <section className={styles.strip} aria-label={t('label')}>
       <div className={cx('wrap', styles.stripInner)}>
         <div className={styles.publisher}>
+          {/* The publisher's seal stays Arabic in every language: it is their mark. */}
           <span className={styles.seal} aria-hidden="true">
             الرسالة
             <small>ناشرون</small>
           </span>
           <div>
-            <p className={styles.publisherTitle}>الموزّع المعتمد لمؤسسة الرسالة ناشرون</p>
-            <p className={styles.publisherSub}>إصدارات أصلية مباشرة من الناشر، بتحقيقات موثوقة</p>
+            <p className={styles.publisherTitle}>{t('publisherTitle')}</p>
+            <p className={styles.publisherSub}>{t('publisherSub')}</p>
           </div>
         </div>
         <ul className={styles.perks}>
@@ -71,16 +83,16 @@ export function PublisherStrip() {
   );
 }
 
-function reasonText(reason: PickReason): string {
+function reasonText(t: TFunction<'home', 'picks'>, reason: PickReason): string {
   switch (reason.type) {
     case 'BecauseYouBought':
-      return `لأنك اشتريت ${reason.label ?? 'كتاباً قريباً'}`;
+      return t('bought', { label: reason.label ?? t('boughtFallback') });
     case 'FollowsMuhaqqiq':
-      return `لأنك تتابع ${reason.label ?? 'محقّقاً'}`;
+      return t('follows', { label: reason.label ?? t('followsFallback') });
     case 'MatchesInterest':
-      return `من اهتماماتك: ${reason.label ?? ''}`;
+      return t('interest', { label: reason.label ?? '' });
     case 'Popular':
-      return 'الأكثر طلباً';
+      return t('popular');
   }
 }
 
@@ -91,10 +103,10 @@ function reasonLink(reason: PickReason): string | null {
   return null;
 }
 
-const greetingFor = (now: number | null) => {
-  if (now === null) return 'أهلاً';
+const greetingKey = (now: number | null) => {
+  if (now === null) return 'hello';
   const hour = new Date(now).getHours();
-  return hour >= 4 && hour < 12 ? 'صباح الخير' : 'مساء الخير';
+  return hour >= 4 && hour < 12 ? 'morning' : 'evening';
 };
 
 /**
@@ -102,6 +114,7 @@ const greetingFor = (now: number | null) => {
  * see the best-sellers in «رفوف القرّاء» instead, so nothing repeats.
  */
 export function PicksSection() {
+  const { t } = useTranslation('home', { keyPrefix: 'picks' });
   const { customer } = useSession();
   const picks = usePicks();
   const now = useNow(10 * 60_000);
@@ -115,15 +128,15 @@ export function PicksSection() {
     <section className={cx('wrap', styles.section)} aria-labelledby="picks-title">
       <SectionHeader
         id="picks-title"
-        kicker="مختارة لك"
-        title={`${greetingFor(now)} يا ${customer.firstName}، هذه اقتراحات اليوم`}
-        description="من مكتبتك والمحققين الذين تتابعهم واهتماماتك."
+        kicker={t('kicker')}
+        title={t('title', { greeting: t(greetingKey(now)), name: customer.firstName })}
+        description={t('description')}
       />
       {reasons.length > 0 && (
-        <ul className={styles.reasons} aria-label="لماذا هذه الاقتراحات">
+        <ul className={styles.reasons} aria-label={t('reasonsLabel')}>
           {reasons.map((reason) => {
             const to = reasonLink(reason);
-            const text = reasonText(reason);
+            const text = reasonText(t, reason);
             return (
               <li key={`${reason.type}-${String(reason.refId)}`}>
                 {to ? (
@@ -153,6 +166,8 @@ export function PicksSection() {
 
 /** Spec 5.1 §4: the featured reading paths. Hidden when none are featured. */
 export function PathsSection() {
+  const { t } = useTranslation('home', { keyPrefix: 'paths' });
+  const { t: tc } = useTranslation();
   const featured = useFeaturedPaths();
   const items = featured.data?.slice(0, 3) ?? [];
   if (featured.isSuccess && items.length === 0) return null;
@@ -161,13 +176,13 @@ export function PathsSection() {
     <section className={cx('wrap', styles.section)} aria-labelledby="paths-home-title">
       <SectionHeader
         id="paths-home-title"
-        kicker="مسارات القراءة"
-        title="لا تعرف من أين تبدأ؟ اتبع طريقاً مرسوماً"
-        description="مسارات متدرّجة يرتّبها طلاب علم متخصصون، بخصم عند شراء المسار كاملاً."
-        more={{ to: paths.readingPaths, label: 'كل المسارات' }}
+        kicker={t('kicker')}
+        title={t('title')}
+        description={t('description')}
+        more={{ to: paths.readingPaths, label: t('more') }}
       />
       {featured.isPending ? (
-        <div className={styles.pathsRow} aria-busy="true" aria-label="جارٍ التحميل">
+        <div className={styles.pathsRow} aria-busy="true" aria-label={tc('loading')}>
           {[0, 1, 2].map((key) => (
             <div key={key} className={styles.pathSkeleton} />
           ))}
@@ -187,6 +202,7 @@ export function PathsSection() {
 
 /** Spec 5.1 §6: six top-level categories with their Ruqaʿa letter. */
 export function CategoryTiles() {
+  const { t } = useTranslation('home', { keyPrefix: 'categories' });
   const categories = useCategories();
   const items = categories.data?.slice(0, 6) ?? [];
   if (categories.isSuccess && items.length === 0) return null;
@@ -195,9 +211,9 @@ export function CategoryTiles() {
     <section className={cx('wrap', styles.section)} aria-labelledby="categories-title">
       <SectionHeader
         id="categories-title"
-        kicker="أقسام المكتبة"
-        title="تصفّح بحسب العلم"
-        more={{ to: paths.search, label: 'كل الأقسام' }}
+        kicker={t('kicker')}
+        title={t('title')}
+        more={{ to: paths.search, label: t('more') }}
       />
       <ul className={styles.tiles} aria-busy={categories.isPending}>
         {categories.isPending
@@ -223,54 +239,44 @@ export function CategoryTiles() {
   );
 }
 
-const EFENDI_FEATURES: { icon: IconName; title: string; text: string }[] = [
-  {
-    icon: 'search',
-    title: 'بحث بالمعنى',
-    text: '«كتاب عن آداب طالب العلم» بدل كتابة العنوان حرفياً',
-  },
-  {
-    icon: 'book',
-    title: 'مقارنة الطبعات',
-    text: 'الفروق بين التحقيقات والتجليد والسعر في جدول واحد',
-  },
-  { icon: 'cam', title: 'البحث بالصورة', text: 'صوّر غلاف كتاب أو صفحة منه ونجده لك' },
-  { icon: 'check', title: 'ملخّص ذكي', text: 'نبذة وفهرس ومستوى كل كتاب قبل أن تشتريه' },
-];
+const EFENDI_FEATURES = [
+  { icon: 'search', key: 'search' },
+  { icon: 'book', key: 'compare' },
+  { icon: 'cam', key: 'photo' },
+  { icon: 'check', key: 'summary' },
+] as const satisfies readonly { icon: IconName; key: string }[];
 
 /**
  * Spec 5.1 §7 «بائع كتب عالِم». The assistant isn't live yet, so this shows
  * what's coming (marked «قريباً») instead of a staged sample conversation.
  */
 export function EfendiTeaser() {
+  const { t } = useTranslation('home', { keyPrefix: 'efendi' });
   return (
     <section className={cx('wrap', styles.section)} aria-labelledby="efendi-teaser-title">
       <div className={styles.teaser}>
         <div className={styles.teaserCopy}>
           <p className={styles.teaserKicker}>
-            <Spark size={14} /> أفندي · يعتمد على Claude · قريباً
+            <Spark size={14} /> {t('kicker')}
           </p>
           <h2 id="efendi-teaser-title" className={styles.teaserTitle}>
-            بائع كتب عالِم، متاح لك ٢٤ ساعة
+            {t('title')}
           </h2>
-          <p className={styles.teaserText}>
-            اسأله كما تسأل صاحب مكتبة خبيراً عن الطبعات والمحققين ومستوى الكتاب، وسيقترح لك ويقارن
-            ويضيف إلى سلتك. نُعدّه الآن بعناية، ولن يقترح إلا ما في مكتبتنا فعلاً.
-          </p>
+          <p className={styles.teaserText}>{t('text')}</p>
           <ButtonLink to={paths.askEfendi} variant="ink">
-            تعرّف على أفندي
+            {t('cta')}
           </ButtonLink>
         </div>
         <ul className={styles.features}>
           {EFENDI_FEATURES.map((feature) => (
-            <li key={feature.title}>
+            <li key={feature.key}>
               <span className={styles.featureIcon} aria-hidden="true">
                 <Icon name={feature.icon} size={18} />
               </span>
               <b>
-                {feature.title} <small>قريباً</small>
+                {t(`${feature.key}Title`)} <small>{t('soon')}</small>
               </b>
-              <p>{feature.text}</p>
+              <p>{t(`${feature.key}Text`)}</p>
             </li>
           ))}
         </ul>
@@ -281,6 +287,7 @@ export function EfendiTeaser() {
 
 /** Spec 5.1 §8 «رفوف القرّاء هذا الشهر»: best-sellers with category tabs. */
 export function ReaderShelves() {
+  const { t } = useTranslation('home', { keyPrefix: 'shelves' });
   const categories = useCategories();
   const tabs = categories.data?.slice(0, 5) ?? [];
   const [category, setCategory] = useState<string | null>(null);
@@ -294,11 +301,11 @@ export function ReaderShelves() {
     <section className={cx('wrap', styles.section)} aria-labelledby="shelves-title">
       <SectionHeader
         id="shelves-title"
-        kicker="الأكثر طلباً"
-        title="رفوف القرّاء هذا الشهر"
+        kicker={t('kicker')}
+        title={t('title')}
         aside={
           tabs.length > 0 ? (
-            <div className={styles.tabs} role="group" aria-label="القسم">
+            <div className={styles.tabs} role="group" aria-label={t('tabsLabel')}>
               <button
                 type="button"
                 className={cx(styles.tab, category === null && styles.tabOn)}
@@ -307,7 +314,7 @@ export function ReaderShelves() {
                   setCategory(null);
                 }}
               >
-                الكل
+                {t('all')}
               </button>
               {tabs.map((tab) => (
                 <button
@@ -334,7 +341,7 @@ export function ReaderShelves() {
           onRetry={() => {
             void query.refetch();
           }}
-          emptyText="لا كتب في هذا القسم بعد."
+          emptyText={t('empty')}
         />
       </div>
       <div className={styles.moreRow}>
@@ -343,7 +350,7 @@ export function ReaderShelves() {
           variant="ghost"
           size="sm"
         >
-          عرض المزيد <span aria-hidden="true">←</span>
+          {t('more')} <span aria-hidden="true">←</span>
         </ButtonLink>
       </div>
     </section>
@@ -352,6 +359,7 @@ export function ReaderShelves() {
 
 /** Spec 5.1 §9 «أعلام المحققين»: up to five featured muhaqqiqs. */
 export function MuhaqqiqsSection() {
+  const { t } = useTranslation('home', { keyPrefix: 'muhaqqiqs' });
   const featured = useFeaturedMuhaqqiqs();
   const items = featured.data?.slice(0, 5) ?? [];
   if (!featured.isSuccess || items.length === 0) return null;
@@ -360,9 +368,9 @@ export function MuhaqqiqsSection() {
     <section className={cx('wrap', styles.section)} aria-labelledby="muhaqqiqs-title">
       <SectionHeader
         id="muhaqqiqs-title"
-        kicker="تحقيقات تثق بها"
-        title="أعلام المحققين"
-        description="تابع محقّقك المفضّل ليصلك إشعار بكل تحقيق جديد له."
+        kicker={t('kicker')}
+        title={t('title')}
+        description={t('description')}
       />
       <ul className={styles.people}>
         {items.map((muhaqqiq) => (

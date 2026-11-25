@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Trans, useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router';
 
 import { paths } from '@/app/paths';
@@ -11,32 +12,32 @@ import { Icon } from '@/shared/ui/Icon/Icon';
 
 import styles from './HomeHero.module.css';
 
-const SUGGESTIONS = [
-  'ما الفرق بين طبعات المسند؟',
-  'هدية لطالب علم بميزانية ٥٠٠ ₺',
-  'كتب الأرناؤوط في الحديث',
-];
+const SUGGESTIONS = ['hero.suggestion1', 'hero.suggestion2', 'hero.suggestion3'] as const;
 
 const askUrl = (q: string) => `${paths.askEfendi}?${new URLSearchParams({ q }).toString()}`;
 
 /** Live figures from /api/store/stats; each one only when it is meaningful. */
 function TrustFigures() {
+  const { t } = useTranslation('home');
   const { data: stats } = useStoreStats();
   if (!stats) return null;
   const figures = [
-    stats.bookCount > 0 && { value: formatCount(stats.bookCount), label: 'عنوان محقّق' },
+    stats.bookCount > 0 && { value: formatCount(stats.bookCount), label: t('figures.books') },
     stats.muhaqqiqCount > 0 && {
       value: formatCount(stats.muhaqqiqCount),
-      label: 'محقّقاً وعالماً',
+      label: t('figures.muhaqqiqs'),
     },
     stats.averageRating !== null &&
       stats.reviewCount > 0 && {
         value: `${formatAmount(stats.averageRating)} ★`,
-        label: `من ${formatCount(stats.reviewCount)} مراجعة`,
+        label: t('figures.reviews', {
+          count: stats.reviewCount,
+          n: formatCount(stats.reviewCount),
+        }),
       },
     stats.countriesShippedTo > 0 && {
       value: formatCount(stats.countriesShippedTo),
-      label: 'دولة نشحن إليها',
+      label: t('figures.countries'),
     },
   ].filter((item) => item !== false);
   if (figures.length === 0) return null;
@@ -55,6 +56,7 @@ function TrustFigures() {
 
 /** The left stage (spec 5.1): a shelf of spines and the two best-sellers' covers. */
 function Stage() {
+  const { t } = useTranslation('home');
   const query = useCatalogSearch({ sort: 'Bestselling', pageSize: 2 });
   const books = query.data?.results.items ?? [];
   const top = books[0];
@@ -88,7 +90,7 @@ function Stage() {
       <div className={styles.plank} aria-hidden="true" />
       {top && (
         <Link to={paths.book(top.slug)} className={styles.float}>
-          <span className={styles.floatLabel}>الأكثر طلباً هذا الشهر</span>
+          <span className={styles.floatLabel}>{t('hero.bestThisMonth')}</span>
           <b className={styles.floatTitle}>{top.title}</b>
           <span className={styles.floatPrice}>{formatMoney(top.price, top.currency)}</span>
         </Link>
@@ -99,6 +101,7 @@ function Stage() {
 
 /** Home hero (spec 5.1 §1): title, the «اسأل أفندي» box, live figures, the stage. */
 export function HomeHero() {
+  const { t } = useTranslation('home');
   const navigate = useNavigate();
   const [question, setQuestion] = useState('');
 
@@ -106,19 +109,16 @@ export function HomeHero() {
     <section className={styles.hero} aria-labelledby="hero-title">
       <div className={`wrap ${styles.inner}`}>
         <div className={styles.copy}>
-          <p className={styles.badge}>كتب التراث المحقَّقة من الرسالة ناشرون</p>
+          <p className={styles.badge}>{t('hero.badge')}</p>
           <h1 id="hero-title" className={styles.title}>
-            كنوز التراث المحقَّق، <em>يختارها لك أفندي</em>
+            <Trans t={t} i18nKey="hero.title" components={{ em: <em /> }} />
           </h1>
-          <p className={styles.lead}>
-            إصدارات مؤسسة الرسالة ناشرون وأمهات الكتب بتحقيقات موثوقة. صِف ما تبحث عنه بكلماتك، ودع
-            أفندي يدلّك على الطبعة الأنسب لمستواك.
-          </p>
+          <p className={styles.lead}>{t('hero.lead')}</p>
 
           <form
             className={styles.ask}
             role="search"
-            aria-label="اسأل أفندي"
+            aria-label={t('hero.ask')}
             onSubmit={(event) => {
               event.preventDefault();
               const q = question.trim();
@@ -128,14 +128,14 @@ export function HomeHero() {
             <div className={styles.askRow}>
               <EffendiAvatar size={44} className={styles.askAvatar} />
               <label htmlFor="hero-ask" className="sr-only">
-                اسأل أفندي
+                {t('hero.ask')}
               </label>
               <input
                 id="hero-ask"
                 className={styles.askInput}
                 type="text"
                 maxLength={300}
-                placeholder="أنا طالب مبتدئ، أريد كتاباً في السيرة النبوية بتحقيق موثوق"
+                placeholder={t('hero.placeholder')}
                 value={question}
                 onChange={(event) => {
                   setQuestion(event.target.value);
@@ -144,29 +144,32 @@ export function HomeHero() {
               <Link
                 to={`${paths.askEfendi}?mode=photo`}
                 className={styles.tool}
-                aria-label="ابحث بصورة الغلاف"
+                aria-label={t('hero.photo')}
               >
                 <Icon name="cam" size={20} />
               </Link>
               <Link
                 to={`${paths.askEfendi}?mode=voice`}
                 className={styles.tool}
-                aria-label="اسأل بصوتك"
+                aria-label={t('hero.voice')}
               >
                 <Icon name="mic" size={20} />
               </Link>
-              <button type="submit" className={styles.send} aria-label="اسأل أفندي">
+              <button type="submit" className={styles.send} aria-label={t('hero.ask')}>
                 <Icon name="send" size={20} />
               </button>
             </div>
-            <ul className={styles.suggestions} aria-label="أسئلة مقترحة">
-              {SUGGESTIONS.map((suggestion) => (
-                <li key={suggestion}>
-                  <Link to={askUrl(suggestion)} className={styles.suggestion}>
-                    {suggestion}
-                  </Link>
-                </li>
-              ))}
+            <ul className={styles.suggestions} aria-label={t('hero.suggestionsLabel')}>
+              {SUGGESTIONS.map((key) => {
+                const suggestion = t(key);
+                return (
+                  <li key={key}>
+                    <Link to={askUrl(suggestion)} className={styles.suggestion}>
+                      {suggestion}
+                    </Link>
+                  </li>
+                );
+              })}
             </ul>
           </form>
 

@@ -1,4 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 
 import { paths } from '@/app/paths';
@@ -10,6 +11,8 @@ import { adminPathsApi, type AdminReadingPath } from '@/features/admin/paths/api
 import { PathForm } from '@/features/admin/paths/components/PathForm';
 import { adminPathKeys, useAdminPaths, usePathMutation } from '@/features/admin/paths/queries';
 import { emptyPath, pathInput, type PathValues, pathValues } from '@/features/admin/paths/schema';
+import { useUnsavedChanges } from '@/features/admin/lib/useUnsavedChanges';
+import { ReadingPathTranslations } from '@/features/admin/translations/panels';
 import NotFoundPage from '@/pages/not-found/NotFoundPage';
 import { errorMessage } from '@/shared/api/errorMessages';
 import { arabicPlural } from '@/shared/lib/format';
@@ -62,6 +65,8 @@ export default function AdminReadingPathEditorPage() {
   const books = useAdminBooks();
   const pathId = id === undefined ? null : /^\d+$/.test(id) ? Number(id) : 0;
   const path = pathId === null ? null : list.data?.find((p) => p.id === pathId);
+  const [translationDirty, setTranslationDirty] = useState(false);
+  useUnsavedChanges(translationDirty);
 
   const save = usePathMutation(
     (values: PathValues) =>
@@ -147,6 +152,27 @@ export default function AdminReadingPathEditorPage() {
         }}
         status={path && <PathStatus path={path} />}
       />
+      {path && (
+        <section
+          id="translations"
+          className={styles.card}
+          style={{ marginBlockStart: 16 }}
+          aria-labelledby="path-translations-title"
+        >
+          <h2 id="path-translations-title" className={styles.cardTitle}>
+            الترجمات
+          </h2>
+          <ReadingPathTranslations
+            // The stages decide the fields: rebuild when they change.
+            key={`${String(path.id)}|${path.stages.map((s) => s.bookId).join()}`}
+            path={path}
+            bookTitle={(bookId) =>
+              books.data.find((book) => book.id === bookId)?.title ?? `#${String(bookId)}`
+            }
+            onDirtyChange={setTranslationDirty}
+          />
+        </section>
+      )}
     </>
   );
 }

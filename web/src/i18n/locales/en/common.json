@@ -124,5 +124,22 @@
     "title": "Checkout in English isn't open yet",
     "text": "The legal texts in this language haven't been published yet. You can complete your order in Arabic now.",
     "action": "Continue in Arabic"
+  },
+    "count": {
+    "countries_one": "1 country",
+    "countries_other": "{{n}} countries",
+    "volumes_one": "1 volume",
+    "volumes_other": "{{n}} volumes",
+    "results_zero": "No results",
+    "results_one": "1 result",
+    "results_other": "{{n}} results",
+    "editions_one": "1 edition",
+    "editions_other": "{{n}} editions",
+    "works_one": "1 edited work",
+    "works_other": "{{n}} edited works",
+    "books_one": "1 book",
+    "books_other": "{{n}} books",
+    "copies_one": "1 copy",
+    "copies_other": "{{n}} copies"
   }
 }

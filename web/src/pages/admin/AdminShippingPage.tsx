@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import styles from '@/features/admin/components/admin.module.css';
 import { AdminPageHeader } from '@/features/admin/components/AdminPageHeader';
@@ -8,6 +8,9 @@ import { DeliveryForm } from '@/features/admin/shipping/components/DeliveryForm'
 import shipping from '@/features/admin/shipping/components/Shipping.module.css';
 import { ZoneForm } from '@/features/admin/shipping/components/ZoneForm';
 import { useAdminZones, useZoneMutation } from '@/features/admin/shipping/queries';
+import { useUnsavedChanges } from '@/features/admin/lib/useUnsavedChanges';
+import { ShippingZoneTranslations } from '@/features/admin/translations/panels';
+import { TranslationFlags } from '@/features/admin/translations/TranslationFlags';
 import { useEditParam } from '@/features/admin/useEditParam';
 import { errorMessage } from '@/shared/api/errorMessages';
 import { cx } from '@/shared/lib/cx';
@@ -69,6 +72,8 @@ function ZoneStatus({ zone, onDeleted }: { zone: AdminShippingZone; onDeleted: (
 export default function AdminShippingPage() {
   const zones = useAdminZones();
   const { edit, open, replace, close } = useEditParam();
+    const [translationDirty, setTranslationDirty] = useState(false);
+  useUnsavedChanges(translationDirty, true);
   const editorRef = useRef<HTMLElement>(null);
   const all = zones.data ?? [];
   const selected = typeof edit === 'number' ? all.find((z) => z.id === edit) : undefined;
@@ -140,6 +145,13 @@ export default function AdminShippingPage() {
               <>
                 <h3 className={styles.cardTitle}>التوصيل</h3>
                 <DeliveryForm key={`delivery-${JSON.stringify(selected)}`} zone={selected} />
+                  <h3 className={styles.cardTitle}>ترجمة أسماء الخيارات</h3>
+                <ShippingZoneTranslations
+                  // New or renamed extras change the fields.
+                  key={`${String(selected.id)}|${selected.options.map((o) => `${o.code}:${o.name}`).join()}`}
+                  zone={selected}
+                  onDirtyChange={setTranslationDirty}
+                />
                 <ZoneStatus zone={selected} onDeleted={close} />
               </>
             )}
@@ -220,6 +232,11 @@ export default function AdminShippingPage() {
                     </td>
                     <td data-label="خيارات" className={styles.num}>
                       {formatCount(zone.options.length)}
+                        {zone.options.length > 0 && (
+                        <span className={styles.sub}>
+                          <TranslationFlags translations={zone.translations} />
+                        </span>
+                      )}
                     </td>
                     <td data-label="الحالة">
                       <StatusBadge
