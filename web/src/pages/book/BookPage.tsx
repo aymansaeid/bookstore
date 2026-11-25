@@ -1,3 +1,5 @@
+import type { TFunction } from 'i18next';
+import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router';
 
 import { paths } from '@/app/paths';
@@ -12,20 +14,20 @@ import NotFoundPage from '@/pages/not-found/NotFoundPage';
 import { isApiError } from '@/shared/api/ApiError';
 import { errorMessage } from '@/shared/api/errorMessages';
 import { cx } from '@/shared/lib/cx';
-import { formatAmount, formatCount } from '@/shared/lib/format';
+import { formatAmount, formatCount, LIST_SEPARATOR } from '@/shared/lib/format';
 import { Breadcrumbs, type Crumb } from '@/shared/ui/Breadcrumbs/Breadcrumbs';
 import { Button } from '@/shared/ui/Button/Button';
 import { DocumentTitle } from '@/shared/ui/DocumentTitle';
-import { SectionHeader } from '@/shared/ui/SectionHeader/SectionHeader';
 import { OriginalTitle } from '@/shared/ui/OriginalTitle/OriginalTitle';
+import { SectionHeader } from '@/shared/ui/SectionHeader/SectionHeader';
 
 import styles from './BookPage.module.css';
 
 /** Show «● N نسخة بيعت هذا الأسبوع» only above this (API §7b). */
 const SOLD_THRESHOLD = 5;
 
-function crumbs(book: PublicBook): Crumb[] {
-  const items: Crumb[] = [{ label: 'الرئيسية', to: paths.home }];
+function crumbs(book: PublicBook, home: string): Crumb[] {
+  const items: Crumb[] = [{ label: home, to: paths.home }];
   if (book.category?.parent) {
     items.push({ label: book.category.parent.name, to: paths.category(book.category.parent.slug) });
   }
@@ -36,26 +38,27 @@ function crumbs(book: PublicBook): Crumb[] {
   return items;
 }
 
-function BookHeading({ book }: { book: PublicBook }) {
+function BookHeading({ book, t }: { book: PublicBook; t: TFunction<'book', 'page'> }) {
   const sold = book.soldLast7Days ?? 0;
   return (
     <header className={styles.heading}>
       <p className={styles.kicker}>
         {[book.category?.name, book.publisher].filter(Boolean).join(' · ')}
       </p>
-     <h1 className={styles.title}>
+      <h1 className={styles.title}>
         {book.title}
         <OriginalTitle title={book.title} original={book.originalTitle} />
       </h1>
       {book.subtitle && <p className={styles.subtitle}>{book.subtitle}</p>}
       <p className={styles.people}>
-        تأليف: <b>{book.author}</b>
+        {t('by')} <b>{book.author}</b>
         {book.muhaqqiqs.length > 0 && (
           <>
-            {' · '}تحقيق:{' '}
+            {' · '}
+            {t('editedBy')}{' '}
             {book.muhaqqiqs.map((muhaqqiq, index) => (
               <span key={muhaqqiq.id}>
-                {index > 0 && '، '}
+                {index > 0 && LIST_SEPARATOR}
                 <Link to={paths.muhaqqiq(muhaqqiq.slug)} className={styles.personLink}>
                   {muhaqqiq.name}
                 </Link>
@@ -68,11 +71,13 @@ function BookHeading({ book }: { book: PublicBook }) {
         {book.averageRating !== null && book.reviewCount > 0 && (
           <a href="#reviews" className={styles.rating}>
             <b aria-hidden="true">★</b> {formatAmount(book.averageRating)}
-            <span>({formatCount(book.reviewCount)} مراجعة)</span>
+            <span>
+              {t('reviews', { count: book.reviewCount, n: formatCount(book.reviewCount) })}
+            </span>
           </a>
         )}
         {sold >= SOLD_THRESHOLD && (
-          <span className={styles.sold}>● {formatCount(sold)} نسخة بيعت هذا الأسبوع</span>
+          <span className={styles.sold}>{t('sold', { count: sold, n: formatCount(sold) })}</span>
         )}
       </p>
     </header>
@@ -80,13 +85,15 @@ function BookHeading({ book }: { book: PublicBook }) {
 }
 
 export default function BookPage() {
+  const { t } = useTranslation('book', { keyPrefix: 'page' });
+  const { t: tc } = useTranslation();
   const { slug = '' } = useParams();
   const query = useBook(slug);
 
   if (query.isPending) {
     return (
       <div className={cx('wrap', styles.loading)} role="status">
-        جارٍ تحميل الكتاب…
+        {t('loading')}
       </div>
     );
   }
@@ -103,7 +110,7 @@ export default function BookPage() {
             void query.refetch();
           }}
         >
-          أعد المحاولة
+          {tc('ui.retry')}
         </Button>
       </div>
     );
@@ -115,13 +122,13 @@ export default function BookPage() {
     <div className={styles.page}>
       <DocumentTitle title={book.title} />
       <div className="wrap">
-        <Breadcrumbs items={crumbs(book)} />
+        <Breadcrumbs items={crumbs(book, tc('ui.home'))} />
 
         {/* key: switching edition resets gallery index and quantity */}
         <div className={styles.top} key={book.id}>
           <BookGallery book={book} />
           <div className={styles.info}>
-            <BookHeading book={book} />
+            <BookHeading book={book} t={t} />
             <BookPurchase book={book} />
           </div>
         </div>
@@ -138,7 +145,11 @@ export default function BookPage() {
 
         {book.related && book.related.length > 0 && (
           <section className={styles.block} aria-labelledby="related-title">
-            <SectionHeader id="related-title" kicker="مختارة بعناية" title="يُكمل مكتبتك" />
+            <SectionHeader
+              id="related-title"
+              kicker={t('relatedKicker')}
+              title={t('relatedTitle')}
+            />
             <BookList
               books={book.related}
               isLoading={false}

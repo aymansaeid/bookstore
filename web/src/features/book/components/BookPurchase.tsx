@@ -2,19 +2,22 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { Trans, useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router';
 
+import { UI_LANGUAGE } from '@/app/locale';
 import { paths } from '@/app/paths';
 import { type EmailOnlyValues, emailOnlySchema, trimValue } from '@/features/auth/schemas';
 import { useSession } from '@/features/auth/session';
 import { bookApi } from '@/features/book/api';
 import { bookKeys } from '@/features/book/queries';
-import { useCartStore, MAX_QUANTITY } from '@/features/cart/cartStore';
+import { MAX_QUANTITY, useCartStore } from '@/features/cart/cartStore';
 import { addToCartWithFeedback } from '@/features/catalog/addToCart';
 import type { BookSummary, PublicBook } from '@/features/catalog/types';
 import { useLibrary, useToggleOwned } from '@/features/library/queries';
 import { useShippingSummary } from '@/features/store/queries';
 import { WishlistButton } from '@/features/wishlist/WishlistButton';
+import { i18n } from '@/i18n';
 import { isApiError } from '@/shared/api/ApiError';
 import { errorMessage } from '@/shared/api/errorMessages';
 import { cx } from '@/shared/lib/cx';
@@ -28,18 +31,19 @@ import { toast } from '@/shared/ui/toast/toastStore';
 
 import styles from './BookPurchase.module.css';
 
-const ASK_PRESETS = ['هل يناسب المبتدئين؟', 'ما الفرق بين الطبعات؟', 'بماذا أبدأ قبله؟'];
+const ASK_PRESETS = ['ask1', 'ask2', 'ask3'] as const;
 
 function editionText(edition: BookSummary): string {
   return edition.editionLabel ?? (edition.volumes ? volumesLabel(edition.volumes) : edition.title);
 }
 
 function EditionPicker({ book }: { book: PublicBook }) {
+  const { t } = useTranslation('book', { keyPrefix: 'purchase' });
   const options: BookSummary[] = [book, ...(book.editions ?? [])];
   return (
     <section className={styles.editions} aria-labelledby="editions-title">
       <h2 id="editions-title" className={styles.blockTitle}>
-        اختر الطبعة
+        {t('chooseEdition')}
       </h2>
       <ul className={styles.editionList}>
         {options.map((edition) => {
@@ -55,7 +59,7 @@ function EditionPicker({ book }: { book: PublicBook }) {
                 <b>{editionText(edition)}</b>
                 <span>
                   {formatMoney(edition.price, edition.currency)}
-                  {!edition.inStock && ' · غير متوفر'}
+                  {!edition.inStock && t('unavailable')}
                 </span>
               </span>
               {current && <Icon name="check" className={styles.editionCheck} />}
@@ -82,6 +86,7 @@ function EditionPicker({ book }: { book: PublicBook }) {
 
 /** Back-in-stock alert (§8): double opt-in, nothing is held for the customer. */
 function NotifyMeForm({ book }: { book: PublicBook }) {
+  const { t } = useTranslation('book', { keyPrefix: 'notify' });
   const { customer } = useSession();
   const queryClient = useQueryClient();
   const [sentTo, setSentTo] = useState<string | null>(null);
@@ -98,8 +103,7 @@ function NotifyMeForm({ book }: { book: PublicBook }) {
   if (sentTo) {
     return (
       <FormAlert tone="success">
-        أرسلنا رابط تأكيد إلى <b dir="ltr">{sentTo}</b>. افتحه لتفعيل التنبيه، وسنراسلك حين يعود
-        الكتاب.
+        <Trans t={t} i18nKey="sent" values={{ email: sentTo }} components={{ b: <b dir="ltr" /> }} />
       </FormAlert>
     );
   }
@@ -117,7 +121,7 @@ function NotifyMeForm({ book }: { book: PublicBook }) {
             setSentTo(email);
           } catch (error) {
             if (isApiError(error) && error.code === 'StockNotification.AlreadyInStock') {
-              toast.success('الكتاب متوفر الآن، يمكنك إضافته إلى السلة.');
+              toast.success(i18n.t('notify.inStockNow', { ns: 'book' }));
               void queryClient.invalidateQueries({ queryKey: bookKeys.detail(book.slug) });
             } else {
               setServerError(errorMessage(error));
@@ -127,12 +131,12 @@ function NotifyMeForm({ book }: { book: PublicBook }) {
       }}
     >
       <p className={styles.notifyTitle}>
-        <Icon name="bell" size={18} /> هذا الكتاب غير متوفر حالياً. نبّهني عند توفّره:
+        <Icon name="bell" size={18} /> {t('title')}
       </p>
       {serverError && <FormAlert>{serverError}</FormAlert>}
       <div className={styles.notifyRow}>
         <TextField
-          label="البريد الإلكتروني"
+          label={t('email')}
           type="email"
           dir="ltr"
           autoComplete="email"
@@ -141,7 +145,7 @@ function NotifyMeForm({ book }: { book: PublicBook }) {
           {...register('email', { setValueAs: trimValue })}
         />
         <Button type="submit" variant="ink" disabled={isSubmitting}>
-          نبّهني
+          {t('submit')}
         </Button>
       </div>
     </form>
@@ -150,6 +154,7 @@ function NotifyMeForm({ book }: { book: PublicBook }) {
 
 /** «أملك هذا الكتاب» (§7b): also keeps recommendations from suggesting it. */
 function OwnedToggle({ bookId }: { bookId: number }) {
+  const { t } = useTranslation('book', { keyPrefix: 'owned' });
   const { status } = useSession();
   const library = useLibrary();
   const toggle = useToggleOwned();
@@ -160,7 +165,7 @@ function OwnedToggle({ bookId }: { bookId: number }) {
     return (
       <p className={styles.owned}>
         <Icon name="check" size={18} />
-        {item.ownership === 'OnTheWay' ? 'في طريقه إليك ضمن طلب سابق' : 'في مكتبتك من مشترياتك'}
+        {item.ownership === 'OnTheWay' ? t('onTheWay') : t('purchased')}
       </p>
     );
   }
@@ -177,12 +182,13 @@ function OwnedToggle({ bookId }: { bookId: number }) {
       }}
     >
       <Icon name={owned ? 'check' : 'book'} size={18} />
-      {owned ? 'أملك هذا الكتاب' : 'أملك هذا الكتاب من مكان آخر'}
+      {owned ? t('own') : t('ownElsewhere')}
     </button>
   );
 }
 
 export function BookPurchase({ book }: { book: PublicBook }) {
+  const { t } = useTranslation('book', { keyPrefix: 'purchase' });
   const [quantity, setQuantity] = useState(1);
   const navigate = useNavigate();
   const shipping = useShippingSummary();
@@ -192,20 +198,22 @@ export function BookPurchase({ book }: { book: PublicBook }) {
     <div className={styles.purchase}>
       <div className={styles.priceRow}>
         <p className={styles.price}>
+          {/* English writes the sign first (₺2,400); Arabic and Turkish after. */}
+          {UI_LANGUAGE === 'en' && <small>₺</small>}
           {formatAmount(book.price)}
-          <small>₺</small>
+          {UI_LANGUAGE !== 'en' && <small>₺</small>}
         </p>
         {book.oldPrice !== null && (
           <s className={styles.old}>
-            <span className="sr-only">بدلاً من </span>
+            <span className="sr-only">{t('insteadOf')}</span>
             {formatMoney(book.oldPrice, book.currency)}
           </s>
         )}
-        {savings > 0 && <span className={styles.save}>وفّر {formatMoney(savings)}</span>}
+        {savings > 0 && (
+          <span className={styles.save}>{t('save', { amount: formatMoney(savings) })}</span>
+        )}
       </div>
-      {book.installmentsAllowed && (
-        <p className={styles.installments}>متاح الدفع بالتقسيط عند إتمام الطلب</p>
-      )}
+      {book.installmentsAllowed && <p className={styles.installments}>{t('installments')}</p>}
 
       {book.editions && book.editions.length > 0 && <EditionPicker book={book} />}
 
@@ -220,7 +228,7 @@ export function BookPurchase({ book }: { book: PublicBook }) {
             }}
           >
             <Icon name="cart" />
-            أضف إلى السلة
+            {t('addToCart')}
           </Button>
           <Button
             variant="ink"
@@ -230,7 +238,7 @@ export function BookPurchase({ book }: { book: PublicBook }) {
               void navigate(paths.cart);
             }}
           >
-            اشترِ الآن
+            {t('buyNow')}
           </Button>
           <WishlistButton book={book} className={styles.wish} />
         </div>
@@ -242,19 +250,22 @@ export function BookPurchase({ book }: { book: PublicBook }) {
 
       <div className={styles.ask}>
         <p className={styles.askTitle}>
-          <Spark size={15} /> اسأل أفندي عن هذا الكتاب…
+          <Spark size={15} /> {t('askTitle')}
         </p>
         <ul className={styles.askList}>
-          {ASK_PRESETS.map((question) => (
-            <li key={question}>
-              <Link
-                to={`${paths.askEfendi}?${new URLSearchParams({ book: book.slug, q: question }).toString()}`}
-                className={styles.askChip}
-              >
-                {question}
-              </Link>
-            </li>
-          ))}
+          {ASK_PRESETS.map((key) => {
+            const question = t(key);
+            return (
+              <li key={key}>
+                <Link
+                  to={`${paths.askEfendi}?${new URLSearchParams({ book: book.slug, q: question }).toString()}`}
+                  className={styles.askChip}
+                >
+                  {question}
+                </Link>
+              </li>
+            );
+          })}
         </ul>
       </div>
 
@@ -263,17 +274,17 @@ export function BookPurchase({ book }: { book: PublicBook }) {
           <Icon name="truck" />
           <span>
             {shipping.freeShippingThreshold !== undefined
-              ? `شحن مجاني فوق ${formatMoney(shipping.freeShippingThreshold)} داخل تركيا`
-              : 'نشحن داخل تركيا وإلى دول العالم'}
+              ? t('freeShipping', { amount: formatMoney(shipping.freeShippingThreshold) })
+              : t('shipping')}
           </span>
         </li>
         <li>
           <Icon name="shield" />
-          <span>طبعة أصلية من {book.publisher ?? 'الناشر'}</span>
+          <span>{t('original', { publisher: book.publisher ?? t('thePublisher') })}</span>
         </li>
         <li>
           <Icon name="box" />
-          <span>إرجاع خلال ١٤ يوماً من الاستلام</span>
+          <span>{t('returns')}</span>
         </li>
       </ul>
     </div>
@@ -282,6 +293,7 @@ export function BookPurchase({ book }: { book: PublicBook }) {
 
 /** Mobile: price + add to cart stays on screen (spec 5.11, §8.3). */
 export function MobileBuyBar({ book }: { book: PublicBook }) {
+  const { t } = useTranslation('book', { keyPrefix: 'purchase' });
   return (
     <div className={styles.buyBar}>
       <div>
@@ -299,11 +311,11 @@ export function MobileBuyBar({ book }: { book: PublicBook }) {
           }}
         >
           <Icon name="cart" size={18} />
-          أضف إلى السلة
+          {t('addToCart')}
         </Button>
       ) : (
         <a href="#notify" className={styles.barNotify}>
-          نبّهني عند توفّره
+          {t('notifyBar')}
         </a>
       )}
     </div>

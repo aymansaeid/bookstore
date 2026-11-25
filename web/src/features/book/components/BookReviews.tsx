@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router';
 import { z } from 'zod';
 
@@ -8,6 +9,7 @@ import { paths } from '@/app/paths';
 import { useSession } from '@/features/auth/session';
 import { useBookReviews, useReviewEligibility, useSubmitReview } from '@/features/book/queries';
 import type { ReviewSort } from '@/features/book/types';
+import { i18n } from '@/i18n';
 import { errorMessage } from '@/shared/api/errorMessages';
 import { serverFieldErrors } from '@/shared/api/formErrors';
 import { cx } from '@/shared/lib/cx';
@@ -19,26 +21,35 @@ import { Stars } from '@/shared/ui/Stars/Stars';
 
 import styles from './BookReviews.module.css';
 
+/** Messages are looked up when a check fails, so they follow the page's language. */
+const message = (key: 'ratingRequired' | 'titleTooLong' | 'bodyTooLong') => () =>
+  i18n.t(`reviews.${key}`, { ns: 'book' });
+
 const reviewSchema = z.object({
-  rating: z.number().int().min(1, 'اختر عدد النجوم').max(5),
-  title: z.string().trim().max(120, 'العنوان أطول من المسموح'),
+  rating: z
+    .number()
+    .int()
+    .min(1, { error: message('ratingRequired') })
+    .max(5),
+  title: z
+    .string()
+    .trim()
+    .max(120, { error: message('titleTooLong') }),
   body: z
     .string()
     .trim()
-    .min(10, `اكتب ${formatCount(10)} أحرف على الأقل`)
-    .max(2000, 'المراجعة أطول من المسموح'),
+    .min(10, { error: () => i18n.t('reviews.bodyTooShort', { ns: 'book', n: formatCount(10) }) })
+    .max(2000, { error: message('bodyTooLong') }),
 });
 type ReviewValues = z.infer<typeof reviewSchema>;
 
-const SORTS: { value: ReviewSort; label: string }[] = [
-  { value: 'Newest', label: 'الأحدث' },
-  { value: 'HighestRated', label: 'الأعلى تقييماً' },
-  { value: 'LowestRated', label: 'الأقل تقييماً' },
-];
+const SORTS: readonly ReviewSort[] = ['Newest', 'HighestRated', 'LowestRated'];
 
 function StarInput({ value, onChange }: { value: number; onChange: (value: number) => void }) {
+  const { t } = useTranslation('book', { keyPrefix: 'reviews' });
+
   return (
-    <div className={styles.starInput} role="radiogroup" aria-label="التقييم">
+    <div className={styles.starInput} role="radiogroup" aria-label={t('rating')}>
       {[1, 2, 3, 4, 5].map((star) => (
         <label key={star} className={cx(styles.star, star <= value && styles.starOn)}>
           <input
@@ -51,7 +62,7 @@ function StarInput({ value, onChange }: { value: number; onChange: (value: numbe
             }}
           />
           <span aria-hidden="true">★</span>
-          <span className="sr-only">{formatCount(star)} من ٥</span>
+          <span className="sr-only">{t('stars', { n: formatCount(star) })}</span>
         </label>
       ))}
     </div>
@@ -59,6 +70,7 @@ function StarInput({ value, onChange }: { value: number; onChange: (value: numbe
 }
 
 function ReviewForm({ bookId, onDone }: { bookId: number; onDone: () => void }) {
+  const { t } = useTranslation('book', { keyPrefix: 'reviews' });
   const submit = useSubmitReview(bookId);
   const [serverError, setServerError] = useState<string | null>(null);
   const {
@@ -103,13 +115,13 @@ function ReviewForm({ bookId, onDone }: { bookId: number; onDone: () => void }) 
       />
       {errors.rating?.message && <p className={styles.fieldError}>{errors.rating.message}</p>}
       <TextField
-        label="عنوان المراجعة (اختياري)"
+        label={t('reviewTitle')}
         error={errors.title?.message}
         {...register('title')}
       />
-      <TextAreaField label="مراجعتك" error={errors.body?.message} {...register('body')} />
+      <TextAreaField label={t('body')} error={errors.body?.message} {...register('body')} />
       <Button type="submit" variant="ink" disabled={isSubmitting}>
-        {isSubmitting ? 'جارٍ الإرسال…' : 'أرسل المراجعة'}
+        {isSubmitting ? t('sending') : t('send')}
       </Button>
     </form>
   );
@@ -117,6 +129,7 @@ function ReviewForm({ bookId, onDone }: { bookId: number; onDone: () => void }) 
 
 /** «اكتب مراجعتك» driven by GET /eligibility (§8). */
 function WriteReview({ bookId }: { bookId: number }) {
+  const { t } = useTranslation('book', { keyPrefix: 'reviews' });
   const { status } = useSession();
   const location = useLocation();
   const eligibility = useReviewEligibility(bookId);
@@ -124,7 +137,7 @@ function WriteReview({ bookId }: { bookId: number }) {
   const [sent, setSent] = useState(false);
 
   if (sent) {
-    return <FormAlert tone="success">شكراً لك! ستظهر مراجعتك بعد مراجعتها.</FormAlert>;
+    return <FormAlert tone="success">{t('thanks')}</FormAlert>;
   }
   if (status !== 'authenticated') {
     return (
@@ -132,16 +145,16 @@ function WriteReview({ bookId }: { bookId: number }) {
         to={paths.loginWithReturn(`${location.pathname}#reviews`)}
         className={buttonClass('gold', 'sm')}
       >
-        سجّل الدخول لكتابة مراجعة
+        {t('signIn')}
       </Link>
     );
   }
   if (!eligibility.data) return null;
   if (eligibility.data.reason === 'AlreadyReviewed') {
-    return <p className={styles.note}>كتبتَ مراجعة لهذا الكتاب. شكراً لك.</p>;
+    return <p className={styles.note}>{t('already')}</p>;
   }
   if (!eligibility.data.canReview) {
-    return <p className={styles.note}>يمكن لمن اشترى الكتاب واستلمه كتابة مراجعة.</p>;
+    return <p className={styles.note}>{t('buyersOnly')}</p>;
   }
   if (!open) {
     return (
@@ -152,7 +165,7 @@ function WriteReview({ bookId }: { bookId: number }) {
           setOpen(true);
         }}
       >
-        اكتب مراجعتك
+        {t('write')}
       </Button>
     );
   }
@@ -167,6 +180,8 @@ function WriteReview({ bookId }: { bookId: number }) {
 }
 
 export function BookReviews({ bookId }: { bookId: number }) {
+  const { t } = useTranslation('book', { keyPrefix: 'reviews' });
+  const { t: tc } = useTranslation();
   const [sort, setSort] = useState<ReviewSort>('Newest');
   const query = useBookReviews(bookId, sort);
   const summary = query.data?.pages[0]?.summary;
@@ -175,7 +190,7 @@ export function BookReviews({ bookId }: { bookId: number }) {
   return (
     <section id="reviews" className={styles.section} aria-labelledby="reviews-title">
       <h2 id="reviews-title" className={styles.heading}>
-        المراجعات
+        {t('title')}
       </h2>
 
       <div className={styles.layout}>
@@ -185,7 +200,10 @@ export function BookReviews({ bookId }: { bookId: number }) {
               <p className={styles.average}>{formatAmount(summary.averageRating)}</p>
               <Stars value={summary.averageRating} size={20} />
               <p className={styles.count}>
-                من {formatCount(summary.reviewCount)} مراجعة لمشترين موثّقين
+                {t('fromVerified', {
+                  count: summary.reviewCount,
+                  n: formatCount(summary.reviewCount),
+                })}
               </p>
               <ul className={styles.bars}>
                 {(['5', '4', '3', '2', '1'] as const).map((level) => {
@@ -204,7 +222,7 @@ export function BookReviews({ bookId }: { bookId: number }) {
               </ul>
             </>
           ) : (
-            <p className={styles.count}>لا توجد مراجعات بعد. كن أول من يكتب عن هذا الكتاب.</p>
+            <p className={styles.count}>{t('none')}</p>
           )}
           <div className={styles.write}>
             <WriteReview bookId={bookId} />
@@ -214,7 +232,7 @@ export function BookReviews({ bookId }: { bookId: number }) {
         <div className={styles.list}>
           {reviews.length > 0 && (
             <label className={styles.sort}>
-              ترتيب حسب
+              {t('sortBy')}
               <select
                 value={sort}
                 onChange={(event) => {
@@ -222,8 +240,8 @@ export function BookReviews({ bookId }: { bookId: number }) {
                 }}
               >
                 {SORTS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
+                  <option key={option} value={option}>
+                    {t(option)}
                   </option>
                 ))}
               </select>
@@ -235,7 +253,7 @@ export function BookReviews({ bookId }: { bookId: number }) {
               <li key={review.id} className={styles.review}>
                 <div className={styles.reviewHead}>
                   <Stars value={review.rating} size={14} />
-                  <span className={styles.verified}>✓ مشترٍ موثّق</span>
+                  <span className={styles.verified}>{t('verified')}</span>
                 </div>
                 {review.title && <h3 className={styles.reviewTitle}>{review.title}</h3>}
                 <p className={styles.reviewBody}>{review.body}</p>
@@ -255,7 +273,7 @@ export function BookReviews({ bookId }: { bookId: number }) {
                 void query.fetchNextPage();
               }}
             >
-              {query.isFetchingNextPage ? 'جارٍ التحميل…' : 'عرض المزيد'}
+              {query.isFetchingNextPage ? tc('loading') : t('more')}
             </Button>
           )}
         </div>

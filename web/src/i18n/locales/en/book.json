@@ -1,0 +1,92 @@
+{
+  "page": {
+    "loading": "Loading the book…",
+    "by": "By",
+    "editedBy": "Edited by",
+    "reviews_one": "({{n}} review)",
+    "reviews_other": "({{n}} reviews)",
+    "sold_one": "● {{n}} copy sold this week",
+    "sold_other": "● {{n}} copies sold this week",
+    "relatedKicker": "Carefully chosen",
+    "relatedTitle": "To complete your library"
+  },
+  "specs": {
+    "publisher": "Publisher",
+    "editing": "Edited by",
+    "volumes": "Volumes",
+    "binding": "Binding",
+    "pages": "Pages",
+    "language": "Language",
+    "isbn": "ISBN",
+    "about": "About the book",
+    "highlights": "Main topics"
+  },
+  "gallery": {
+    "save": "Save {{percent}}",
+    "bestseller": "Bestseller",
+    "new": "New",
+    "share": "Share this book",
+    "copied": "Link to the book copied",
+    "images": "Book images",
+    "image": "Image {{n}}"
+  },
+  "purchase": {
+    "insteadOf": "was ",
+    "save": "Save {{amount}}",
+    "installments": "Instalments available at checkout",
+    "chooseEdition": "Choose an edition",
+    "unavailable": " · unavailable",
+    "addToCart": "Add to cart",
+    "buyNow": "Buy now",
+    "askTitle": "Ask Efendi about this book…",
+    "ask1": "Is it suitable for beginners?",
+    "ask2": "How do the editions differ?",
+    "ask3": "What should I read before it?",
+    "freeShipping": "Free shipping within Turkey over {{amount}}",
+    "shipping": "We ship within Turkey and worldwide",
+    "original": "Original edition from {{publisher}}",
+    "thePublisher": "the publisher",
+    "returns": "Returns within 14 days of delivery",
+    "notifyBar": "Notify me when available"
+  },
+  "notify": {
+    "sent": "We sent a confirmation link to <b>{{email}}</b>. Open it to turn on the alert, and we'll email you when the book is back.",
+    "inStockNow": "The book is in stock now; you can add it to your cart.",
+    "title": "This book is currently unavailable. Notify me when it's back:",
+    "email": "Email address",
+    "submit": "Notify me"
+  },
+  "owned": {
+    "onTheWay": "On its way to you in an earlier order",
+    "purchased": "In your library from your purchases",
+    "own": "I own this book",
+    "ownElsewhere": "I own this book from elsewhere"
+  },
+  "reviews": {
+    "title": "Reviews",
+    "fromVerified_one": "From {{n}} verified buyer's review",
+    "fromVerified_other": "From {{n}} verified buyers' reviews",
+    "none": "No reviews yet. Be the first to write about this book.",
+    "sortBy": "Sort by",
+    "Newest": "Newest",
+    "HighestRated": "Highest rated",
+    "LowestRated": "Lowest rated",
+    "verified": "✓ Verified buyer",
+    "more": "Show more",
+    "rating": "Rating",
+    "stars": "{{n}} out of 5",
+    "ratingRequired": "Choose a number of stars",
+    "titleTooLong": "The title is too long",
+    "bodyTooShort": "Write at least {{n}} characters",
+    "bodyTooLong": "The review is too long",
+    "reviewTitle": "Review title (optional)",
+    "body": "Your review",
+    "sending": "Sending…",
+    "send": "Send review",
+    "thanks": "Thank you! Your review will appear once it's been checked.",
+    "signIn": "Sign in to write a review",
+    "already": "You've reviewed this book. Thank you.",
+    "buyersOnly": "Reviews can be written by customers who bought and received the book.",
+    "write": "Write a review"
+  }
+}

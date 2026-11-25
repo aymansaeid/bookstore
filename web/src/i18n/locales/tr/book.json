@@ -1,0 +1,89 @@
+{
+  "page": {
+    "loading": "Kitap yükleniyor…",
+    "by": "Yazar:",
+    "editedBy": "Tahkik:",
+    "reviews": "({{n}} değerlendirme)",
+    "sold": "● Bu hafta {{n}} adet satıldı",
+    "relatedKicker": "Özenle seçildi",
+    "relatedTitle": "Kitaplığınızı tamamlayın"
+  },
+  "specs": {
+    "publisher": "Yayınevi",
+    "editing": "Tahkik",
+    "volumes": "Cilt",
+    "binding": "Cilt türü",
+    "pages": "Sayfa sayısı",
+    "language": "Dil",
+    "isbn": "ISBN",
+    "about": "Kitap hakkında",
+    "highlights": "Başlıca konular"
+  },
+  "gallery": {
+    "save": "{{percent}} indirim",
+    "bestseller": "Çok satan",
+    "new": "Yeni",
+    "share": "Kitabı paylaş",
+    "copied": "Kitabın bağlantısı kopyalandı",
+    "images": "Kitap görselleri",
+    "image": "Görsel {{n}}"
+  },
+  "purchase": {
+    "insteadOf": "önceki fiyat ",
+    "save": "{{amount}} kazanç",
+    "installments": "Ödeme sırasında taksit imkânı",
+    "chooseEdition": "Baskı seçin",
+    "unavailable": " · mevcut değil",
+    "addToCart": "Sepete ekle",
+    "buyNow": "Hemen al",
+    "askTitle": "Bu kitabı Efendi'ye sorun…",
+    "ask1": "Yeni başlayanlara uygun mu?",
+    "ask2": "Baskılar arasındaki fark nedir?",
+    "ask3": "Bundan önce ne okumalıyım?",
+    "freeShipping": "Türkiye içi {{amount}} üzeri ücretsiz kargo",
+    "shipping": "Türkiye içine ve tüm dünyaya gönderim",
+    "original": "{{publisher}} orijinal baskısı",
+    "thePublisher": "Yayınevinin",
+    "returns": "Teslimattan itibaren 14 gün içinde iade",
+    "notifyBar": "Gelince haber ver"
+  },
+  "notify": {
+    "sent": "<b>{{email}}</b> adresine bir onay bağlantısı gönderdik. Bildirimi açmak için bağlantıyı açın; kitap geri geldiğinde size yazacağız.",
+    "inStockNow": "Kitap şu anda stokta; sepetinize ekleyebilirsiniz.",
+    "title": "Bu kitap şu anda mevcut değil. Gelince haber ver:",
+    "email": "E-posta adresi",
+    "submit": "Haber ver"
+  },
+  "owned": {
+    "onTheWay": "Önceki bir siparişle size geliyor",
+    "purchased": "Satın aldıklarınızdan, kitaplığınızda",
+    "own": "Bu kitaba sahibim",
+    "ownElsewhere": "Bu kitaba başka yerden sahibim"
+  },
+  "reviews": {
+    "title": "Değerlendirmeler",
+    "fromVerified": "Onaylı alıcılardan {{n}} değerlendirme",
+    "none": "Henüz değerlendirme yok. Bu kitap hakkında ilk yazan siz olun.",
+    "sortBy": "Sırala",
+    "Newest": "En yeni",
+    "HighestRated": "En yüksek puan",
+    "LowestRated": "En düşük puan",
+    "verified": "✓ Onaylı alıcı",
+    "more": "Daha fazla göster",
+    "rating": "Puan",
+    "stars": "5 üzerinden {{n}}",
+    "ratingRequired": "Yıldız sayısını seçin",
+    "titleTooLong": "Başlık çok uzun",
+    "bodyTooShort": "En az {{n}} karakter yazın",
+    "bodyTooLong": "Değerlendirme çok uzun",
+    "reviewTitle": "Değerlendirme başlığı (isteğe bağlı)",
+    "body": "Değerlendirmeniz",
+    "sending": "Gönderiliyor…",
+    "send": "Değerlendirmeyi gönder",
+    "thanks": "Teşekkürler! Değerlendirmeniz kontrol edildikten sonra yayınlanacak.",
+    "signIn": "Değerlendirme yazmak için giriş yapın",
+    "already": "Bu kitabı değerlendirdiniz. Teşekkürler.",
+    "buyersOnly": "Kitabı satın alıp teslim alanlar değerlendirme yazabilir.",
+    "write": "Değerlendirme yazın"
+  }
+}

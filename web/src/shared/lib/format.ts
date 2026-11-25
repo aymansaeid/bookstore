@@ -29,6 +29,9 @@ const regionNames = new Intl.DisplayNames([UI_LANGUAGE], { type: 'region' });
 
 const NBSP = '\u00A0';
 
+/** Between names in a list: «، » in Arabic, ", " otherwise. */
+export const LIST_SEPARATOR = UI_LANGUAGE === 'ar' ? '، ' : ', ';
+
 export const formatCount = (value: number): string => arabic.format(value);
 
 /** Counter bubbles: 1–99, then "٩٩+". */

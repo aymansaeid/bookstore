@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { BookCover } from '@/features/catalog/components/BookCover';
 import type { PublicBook } from '@/features/catalog/types';
 import { WishlistButton } from '@/features/wishlist/WishlistButton';
+import { i18n } from '@/i18n';
 import { cx } from '@/shared/lib/cx';
-import { formatCount } from '@/shared/lib/format';
+import { formatCount, formatPercent } from '@/shared/lib/format';
 import { Icon } from '@/shared/ui/Icon/Icon';
 import { toast } from '@/shared/ui/toast/toastStore';
 
@@ -13,13 +15,12 @@ import styles from './BookGallery.module.css';
 async function share(title: string) {
   const url = window.location.href;
   try {
-    // 1. Replaced the `in` operator with a truthiness/type check
+    // Phones open the share sheet; desktops copy the link.
     if (typeof navigator.share === 'function') {
       await navigator.share({ title, url });
     } else {
-      // 2. TypeScript no longer considers this block unreachable
       await navigator.clipboard.writeText(url);
-      toast.success('نُسخ رابط الكتاب');
+      toast.success(i18n.t('gallery.copied', { ns: 'book' }));
     }
   } catch {
     // The user closed the share sheet: nothing to report.
@@ -28,6 +29,7 @@ async function share(title: string) {
 
 /** Spec 5.4 stage: big cover on a patterned paper stage, badges, tools, thumbnails. */
 export function BookGallery({ book }: { book: PublicBook }) {
+  const { t } = useTranslation('book', { keyPrefix: 'gallery' });
   const images = [...book.images].sort(
     (a, b) => Number(b.isCover) - Number(a.isCover) || a.displayOrder - b.displayOrder,
   );
@@ -39,10 +41,14 @@ export function BookGallery({ book }: { book: PublicBook }) {
       <div className={styles.stage}>
         <div className={styles.badges}>
           {(book.savingsPercent ?? 0) > 0 && (
-            <span className={styles.sale}>وفّر {formatCount(book.savingsPercent ?? 0)}٪</span>
+            <span className={styles.sale}>
+              {t('save', { percent: formatPercent(book.savingsPercent ?? 0) })}
+            </span>
           )}
-          {book.badges.includes('Bestseller') && <span className={styles.best}>الأكثر مبيعاً</span>}
-          {book.badges.includes('New') && <span className={styles.new}>جديد</span>}
+          {book.badges.includes('Bestseller') && (
+            <span className={styles.best}>{t('bestseller')}</span>
+          )}
+          {book.badges.includes('New') && <span className={styles.new}>{t('new')}</span>}
         </div>
 
         <div className={styles.tools}>
@@ -50,7 +56,7 @@ export function BookGallery({ book }: { book: PublicBook }) {
           <button
             type="button"
             className={styles.tool}
-            aria-label="مشاركة الكتاب"
+            aria-label={t('share')}
             onClick={() => {
               void share(book.title);
             }}
@@ -72,13 +78,13 @@ export function BookGallery({ book }: { book: PublicBook }) {
       </div>
 
       {images.length > 1 && (
-        <ul className={styles.thumbs} aria-label="صور الكتاب">
+        <ul className={styles.thumbs} aria-label={t('images')}>
           {images.map((image, index) => (
             <li key={image.id}>
               <button
                 type="button"
                 className={cx(styles.thumb, index === active && styles.thumbActive)}
-                aria-label={image.altText ?? `الصورة ${formatCount(index + 1)}`}
+                aria-label={image.altText ?? t('image', { n: formatCount(index + 1) })}
                 aria-pressed={index === active}
                 onClick={() => {
                   setActive(index);
