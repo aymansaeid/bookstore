@@ -2,8 +2,16 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { Trans, useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
+import {
+  ENABLED_LANGUAGES,
+  isUiLanguage,
+  LANGUAGE_NAMES,
+  UI_LANGUAGE,
+  type UiLanguage,
+} from '@/app/locale';
 import { paths } from '@/app/paths';
 import { accountApi } from '@/features/account/api';
 import { AccountHeader } from '@/features/account/components/AccountHeader';
@@ -23,12 +31,30 @@ import { ApiError } from '@/shared/api/ApiError';
 import { errorMessage } from '@/shared/api/errorMessages';
 import { formatCount, formatDate } from '@/shared/lib/format';
 import { Button } from '@/shared/ui/Button/Button';
-import { Checkbox, FormAlert, PasswordField, TextField } from '@/shared/ui/form/Field';
+import { Checkbox, FormAlert, PasswordField, SelectField, TextField } from '@/shared/ui/form/Field';
 import { toast } from '@/shared/ui/toast/toastStore';
 
 import styles from './AccountSecurityPage.module.css';
 
+/** The account's email language; older profiles without one get the page's language. */
+const emailLanguage = (customer: Customer): UiLanguage =>
+  isUiLanguage(customer.preferredLanguage) ? customer.preferredLanguage : UI_LANGUAGE;
+
+const profileDefaults = (customer: Customer): ProfileValues => ({
+  firstName: customer.firstName,
+  lastName: customer.lastName,
+  phone: customer.phone ?? '',
+  acceptsMarketingEmails: customer.acceptsMarketingEmails,
+  preferredLanguage: emailLanguage(customer),
+});
+
 function ProfileCard({ customer }: { customer: Customer }) {
+  const { t } = useTranslation('account', { keyPrefix: 'security.profile' });
+  const { t: tShared } = useTranslation('account', { keyPrefix: 'shared' });
+  // Offer every enabled language, plus the saved one if it's no longer enabled.
+  const languages = ENABLED_LANGUAGES.includes(emailLanguage(customer))
+    ? ENABLED_LANGUAGES
+    : [...ENABLED_LANGUAGES, emailLanguage(customer)];
   const {
     register,
     handleSubmit,
@@ -36,12 +62,7 @@ function ProfileCard({ customer }: { customer: Customer }) {
     formState: { errors, isDirty },
   } = useForm<ProfileValues>({
     resolver: zodResolver(profileSchema),
-    defaultValues: {
-      firstName: customer.firstName,
-      lastName: customer.lastName,
-      phone: customer.phone ?? '',
-      acceptsMarketingEmails: customer.acceptsMarketingEmails,
-    },
+    defaultValues: profileDefaults(customer),
     mode: 'onTouched',
   });
 
@@ -50,13 +71,8 @@ function ProfileCard({ customer }: { customer: Customer }) {
       accountApi.updateProfile({ ...values, phone: values.phone === '' ? null : values.phone }),
     onSuccess: (updated) => {
       updateSessionCustomer(updated);
-      reset({
-        firstName: updated.firstName,
-        lastName: updated.lastName,
-        phone: updated.phone ?? '',
-        acceptsMarketingEmails: updated.acceptsMarketingEmails,
-      });
-      toast.success('حُفظت بياناتك.');
+      reset(profileDefaults(updated));
+      toast.success(t('saved'));
     },
   });
 
@@ -72,54 +88,71 @@ function ProfileCard({ customer }: { customer: Customer }) {
       }}
     >
       <h2 id="profile-title" className={shared.cardTitle}>
-        بياناتي
+        {t('title')}
       </h2>
       <p className={shared.muted}>
-        البريد الإلكتروني: <b dir="ltr">{customer.email}</b> · عضو منذ{' '}
-        {formatDate(customer.createdAtUtc)}
+        <Trans
+          t={t}
+          i18nKey="emailLine"
+          values={{ email: customer.email, date: formatDate(customer.createdAtUtc) }}
+          components={{ b: <b dir="ltr" /> }}
+        />
       </p>
       {save.isError && <FormAlert>{errorMessage(save.error)}</FormAlert>}
       <div className={styles.twoCols}>
         <TextField
-          label="الاسم"
+          label={t('firstName')}
           autoComplete="given-name"
           error={errors.firstName?.message}
           {...register('firstName')}
         />
         <TextField
-          label="اسم العائلة"
+          label={t('lastName')}
           autoComplete="family-name"
           error={errors.lastName?.message}
           {...register('lastName')}
         />
       </div>
       <TextField
-        label="رقم الجوال (اختياري)"
+        label={t('phone')}
         type="tel"
         dir="ltr"
         inputMode="tel"
         autoComplete="tel"
         placeholder="+90 5xx xxx xx xx"
-        hint="نملأ به خانة الجوال عند الدفع."
+        hint={t('phoneHint')}
         error={errors.phone?.message}
         {...register('phone')}
       />
-      <Checkbox {...register('acceptsMarketingEmails')}>
-        أرسلوا لي الإصدارات الجديدة والعروض بالبريد الإلكتروني
-      </Checkbox>
+      {languages.length > 1 && (
+        <SelectField
+          label={t('emailLanguage')}
+          hint={t('emailLanguageHint')}
+          error={errors.preferredLanguage?.message}
+          {...register('preferredLanguage')}
+        >
+          {languages.map((language) => (
+            <option key={language} value={language} lang={language}>
+              {LANGUAGE_NAMES[language]}
+            </option>
+          ))}
+        </SelectField>
+      )}
+      <Checkbox {...register('acceptsMarketingEmails')}>{t('marketing')}</Checkbox>
       <Button
         type="submit"
         variant="ink"
         className={styles.submit}
         disabled={!isDirty || save.isPending}
       >
-        {save.isPending ? 'جارٍ الحفظ…' : 'حفظ التغييرات'}
+        {save.isPending ? tShared('saving') : t('save')}
       </Button>
     </form>
   );
 }
 
 function PasswordCard() {
+  const { t } = useTranslation('account', { keyPrefix: 'security.password' });
   const [done, setDone] = useState(false);
   const {
     register,
@@ -150,9 +183,9 @@ function PasswordCard() {
     return (
       <section className={shared.card} aria-labelledby="password-title">
         <h2 id="password-title" className={shared.cardTitle}>
-          تم تغيير كلمة المرور
+          {t('doneTitle')}
         </h2>
-        <p>سجّلنا خروجك من كل الأجهزة حفاظاً على أمان حسابك. سجّل الدخول بكلمة المرور الجديدة.</p>
+        <p>{t('doneText')}</p>
         <Button
           variant="ink"
           className={styles.submit}
@@ -160,7 +193,7 @@ function PasswordCard() {
             endSessionLocally();
           }}
         >
-          تسجيل الدخول
+          {t('signIn')}
         </Button>
       </section>
     );
@@ -181,39 +214,41 @@ function PasswordCard() {
       }}
     >
       <h2 id="password-title" className={shared.cardTitle}>
-        تغيير كلمة المرور
+        {t('title')}
       </h2>
-      <p className={shared.muted}>بعد التغيير نسجّل خروجك من كل الأجهزة، وهذا الجهاز منها.</p>
+      <p className={shared.muted}>{t('lead')}</p>
       {change.isError && !incorrect && <FormAlert>{errorMessage(change.error)}</FormAlert>}
       <PasswordField
-        label="كلمة المرور الحالية"
+        label={t('current')}
         autoComplete="current-password"
         error={errors.currentPassword?.message}
         {...register('currentPassword')}
       />
       <div className={styles.twoCols}>
         <PasswordField
-          label="كلمة المرور الجديدة"
+          label={t('new')}
           autoComplete="new-password"
-          hint={`${formatCount(PASSWORD_MIN)} حرفاً على الأقل`}
+          hint={t('hint', { n: formatCount(PASSWORD_MIN) })}
           error={errors.newPassword?.message}
           {...register('newPassword')}
         />
         <PasswordField
-          label="تأكيد كلمة المرور"
+          label={t('confirm')}
           autoComplete="new-password"
           error={errors.confirmPassword?.message}
           {...register('confirmPassword')}
         />
       </div>
       <Button type="submit" variant="ink" className={styles.submit} disabled={change.isPending}>
-        {change.isPending ? 'جارٍ التغيير…' : 'تغيير كلمة المرور'}
+        {change.isPending ? t('changing') : t('change')}
       </Button>
     </form>
   );
 }
 
 function DeleteCard() {
+  const { t } = useTranslation('account', { keyPrefix: 'security.delete' });
+  const { t: tShared } = useTranslation('account', { keyPrefix: 'shared' });
   const navigate = useNavigate();
   const {
     register,
@@ -231,7 +266,7 @@ function DeleteCard() {
       // Leave «حسابي» first, so the guard doesn't send us to the login page.
       void navigate(paths.home, { replace: true });
       endSessionLocally();
-      toast.success('حُذف حسابك. نتمنى أن نراك مجدداً.');
+      toast.success(t('done'));
     },
   });
 
@@ -247,23 +282,20 @@ function DeleteCard() {
       }}
     >
       <h2 id="delete-title" className={shared.cardTitle}>
-        حذف الحساب
+        {t('title')}
       </h2>
-      <p className={styles.dangerText}>
-        الحذف نهائي ولا يمكن التراجع عنه: تُحذف عناوينك ومفضلتك ومراجعاتك، وتبقى طلباتك محفوظة دون
-        بياناتك الشخصية لأغراض الفوترة.
-      </p>
+      <p className={styles.dangerText}>{t('text')}</p>
       {remove.isError && <FormAlert>{errorMessage(remove.error)}</FormAlert>}
       <PasswordField
-        label="كلمة المرور للتأكيد"
+        label={t('password')}
         autoComplete="current-password"
         error={errors.password?.message}
         {...register('password')}
       />
-      <Checkbox {...register('confirm')}>أفهم أن حذف الحساب نهائي</Checkbox>
+      <Checkbox {...register('confirm')}>{t('confirm')}</Checkbox>
       {errors.confirm?.message && <p className={styles.error}>{errors.confirm.message}</p>}
       <Button type="submit" variant="red" className={styles.submit} disabled={remove.isPending}>
-        {remove.isPending ? 'جارٍ الحذف…' : 'حذف حسابي نهائياً'}
+        {remove.isPending ? tShared('deleting') : t('submit')}
       </Button>
     </form>
   );
@@ -271,11 +303,12 @@ function DeleteCard() {
 
 /** «الحساب والأمان» (API §7): profile, password, account deletion (KVKK). */
 export default function AccountSecurityPage() {
+  const { t } = useTranslation('account');
   const { customer } = useSession();
   if (!customer) return null;
   return (
     <>
-      <AccountHeader title="الحساب والأمان" />
+      <AccountHeader title={t('security.title')} />
       <ProfileCard key={customer.id} customer={customer} />
       <PasswordCard />
       <DeleteCard />

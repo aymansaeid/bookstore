@@ -149,7 +149,17 @@
     "level": { "Beginner": "Başlangıç", "Intermediate": "Orta", "Specialist": "İleri" },
     "badge": { "New": "Yeni", "Deluxe": "Lüks baskı", "Bestseller": "Çok satan" },
     "returnReason": { "ChangedMind": "Fikrimi değiştirdim", "ArrivedDamaged": "Kitap hasarlı geldi", "WrongItem": "Sipariş ettiğimden farklı bir kitap geldi", "Other": "Başka bir sebep" },
-    "cancelReason": { "ChangedMind": "Fikrimi değiştirdim", "OrderedByMistake": "Yanlışlıkla sipariş verdim", "FoundBetterPrice": "Daha uygun fiyat buldum", "DeliveryTooSlow": "Teslimat çok yavaş", "Other": "Başka bir sebep" }
+    "cancelReason": { "ChangedMind": "Fikrimi değiştirdim", "OrderedByMistake": "Yanlışlıkla sipariş verdim", "FoundBetterPrice": "Daha uygun fiyat buldum", "DeliveryTooSlow": "Teslimat çok yavaş", "Other": "Başka bir sebep" },
+      "readingStatus": {
+      "NotStarted": "Henüz başlamadım",
+      "Reading": "Okuyorum",
+      "Finished": "Bitirdim"
+    },
+    "ownership": {
+      "Purchased": "Kitap Efendi'den satın alındı",
+      "OnTheWay": "Size doğru yolda",
+      "AddedManually": "Kendiniz eklediniz"
+    }
   },
     "validation": {
     "email": "Geçerli bir e-posta adresi girin",

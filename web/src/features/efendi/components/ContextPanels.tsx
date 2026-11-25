@@ -5,8 +5,8 @@ import { useCustomerId } from '@/features/account/queries';
 import { useCartStore } from '@/features/cart/cartStore';
 import { BookCover } from '@/features/catalog/components/BookCover';
 import { useQuote } from '@/features/checkout/useQuote';
-import { OWNERSHIP_LABELS, READING_STATUS_LABELS } from '@/features/library/api';
 import { useLibrary } from '@/features/library/queries';
+import { ownershipLabel, readingStatusLabel } from '@/shared/api/enums';
 import { booksPhrase, formatCount, formatMoney } from '@/shared/lib/format';
 import { buttonClass } from '@/shared/ui/Button/buttonClass';
 
@@ -41,8 +41,8 @@ export function LibraryPeek() {
                 {item.readingStatus === 'Reading'
                   ? `أقرأه الآن · ${formatCount(item.progressPercent)}٪`
                   : item.readingStatus === 'Finished'
-                    ? READING_STATUS_LABELS.Finished
-                    : OWNERSHIP_LABELS[item.ownership]}
+                    ? readingStatusLabel('Finished')
+                    : ownershipLabel(item.ownership)}
               </span>
             </div>
           </li>

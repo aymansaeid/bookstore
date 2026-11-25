@@ -1,4 +1,5 @@
 import { customerRequest } from '@/features/auth/session';
+import type { UiLanguage } from '@/app/locale';
 import type { Customer } from '@/features/auth/types';
 import type { PublicOrder } from '@/features/orders/types';
 import type { LoyaltyTier, ReaderLevel } from '@/shared/api/enums';
@@ -18,6 +19,8 @@ export interface ProfileUpdate {
   lastName: string;
   phone: string | null;
   acceptsMarketingEmails: boolean;
+  /** API §2b: ar, en or tr. Omitted or null leaves it unchanged. */
+  preferredLanguage?: UiLanguage | null;
 }
 
 /** API §7b «ما يعرفه أفندي عنك». Full replacement; up to 10 interests. */

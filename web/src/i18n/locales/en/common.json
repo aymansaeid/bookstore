@@ -149,7 +149,17 @@
     "level": { "Beginner": "Beginner", "Intermediate": "Intermediate", "Specialist": "Specialist" },
     "badge": { "New": "New", "Deluxe": "Deluxe edition", "Bestseller": "Bestseller" },
     "returnReason": { "ChangedMind": "I changed my mind", "ArrivedDamaged": "The book arrived damaged", "WrongItem": "I received a different book", "Other": "Another reason" },
-    "cancelReason": { "ChangedMind": "I changed my mind", "OrderedByMistake": "I ordered by mistake", "FoundBetterPrice": "I found a better price", "DeliveryTooSlow": "Delivery is too slow", "Other": "Another reason" }
+    "cancelReason": { "ChangedMind": "I changed my mind", "OrderedByMistake": "I ordered by mistake", "FoundBetterPrice": "I found a better price", "DeliveryTooSlow": "Delivery is too slow", "Other": "Another reason" },
+      "readingStatus": {
+      "NotStarted": "Not started yet",
+      "Reading": "Reading now",
+      "Finished": "Finished"
+    },
+    "ownership": {
+      "Purchased": "Bought from Kitap Efendi",
+      "OnTheWay": "On its way to you",
+      "AddedManually": "Added by you"
+    }
   },
     "validation": {
     "email": "Enter a valid email address",

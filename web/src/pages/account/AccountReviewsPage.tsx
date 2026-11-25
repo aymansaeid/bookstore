@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 
 import { paths } from '@/app/paths';
@@ -26,10 +27,11 @@ import { toast } from '@/shared/ui/toast/toastStore';
 import collections from './AccountCollections.module.css';
 import styles from './AccountReviewsPage.module.css';
 
-const STATUS: Readonly<Record<ReviewStatus, { label: string; tone: Tone }>> = {
-  Pending: { label: 'قيد المراجعة', tone: 'gold' },
-  Approved: { label: 'منشورة', tone: 'green' },
-  Rejected: { label: 'لم تُنشر', tone: 'red' },
+/** Labels in account.json → reviews.status. */
+const STATUS_TONE: Readonly<Record<ReviewStatus, Tone>> = {
+  Pending: 'gold',
+  Approved: 'green',
+  Rejected: 'red',
 };
 
 const reviewKeys = {
@@ -37,6 +39,8 @@ const reviewKeys = {
 };
 
 function ReviewEditor({ review, onDone }: { review: MyReview; onDone: () => void }) {
+  const { t } = useTranslation('account');
+  const { t: tCommon } = useTranslation();
   const queryClient = useQueryClient();
   const [rating, setRating] = useState(review.rating);
   const [title, setTitle] = useState(review.title ?? '');
@@ -53,7 +57,7 @@ function ReviewEditor({ review, onDone }: { review: MyReview; onDone: () => void
       }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['me', 'reviews'] });
-      toast.success('حُفظ التعديل، وستظهر مراجعتك بعد مراجعتها.');
+      toast.success(t('reviews.savedEdit'));
       onDone();
     },
   });
@@ -67,7 +71,7 @@ function ReviewEditor({ review, onDone }: { review: MyReview; onDone: () => void
       }}
     >
       <fieldset className={styles.rating}>
-        <legend className={styles.legend}>تقييمك</legend>
+        <legend className={styles.legend}>{t('reviews.rating')}</legend>
         {[1, 2, 3, 4, 5].map((value) => (
           <label key={value} className={cx(styles.star, value <= rating && styles.starOn)}>
             <input
@@ -80,12 +84,12 @@ function ReviewEditor({ review, onDone }: { review: MyReview; onDone: () => void
               }}
             />
             <span aria-hidden="true">★</span>
-            <span className="sr-only">{formatCount(value)} من ٥</span>
+            <span className="sr-only">{tCommon('ui.stars', { value: formatCount(value) })}</span>
           </label>
         ))}
       </fieldset>
       <TextField
-        label="العنوان (اختياري)"
+        label={t('reviews.titleField')}
         maxLength={REVIEW_LIMITS.titleMax}
         value={title}
         onChange={(event) => {
@@ -93,12 +97,16 @@ function ReviewEditor({ review, onDone }: { review: MyReview; onDone: () => void
         }}
       />
       <TextAreaField
-        label="مراجعتك"
+        label={t('reviews.body')}
         rows={5}
         maxLength={REVIEW_LIMITS.bodyMax}
         value={body}
-        hint={`${formatCount(length)} / ${formatCount(REVIEW_LIMITS.bodyMax)} · ${formatCount(REVIEW_LIMITS.bodyMin)} أحرف على الأقل`}
-        error={tooShort && body !== '' ? 'المراجعة قصيرة جداً' : undefined}
+        hint={t('reviews.hint', {
+          length: formatCount(length),
+          max: formatCount(REVIEW_LIMITS.bodyMax),
+          min: formatCount(REVIEW_LIMITS.bodyMin),
+        })}
+        error={tooShort && body !== '' ? t('reviews.tooShort') : undefined}
         onChange={(event) => {
           setBody(event.target.value);
         }}
@@ -106,10 +114,10 @@ function ReviewEditor({ review, onDone }: { review: MyReview; onDone: () => void
       {save.isError && <FormAlert>{errorMessage(save.error)}</FormAlert>}
       <div className={collections.actions}>
         <Button type="submit" variant="ink" size="sm" disabled={tooShort || save.isPending}>
-          {save.isPending ? 'جارٍ الحفظ…' : 'حفظ التعديل'}
+          {save.isPending ? t('shared.saving') : t('reviews.saveEdit')}
         </Button>
         <Button variant="ghost" size="sm" onClick={onDone}>
-          إلغاء
+          {t('shared.cancel')}
         </Button>
       </div>
     </form>
@@ -117,16 +125,17 @@ function ReviewEditor({ review, onDone }: { review: MyReview; onDone: () => void
 }
 
 function ReviewCard({ review }: { review: MyReview }) {
+  const { t } = useTranslation('account');
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState(false);
   const [confirming, setConfirming] = useState(false);
-  const status = STATUS[review.status];
+  const tone = STATUS_TONE[review.status];
 
   const remove = useMutation({
     mutationFn: () => myReviewsApi.remove(review.id),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['me', 'reviews'] });
-      toast.success('حُذفت المراجعة.');
+      toast.success(t('reviews.deleted'));
     },
   });
 
@@ -136,7 +145,7 @@ function ReviewCard({ review }: { review: MyReview }) {
         <Link to={paths.book(review.bookSlug)} className={collections.title}>
           {review.bookTitle}
         </Link>
-        <StatusBadge label={status.label} tone={status.tone} />
+        <StatusBadge label={t(`reviews.status.${review.status}`)} tone={tone} />
       </div>
 
       {editing ? (
@@ -153,17 +162,15 @@ function ReviewCard({ review }: { review: MyReview }) {
           <p className={styles.body}>{review.body}</p>
           <p className={collections.sub}>
             {formatDate(review.updatedAtUtc ?? review.createdAtUtc)}
-            {review.updatedAtUtc && ' · معدّلة'}
+            {review.updatedAtUtc && t('reviews.edited')}
           </p>
           {review.status === 'Rejected' && (
-            <p className={collections.sub}>
-              لم تُنشر لأنها لا تتوافق مع إرشادات المراجعات. يمكنك تعديلها وإرسالها من جديد.
-            </p>
+            <p className={collections.sub}>{t('reviews.rejectedNote')}</p>
           )}
           {remove.isError && <FormAlert>{errorMessage(remove.error)}</FormAlert>}
           {confirming ? (
             <div className={styles.confirm}>
-              <p>حذف هذه المراجعة نهائياً؟</p>
+              <p>{t('reviews.confirmDelete')}</p>
               <div className={collections.actions}>
                 <Button
                   variant="red"
@@ -173,7 +180,7 @@ function ReviewCard({ review }: { review: MyReview }) {
                     remove.mutate();
                   }}
                 >
-                  {remove.isPending ? 'جارٍ الحذف…' : 'نعم، احذف'}
+                  {remove.isPending ? t('shared.deleting') : t('shared.yesDelete')}
                 </Button>
                 <Button
                   variant="ghost"
@@ -182,7 +189,7 @@ function ReviewCard({ review }: { review: MyReview }) {
                     setConfirming(false);
                   }}
                 >
-                  تراجع
+                  {t('shared.back')}
                 </Button>
               </div>
             </div>
@@ -195,7 +202,7 @@ function ReviewCard({ review }: { review: MyReview }) {
                   setEditing(true);
                 }}
               >
-                تعديل
+                {t('shared.edit')}
               </Button>
               <Button
                 variant="ghost"
@@ -204,7 +211,7 @@ function ReviewCard({ review }: { review: MyReview }) {
                   setConfirming(true);
                 }}
               >
-                حذف
+                {t('shared.delete')}
               </Button>
             </div>
           )}
@@ -216,6 +223,7 @@ function ReviewCard({ review }: { review: MyReview }) {
 
 /** «مراجعاتي» (API §8): every review waits for moderation; edits do too. */
 export default function AccountReviewsPage() {
+  const { t } = useTranslation('account', { keyPrefix: 'reviews' });
   const customerId = useCustomerId();
   const reviews = useQuery({
     queryKey: reviewKeys.list(customerId ?? 0),
@@ -225,22 +233,19 @@ export default function AccountReviewsPage() {
 
   return (
     <>
-      <AccountHeader
-        title="مراجعاتي"
-        description="تظهر المراجعة للجميع بعد أن نراجعها، وكذلك كل تعديل عليها."
-      />
+      <AccountHeader title={t('title')} description={t('lead')} />
       {reviews.isError ? (
         <div className={shared.empty} role="alert">
           <p>{errorMessage(reviews.error)}</p>
         </div>
       ) : !reviews.data ? (
-        <div className={shared.skeleton} aria-busy="true" aria-label="جارٍ تحميل مراجعاتك" />
+        <div className={shared.skeleton} aria-busy="true" aria-label={t('loading')} />
       ) : reviews.data.length === 0 ? (
         <div className={shared.empty}>
           <Icon name="check" size={28} />
-          <p>لم تكتب مراجعات بعد. بعد استلام طلبك يمكنك تقييم الكتب من صفحاتها.</p>
+          <p>{t('none')}</p>
           <ButtonLink to={paths.account.library} variant="ink" size="sm">
-            إلى مكتبتي
+            {t('toLibrary')}
           </ButtonLink>
         </div>
       ) : (

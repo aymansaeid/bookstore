@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 
 import { paths } from '@/app/paths';
@@ -15,6 +16,7 @@ import styles from './AccountCollections.module.css';
 
 /** «تنبيهات المحققين» (API §7c): muhaqqiqs you follow; each new edition notifies you. */
 export default function AccountFollowingPage() {
+  const { t } = useTranslation('account');
   const customerId = useCustomerId();
   const follows = useQuery({
     queryKey: followKeys.list(customerId ?? 0),
@@ -25,22 +27,19 @@ export default function AccountFollowingPage() {
 
   return (
     <>
-      <AccountHeader
-        title="تنبيهات المحققين"
-        description="نخبرك في الإشعارات وبالبريد عند صدور تحقيق جديد لمن تتابعهم."
-      />
+      <AccountHeader title={t('following.title')} description={t('following.lead')} />
       {follows.isError ? (
         <div className={shared.empty} role="alert">
           <p>{errorMessage(follows.error)}</p>
         </div>
       ) : !follows.data ? (
-        <div className={shared.skeleton} aria-busy="true" aria-label="جارٍ التحميل" />
+        <div className={shared.skeleton} aria-busy="true" aria-label={t('shared.loading')} />
       ) : follows.data.length === 0 ? (
         <div className={shared.empty}>
           <Icon name="bell" size={28} />
-          <p>لا تتابع أي محقّق بعد. اضغط «متابعة» في صفحة أي محقّق.</p>
+          <p>{t('following.none')}</p>
           <ButtonLink to={paths.search} variant="ink" size="sm">
-            تصفّح المكتبة
+            {t('shared.browse')}
           </ButtonLink>
         </div>
       ) : (
@@ -62,7 +61,9 @@ export default function AccountFollowingPage() {
                     ))}
                   </ul>
                 )}
-                <span className={styles.sub}>تتابعه منذ {formatDate(followedAtUtc)}</span>
+                <span className={styles.sub}>
+                  {t('following.since', { date: formatDate(followedAtUtc) })}
+                </span>
                 <div className={styles.actions}>
                   <Button
                     variant="ghost"
@@ -72,7 +73,7 @@ export default function AccountFollowingPage() {
                       toggle.mutate({ id: muhaqqiq.id, following: true });
                     }}
                   >
-                    إلغاء المتابعة
+                    {t('following.unfollow')}
                   </Button>
                 </div>
               </div>

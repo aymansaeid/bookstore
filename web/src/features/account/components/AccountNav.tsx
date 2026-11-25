@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { NavLink, useNavigate } from 'react-router';
 
 import { paths } from '@/app/paths';
@@ -12,9 +13,23 @@ import type { IconName } from '@/shared/ui/Icon/icons';
 
 import styles from './AccountNav.module.css';
 
+type Section =
+  | 'dashboard'
+  | 'library'
+  | 'paths'
+  | 'orders'
+  | 'wishlist'
+  | 'following'
+  | 'notifications'
+  | 'chats'
+  | 'points'
+  | 'addresses'
+  | 'reviews'
+  | 'security';
+
 interface Item {
   to: string;
-  label: string;
+  label: Section;
   icon: IconName;
   end?: boolean;
   badge?: 'notifications';
@@ -22,18 +37,18 @@ interface Item {
 
 /** Spec 5.9 sidebar, in the spec's order. */
 const ITEMS: Item[] = [
-  { to: paths.account.root, label: 'لوحتي', icon: 'home', end: true },
-  { to: paths.account.library, label: 'مكتبتي', icon: 'book' },
-  { to: paths.account.paths, label: 'مساراتي', icon: 'route' },
-  { to: paths.account.orders, label: 'طلباتي', icon: 'box' },
-  { to: paths.account.wishlist, label: 'المفضلة', icon: 'heart' },
-  { to: paths.account.following, label: 'تنبيهات المحققين', icon: 'user' },
-  { to: paths.account.notifications, label: 'الإشعارات', icon: 'bell', badge: 'notifications' },
-  { to: paths.account.chats, label: 'محادثاتي مع أفندي', icon: 'send' },
-  { to: paths.account.points, label: 'النقاط', icon: 'gift' },
-  { to: paths.account.addresses, label: 'العناوين', icon: 'pin' },
-  { to: paths.account.reviews, label: 'مراجعاتي', icon: 'check' },
-  { to: paths.account.security, label: 'الحساب والأمان', icon: 'shield' },
+  { to: paths.account.root, label: 'dashboard', icon: 'home', end: true },
+  { to: paths.account.library, label: 'library', icon: 'book' },
+  { to: paths.account.paths, label: 'paths', icon: 'route' },
+  { to: paths.account.orders, label: 'orders', icon: 'box' },
+  { to: paths.account.wishlist, label: 'wishlist', icon: 'heart' },
+  { to: paths.account.following, label: 'following', icon: 'user' },
+  { to: paths.account.notifications, label: 'notifications', icon: 'bell', badge: 'notifications' },
+  { to: paths.account.chats, label: 'chats', icon: 'send' },
+  { to: paths.account.points, label: 'points', icon: 'gift' },
+  { to: paths.account.addresses, label: 'addresses', icon: 'pin' },
+  { to: paths.account.reviews, label: 'reviews', icon: 'check' },
+  { to: paths.account.security, label: 'security', icon: 'shield' },
 ];
 
 /**
@@ -41,6 +56,7 @@ const ITEMS: Item[] = [
  * phones (the bottom nav already covers the main sections, spec §8.3).
  */
 export function AccountNav({ customer }: { customer: Customer }) {
+  const { t } = useTranslation('account');
   const navigate = useNavigate();
   const summary = useCustomerSummary();
   const unread = useUnreadNotificationsCount();
@@ -48,7 +64,7 @@ export function AccountNav({ customer }: { customer: Customer }) {
   const unreadCount = unread.data ?? 0;
 
   return (
-    <aside className={styles.sidebar} aria-label="حسابي">
+    <aside className={styles.sidebar} aria-label={t('nav.label')}>
       <div className={styles.profile}>
         <span className={styles.avatar} aria-hidden="true">
           {initial}
@@ -59,14 +75,17 @@ export function AccountNav({ customer }: { customer: Customer }) {
           </p>
           {summary.data && (
             <p className={styles.tier}>
-              ★ {tierLabel(summary.data.loyaltyTier)} · {formatCount(summary.data.loyaltyPoints)}{' '}
-              نقطة
+              ★ {tierLabel(summary.data.loyaltyTier)} ·{' '}
+              {t('shared.points', {
+                count: summary.data.loyaltyPoints,
+                n: formatCount(summary.data.loyaltyPoints),
+              })}
             </p>
           )}
         </div>
       </div>
 
-      <nav aria-label="أقسام حسابي">
+      <nav aria-label={t('nav.sections')}>
         <ul className={styles.list}>
           {ITEMS.map((item) => (
             <li key={item.to}>
@@ -76,11 +95,11 @@ export function AccountNav({ customer }: { customer: Customer }) {
                 className={({ isActive }) => cx(styles.link, isActive && styles.active)}
               >
                 <Icon name={item.icon} size={18} />
-                <span className={styles.label}>{item.label}</span>
+                <span className={styles.label}>{t(`nav.${item.label}`)}</span>
                 {item.badge === 'notifications' && unreadCount > 0 && (
                   <span
                     className={styles.count}
-                    aria-label={`${formatCount(unreadCount)} غير مقروء`}
+                    aria-label={t('nav.unread', { n: formatCount(unreadCount) })}
                   >
                     {formatBadgeCount(unreadCount)}
                   </span>
@@ -98,7 +117,7 @@ export function AccountNav({ customer }: { customer: Customer }) {
               }}
             >
               <Icon name="lock" size={18} />
-              <span className={styles.label}>تسجيل الخروج</span>
+              <span className={styles.label}>{t('nav.logout')}</span>
             </button>
           </li>
         </ul>

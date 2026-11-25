@@ -1,5 +1,7 @@
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 
+import { UI_DIRECTION } from '@/app/locale';
 import { paths } from '@/app/paths';
 import { AccountHeader } from '@/features/account/components/AccountHeader';
 import shared from '@/features/account/components/account.module.css';
@@ -20,25 +22,26 @@ const RECENT = 3;
 
 /** «لوحتي» (spec 5.9): greeting, four number cards, latest orders. */
 export default function AccountDashboardPage() {
+  const { t } = useTranslation('account');
   const { customer } = useSession();
   const summary = useCustomerSummary();
   const orders = useMyOrders();
   const data = summary.data;
 
   const stats = [
-    { label: 'طلباتي', value: data?.orderCount, to: paths.account.orders },
-    { label: 'كتب في مكتبتي', value: data?.booksOwned, to: paths.account.library },
-    { label: 'في المفضلة', value: data?.wishlistCount, to: paths.account.wishlist },
+    { label: t('dashboard.orders'), value: data?.orderCount, to: paths.account.orders },
+    { label: t('dashboard.books'), value: data?.booksOwned, to: paths.account.library },
+    { label: t('dashboard.wishlist'), value: data?.wishlistCount, to: paths.account.wishlist },
   ];
 
   return (
     <>
       <AccountHeader
-        title={`أهلاً يا ${customer?.firstName ?? ''}`}
-        description="هنا طلباتك ومكتبتك وكل ما يتذكّره أفندي عنك."
+        title={t('dashboard.hello', { name: customer?.firstName ?? '' })}
+        description={t('dashboard.lead')}
         action={
           <ButtonLink to={paths.askEfendi} variant="ink" size="sm">
-            <Spark /> اسأل أفندي
+            <Spark /> {t('dashboard.ask')}
           </ButtonLink>
         }
       />
@@ -58,7 +61,8 @@ export default function AccountDashboardPage() {
           <Link to={paths.account.points} className={cx(styles.stat, styles.dark)}>
             <span className={styles.value}>{data ? formatCount(data.loyaltyPoints) : '—'}</span>
             <span className={styles.statLabel}>
-              نقطة ولاء{data ? ` · ${tierLabel(data.loyaltyTier)}` : ''}
+              {t('dashboard.loyalty', { count: data?.loyaltyPoints ?? 0 })}
+              {data ? ` · ${tierLabel(data.loyaltyTier)}` : ''}
             </span>
           </Link>
         </li>
@@ -67,11 +71,12 @@ export default function AccountDashboardPage() {
       <section className={shared.card} aria-labelledby="recent-orders-title">
         <div className={shared.cardHead}>
           <h2 id="recent-orders-title" className={shared.cardTitle}>
-            طلباتي الأخيرة
+            {t('dashboard.recent')}
           </h2>
           {orders.data && orders.data.length > RECENT && (
             <Link to={paths.account.orders} className={shared.textLink}>
-              كل الطلبات <Icon name="arrow" size={16} />
+              {t('dashboard.allOrders')}{' '}
+              <Icon name={UI_DIRECTION === 'rtl' ? 'arrow' : 'arrowr'} size={16} />
             </Link>
           )}
         </div>
@@ -83,9 +88,9 @@ export default function AccountDashboardPage() {
           </p>
         ) : orders.data.length === 0 ? (
           <div className={shared.empty}>
-            <p>لم تطلب شيئاً بعد.</p>
+            <p>{t('dashboard.noOrders')}</p>
             <ButtonLink to={paths.search} variant="ink" size="sm">
-              تصفّح المكتبة
+              {t('shared.browse')}
             </ButtonLink>
           </div>
         ) : (

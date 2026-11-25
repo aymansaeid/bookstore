@@ -13,13 +13,15 @@ interface Labelled {
 }
 
 type EnumGroup =
-  | 'orderStatus'
-  | 'returnStatus'
-  | 'format'
-  | 'level'
-  | 'badge'
-  | 'returnReason'
-  | 'cancelReason';
+| 'orderStatus'
+| 'returnStatus'
+| 'format'
+| 'level'
+| 'badge'
+| 'returnReason'
+| 'cancelReason'
+| 'readingStatus'
+| 'ownership';
 
 /** The label, or the raw value for an enum value newer than this build. */
 const label = (group: EnumGroup, value: string): string =>
@@ -112,3 +114,6 @@ export const CANCEL_REASONS: readonly CancelReason[] = [
   'Other',
 ];
 export const cancelReasonLabel = (value: string): string => label('cancelReason', value);
+
+export const readingStatusLabel = (value: string): string => label('readingStatus', value);
+export const ownershipLabel = (value: string): string => label('ownership', value);

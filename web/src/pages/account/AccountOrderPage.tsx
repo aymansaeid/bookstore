@@ -1,6 +1,8 @@
 import { useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router';
 
+import { UI_DIRECTION } from '@/app/locale';
 import { paths } from '@/app/paths';
 import { AccountHeader } from '@/features/account/components/AccountHeader';
 import shared from '@/features/account/components/account.module.css';
@@ -17,6 +19,7 @@ import { Icon } from '@/shared/ui/Icon/Icon';
  * customers, so the order comes from the «طلباتي» list (one cached call).
  */
 export default function AccountOrderPage() {
+  const { t } = useTranslation('account', { keyPrefix: 'orders' });
   const { orderNumber = '' } = useParams();
   const { customer } = useSession();
   const customerId = useCustomerId();
@@ -28,19 +31,19 @@ export default function AccountOrderPage() {
   );
   const back = (
     <ButtonLink to={paths.account.orders} variant="ghost" size="sm">
-      <Icon name="arrowr" size={16} /> كل الطلبات
+      <Icon name={UI_DIRECTION === 'rtl' ? 'arrowr' : 'arrow'} size={16} /> {t('all')}
     </ButtonLink>
   );
 
   if (orders.isPending) {
-    return <div className={shared.skeleton} aria-busy="true" aria-label="جارٍ تحميل الطلب" />;
+    return <div className={shared.skeleton} aria-busy="true" aria-label={t('loadingOne')} />;
   }
   if (orders.isError || !order || !customer) {
     return (
       <>
-        <AccountHeader title="الطلب" action={back} />
+        <AccountHeader title={t('orderTitle')} action={back} />
         <div className={shared.empty} role="alert">
-          <p>{orders.isError ? errorMessage(orders.error) : 'لم نجد هذا الطلب في حسابك.'}</p>
+          <p>{orders.isError ? errorMessage(orders.error) : t('notFound')}</p>
         </div>
       </>
     );
@@ -49,7 +52,7 @@ export default function AccountOrderPage() {
   const key = meKeys.orders(customerId ?? 0);
   return (
     <>
-      <AccountHeader title="تفاصيل الطلب" action={back} />
+      <AccountHeader title={t('detailsTitle')} action={back} />
       <OrderDetails
         order={order}
         // The order is filed under the account's verified email (API §5).

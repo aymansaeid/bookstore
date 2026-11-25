@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 
 import { paths } from '@/app/paths';
@@ -32,24 +33,25 @@ const asCard = (item: WishlistItem) => ({
 
 /** «المفضلة» (API §8): saved books with the live price and stock. */
 export default function AccountWishlistPage() {
+  const { t } = useTranslation('account');
   const wishlist = useWishlist();
   const toggle = useToggleWishlist();
 
   return (
     <>
-      <AccountHeader title="المفضلة" description="الكتب التي حفظتها لوقت لاحق." />
+      <AccountHeader title={t('wishlist.title')} description={t('wishlist.lead')} />
       {wishlist.isError ? (
         <div className={shared.empty} role="alert">
           <p>{errorMessage(wishlist.error)}</p>
         </div>
       ) : !wishlist.data ? (
-        <div className={shared.skeleton} aria-busy="true" aria-label="جارٍ تحميل المفضلة" />
+        <div className={shared.skeleton} aria-busy="true" aria-label={t('wishlist.loading')} />
       ) : wishlist.data.length === 0 ? (
         <div className={shared.empty}>
           <Icon name="heart" size={28} />
-          <p>لم تحفظ أي كتاب بعد. اضغط ♡ على أي كتاب لحفظه هنا.</p>
+          <p>{t('wishlist.none')}</p>
           <ButtonLink to={paths.search} variant="ink" size="sm">
-            تصفّح المكتبة
+            {t('shared.browse')}
           </ButtonLink>
         </div>
       ) : (
@@ -69,8 +71,10 @@ export default function AccountWishlistPage() {
                 </Link>
                 <span className={styles.sub}>{item.author}</span>
                 <span className={styles.price}>{formatMoney(item.price, item.currency)}</span>
-                {!item.inStock && <span className={styles.out}>غير متوفر حالياً</span>}
-                <span className={styles.sub}>حُفظ في {formatDate(item.addedAtUtc)}</span>
+                {!item.inStock && <span className={styles.out}>{t('wishlist.out')}</span>}
+                <span className={styles.sub}>
+                  {t('wishlist.saved', { date: formatDate(item.addedAtUtc) })}
+                </span>
                 <div className={styles.actions}>
                   {item.inStock && (
                     <Button
@@ -80,7 +84,7 @@ export default function AccountWishlistPage() {
                         addToCartWithFeedback({ id: item.bookId, title: item.title });
                       }}
                     >
-                      <Icon name="cart" size={16} /> أضف إلى السلة
+                      <Icon name="cart" size={16} /> {t('wishlist.add')}
                     </Button>
                   )}
                   <Button
@@ -91,7 +95,7 @@ export default function AccountWishlistPage() {
                       toggle.mutate({ book: asCard(item), saved: true });
                     }}
                   >
-                    إزالة
+                    {t('shared.remove')}
                   </Button>
                 </div>
               </div>

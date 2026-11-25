@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 
 import { paths } from '@/app/paths';
@@ -9,7 +10,7 @@ import { BookCover } from '@/features/catalog/components/BookCover';
 import { type MyReadingPath, myPathsApi } from '@/features/paths/api';
 import { levelLabel } from '@/shared/api/enums';
 import { errorMessage } from '@/shared/api/errorMessages';
-import { formatCount } from '@/shared/lib/format';
+import { formatCount, formatPercent } from '@/shared/lib/format';
 import { Button, ButtonLink } from '@/shared/ui/Button/Button';
 import { Icon } from '@/shared/ui/Icon/Icon';
 import { toast } from '@/shared/ui/toast/toastStore';
@@ -17,13 +18,14 @@ import { toast } from '@/shared/ui/toast/toastStore';
 import styles from './AccountPathsPage.module.css';
 
 function PathCard({ item }: { item: MyReadingPath }) {
+  const { t } = useTranslation('account', { keyPrefix: 'paths' });
   const queryClient = useQueryClient();
   const { summary, progress, nextStage } = item;
   const leave = useMutation({
     mutationFn: () => myPathsApi.leave(summary.id),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['me', 'paths'] });
-      toast.success('تركت المسار. يمكنك العودة إليه متى شئت.');
+      toast.success(t('left'));
     },
     onError: (error) => {
       toast.error(errorMessage(error));
@@ -41,7 +43,7 @@ function PathCard({ item }: { item: MyReadingPath }) {
       <div
         className={styles.bar}
         role="progressbar"
-        aria-label={`تقدّمك في «${summary.title}»`}
+        aria-label={t('progress', { title: summary.title })}
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={progress.percent}
@@ -49,8 +51,11 @@ function PathCard({ item }: { item: MyReadingPath }) {
         <span style={{ inlineSize: `${String(progress.percent)}%` }} />
       </div>
       <p className={styles.muted}>
-        أنجزت {formatCount(progress.completedStages)} من {formatCount(progress.totalStages)} مراحل ·{' '}
-        {formatCount(progress.percent)}٪
+        {t('done', {
+          done: formatCount(progress.completedStages),
+          total: formatCount(progress.totalStages),
+          percent: formatPercent(progress.percent),
+        })}
       </p>
 
       {nextStage ? (
@@ -64,7 +69,7 @@ function PathCard({ item }: { item: MyReadingPath }) {
           </Link>
           <div>
             <p className={styles.nextLabel}>
-              التالي في مسارك · المرحلة {formatCount(nextStage.stageNumber)}
+              {t('next', { n: formatCount(nextStage.stageNumber) })}
             </p>
             <Link to={paths.book(nextStage.book.slug)} className={styles.nextTitle}>
               {nextStage.book.title}
@@ -74,13 +79,13 @@ function PathCard({ item }: { item: MyReadingPath }) {
         </div>
       ) : (
         <p className={styles.done}>
-          <Icon name="check" size={16} /> أتممت هذا المسار. بارك الله في علمك.
+          <Icon name="check" size={16} /> {t('finished')}
         </p>
       )}
 
       <div className={styles.actions}>
         <ButtonLink to={paths.readingPath(summary.slug)} variant="ink" size="sm">
-          عرض المسار
+          {t('view')}
         </ButtonLink>
         <Button
           variant="ghost"
@@ -90,7 +95,7 @@ function PathCard({ item }: { item: MyReadingPath }) {
             leave.mutate();
           }}
         >
-          ترك المسار
+          {t('leave')}
         </Button>
       </div>
     </li>
@@ -99,6 +104,7 @@ function PathCard({ item }: { item: MyReadingPath }) {
 
 /** «مساراتي» (API §7d): enrolled reading paths with progress and the next book. */
 export default function AccountPathsPage() {
+  const { t } = useTranslation('account', { keyPrefix: 'paths' });
   const customerId = useCustomerId();
   const myPaths = useQuery({
     queryKey: ['me', 'paths', customerId ?? 0] as const,
@@ -108,22 +114,19 @@ export default function AccountPathsPage() {
 
   return (
     <>
-      <AccountHeader
-        title="مساراتي"
-        description="تقدّمك يُحسب من مكتبتك: كل كتاب تنهيه يُتمّ مرحلته."
-      />
+      <AccountHeader title={t('title')} description={t('lead')} />
       {myPaths.isError ? (
         <div className={shared.empty} role="alert">
           <p>{errorMessage(myPaths.error)}</p>
         </div>
       ) : !myPaths.data ? (
-        <div className={shared.skeleton} aria-busy="true" aria-label="جارٍ تحميل مساراتك" />
+        <div className={shared.skeleton} aria-busy="true" aria-label={t('loading')} />
       ) : myPaths.data.length === 0 ? (
         <div className={shared.empty}>
           <Icon name="route" size={28} />
-          <p>لم تبدأ أي مسار قراءة بعد.</p>
+          <p>{t('none')}</p>
           <ButtonLink to={paths.readingPaths} variant="ink" size="sm">
-            تصفّح مسارات القراءة
+            {t('browse')}
           </ButtonLink>
         </div>
       ) : (

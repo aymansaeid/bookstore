@@ -1,11 +1,12 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 
 import { paths } from '@/app/paths';
 import { AccountHeader } from '@/features/account/components/AccountHeader';
 import shared from '@/features/account/components/account.module.css';
 import { useCustomerId } from '@/features/account/queries';
-import { loyaltyApi, TRANSACTION_LABELS } from '@/features/loyalty/api';
+import { loyaltyApi } from '@/features/loyalty/api';
 import { tierLabel } from '@/shared/api/enums';
 import { errorMessage } from '@/shared/api/errorMessages';
 import { cx } from '@/shared/lib/cx';
@@ -20,6 +21,7 @@ const signed = (points: number) =>
 
 /** «النقاط» (API §7e): balance, tier, next tier and the history. */
 export default function AccountPointsPage() {
+  const { t } = useTranslation('account');
   const customerId = useCustomerId();
   const { page, hrefFor } = usePageParam();
   const summary = useQuery({
@@ -37,56 +39,56 @@ export default function AccountPointsPage() {
 
   return (
     <>
-      <AccountHeader
-        title="النقاط"
-        description="تكسب نقاطاً مع كل طلب. استخدام النقاط عند الدفع قادم قريباً."
-      />
+      <AccountHeader title={t('points.title')} description={t('points.lead')} />
 
       {summary.isError ? (
         <div className={shared.empty} role="alert">
           <p>{errorMessage(summary.error)}</p>
         </div>
       ) : !data ? (
-        <div className={shared.skeleton} aria-busy="true" aria-label="جارٍ تحميل النقاط" />
+        <div className={shared.skeleton} aria-busy="true" aria-label={t('points.loading')} />
       ) : !data.enabled ? (
         <div className={shared.empty}>
-          <p>برنامج النقاط غير مفعّل حالياً.</p>
+          <p>{t('points.disabled')}</p>
         </div>
       ) : (
         <>
-          <section className={styles.hero} aria-label="رصيد النقاط">
+          <section className={styles.hero} aria-label={t('points.balance')}>
             <p className={styles.tier}>★ {tierLabel(data.tier)}</p>
             <p className={styles.balance}>
-              {formatCount(data.balance)} <span>نقطة</span>
+              {formatCount(data.balance)} <span>{t('points.unit', { count: data.balance })}</span>
             </p>
             <p className={styles.worth}>
-              تعادل {formatMoney(data.balance * data.currencyPerPoint)}
+              {t('points.worth', { amount: formatMoney(data.balance * data.currencyPerPoint) })}
             </p>
             {data.nextTier && (
               <p className={styles.next}>
-                بقي {formatCount(data.nextTier.pointsNeeded)} نقطة لتصبح{' '}
-                {tierLabel(data.nextTier.tier)}
+                {t('points.next', {
+                  points: t('shared.points', {
+                    count: data.nextTier.pointsNeeded,
+                    n: formatCount(data.nextTier.pointsNeeded),
+                  }),
+                  tier: tierLabel(data.nextTier.tier),
+                })}
               </p>
             )}
           </section>
 
           <dl className={styles.facts}>
             <div>
-              <dt>قيد التأكيد</dt>
+              <dt>{t('points.pending')}</dt>
               <dd>{formatCount(data.pendingPoints)}</dd>
             </div>
             <div>
-              <dt>آخر ١٢ شهراً</dt>
+              <dt>{t('points.last12')}</dt>
               <dd>{formatCount(data.earnedLast12Months)}</dd>
             </div>
           </dl>
-          <p className={shared.muted}>
-            نقاط الطلبات الجديدة تبقى «قيد التأكيد» حتى تنتهي مهلة الإرجاع.
-          </p>
+          <p className={shared.muted}>{t('points.pendingNote')}</p>
 
           <section className={shared.card} aria-labelledby="history-title">
             <h2 id="history-title" className={shared.cardTitle}>
-              السجلّ
+              {t('points.history')}
             </h2>
             {history.isError ? (
               <p className={shared.muted} role="alert">
@@ -95,14 +97,14 @@ export default function AccountPointsPage() {
             ) : !history.data ? (
               <div className={shared.skeleton} aria-busy="true" />
             ) : history.data.items.length === 0 ? (
-              <p className={shared.muted}>لا حركات بعد. ستظهر نقاطك هنا بعد أول طلب.</p>
+              <p className={shared.muted}>{t('points.none')}</p>
             ) : (
               <>
                 <ul className={cx(styles.history, history.isPlaceholderData && styles.stale)}>
                   {history.data.items.map((entry) => (
                     <li key={entry.id} className={styles.entry}>
                       <span className={styles.what}>
-                        {TRANSACTION_LABELS[entry.type]}
+                        {t(`points.tx.${entry.type}`, { defaultValue: entry.type })}
                         {entry.orderNumber && (
                           <>
                             {' '}

@@ -1,20 +1,17 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 
 import { paths } from '@/app/paths';
 import { AccountHeader } from '@/features/account/components/AccountHeader';
 import shared from '@/features/account/components/account.module.css';
 import { BookCover } from '@/features/catalog/components/BookCover';
-import {
-  type LibraryItem,
-  OWNERSHIP_LABELS,
-  READING_STATUS_LABELS,
-  type ReadingStatus,
-} from '@/features/library/api';
+import type { LibraryItem, ReadingStatus } from '@/features/library/api';
 import { useLibrary, useToggleOwned, useUpdateProgress } from '@/features/library/queries';
+import { ownershipLabel, readingStatusLabel } from '@/shared/api/enums';
 import { errorMessage } from '@/shared/api/errorMessages';
 import { cx } from '@/shared/lib/cx';
-import { formatCount } from '@/shared/lib/format';
+import { booksPhrase, formatCount, formatPercent } from '@/shared/lib/format';
 import { Button, ButtonLink } from '@/shared/ui/Button/Button';
 
 import styles from './AccountLibraryPage.module.css';
@@ -22,6 +19,7 @@ import styles from './AccountLibraryPage.module.css';
 const STATUSES: ReadingStatus[] = ['NotStarted', 'Reading', 'Finished'];
 
 function ProgressEditor({ item, onDone }: { item: LibraryItem; onDone: () => void }) {
+  const { t } = useTranslation('account');
   const update = useUpdateProgress();
   const [status, setStatus] = useState<ReadingStatus>(item.readingStatus);
   const [percent, setPercent] = useState(
@@ -45,7 +43,7 @@ function ProgressEditor({ item, onDone }: { item: LibraryItem; onDone: () => voi
       }}
     >
       <fieldset className={styles.statuses}>
-        <legend className="sr-only">حالة القراءة</legend>
+        <legend className="sr-only">{t('library.statusLegend')}</legend>
         {STATUSES.map((value) => (
           <label key={value} className={cx(styles.status, status === value && styles.statusOn)}>
             <input
@@ -56,13 +54,13 @@ function ProgressEditor({ item, onDone }: { item: LibraryItem; onDone: () => voi
                 setStatus(value);
               }}
             />
-            {READING_STATUS_LABELS[value]}
+            {readingStatusLabel(value)}
           </label>
         ))}
       </fieldset>
       {status === 'Reading' && (
         <label htmlFor={id} className={styles.range}>
-          <span>قرأت {formatCount(percent)}٪</span>
+          <span>{t('library.read', { percent: formatPercent(percent) })}</span>
           <input
             id={id}
             type="range"
@@ -77,10 +75,10 @@ function ProgressEditor({ item, onDone }: { item: LibraryItem; onDone: () => voi
       )}
       <div className={styles.editorActions}>
         <Button type="submit" variant="ink" size="sm" disabled={update.isPending}>
-          {update.isPending ? 'جارٍ الحفظ…' : 'حفظ'}
+          {update.isPending ? t('shared.saving') : t('shared.save')}
         </Button>
         <Button variant="ghost" size="sm" onClick={onDone}>
-          إلغاء
+          {t('shared.cancel')}
         </Button>
       </div>
     </form>
@@ -88,6 +86,7 @@ function ProgressEditor({ item, onDone }: { item: LibraryItem; onDone: () => voi
 }
 
 function ShelfBook({ item }: { item: LibraryItem }) {
+  const { t } = useTranslation('account');
   const [editing, setEditing] = useState(false);
   const toggleOwned = useToggleOwned();
   const { book } = item;
@@ -114,10 +113,10 @@ function ShelfBook({ item }: { item: LibraryItem }) {
         <span className={styles.author}>{book.author}</span>
         <span className={cx(styles.state, styles[item.readingStatus])}>
           {item.readingStatus === 'Reading'
-            ? `أقرأ الآن · ${formatCount(item.progressPercent)}٪`
-            : READING_STATUS_LABELS[item.readingStatus]}
+            ? t('library.readingNow', { percent: formatPercent(item.progressPercent) })
+            : readingStatusLabel(item.readingStatus)}
         </span>
-        <span className={styles.ownership}>{OWNERSHIP_LABELS[item.ownership]}</span>
+        <span className={styles.ownership}>{ownershipLabel(item.ownership)}</span>
       </div>
 
       {editing ? (
@@ -136,7 +135,7 @@ function ShelfBook({ item }: { item: LibraryItem }) {
               setEditing(true);
             }}
           >
-            تحديث التقدّم
+            {t('library.update')}
           </Button>
           {item.ownership === 'AddedManually' && (
             <Button
@@ -147,7 +146,7 @@ function ShelfBook({ item }: { item: LibraryItem }) {
                 toggleOwned.mutate({ bookId: book.id, owned: true });
               }}
             >
-              إزالة
+              {t('shared.remove')}
             </Button>
           )}
         </div>
@@ -158,50 +157,46 @@ function ShelfBook({ item }: { item: LibraryItem }) {
 
 /** «مكتبتي» (spec 5.9): the shelf, reading progress and stats (API §7b). */
 export default function AccountLibraryPage() {
+  const { t } = useTranslation('account');
   const library = useLibrary();
   const data = library.data;
   const current = data?.items.find((item) => item.book.id === data.currentlyReadingBookId);
 
   return (
     <>
-      <AccountHeader
-        title="مكتبتي"
-        description="كل ما اشتريته، وما أضفته من كتب تملكها، مع تقدّمك في قراءتها."
-      />
+      <AccountHeader title={t('library.title')} description={t('library.lead')} />
 
       {library.isError ? (
         <div className={shared.empty} role="alert">
           <p>{errorMessage(library.error)}</p>
         </div>
       ) : !data ? (
-        <div className={shared.skeleton} aria-busy="true" aria-label="جارٍ تحميل مكتبتك" />
+        <div className={shared.skeleton} aria-busy="true" aria-label={t('library.loading')} />
       ) : data.items.length === 0 ? (
         <div className={shared.empty}>
-          <p>رفّك فارغ بعد. الكتب التي تشتريها تظهر هنا تلقائياً.</p>
-          <p className={shared.muted}>
-            تملك كتباً من مكان آخر؟ افتح صفحة الكتاب واختر «أملك هذا الكتاب».
-          </p>
+          <p>{t('library.empty')}</p>
+          <p className={shared.muted}>{t('library.emptyHint')}</p>
           <ButtonLink to={paths.search} variant="ink" size="sm">
-            تصفّح المكتبة
+            {t('shared.browse')}
           </ButtonLink>
         </div>
       ) : (
         <>
           <dl className={styles.stats}>
             <div>
-              <dt>في مكتبتي</dt>
+              <dt>{t('library.inLibrary')}</dt>
               <dd>{formatCount(data.stats.totalBooks)}</dd>
             </div>
             <div>
-              <dt>أقرأ الآن</dt>
+              <dt>{t('library.reading')}</dt>
               <dd>{formatCount(data.stats.reading)}</dd>
             </div>
             <div>
-              <dt>أنهيت</dt>
+              <dt>{t('library.finished')}</dt>
               <dd>{formatCount(data.stats.finished)}</dd>
             </div>
             <div>
-              <dt>صفحات مقروءة</dt>
+              <dt>{t('library.pagesRead')}</dt>
               <dd>
                 {formatCount(data.stats.pagesRead)}
                 <small> / {formatCount(data.stats.totalPages)}</small>
@@ -214,20 +209,20 @@ export default function AccountLibraryPage() {
               <BookCover title={current.book.title} src={current.book.coverImageUrl} sizes="88px" />
               <div>
                 <h2 id="now-title" className={styles.nowLabel}>
-                  أقرأ الآن
+                  {t('library.now')}
                 </h2>
                 <p className={styles.nowTitle}>{current.book.title}</p>
                 <div
                   className={styles.nowBar}
                   role="progressbar"
-                  aria-label="تقدّم القراءة"
+                  aria-label={t('library.progress')}
                   aria-valuemin={0}
                   aria-valuemax={100}
                   aria-valuenow={current.progressPercent}
                 >
                   <span style={{ inlineSize: `${String(current.progressPercent)}%` }} />
                 </div>
-                <p className={shared.muted}>{formatCount(current.progressPercent)}٪</p>
+                <p className={shared.muted}>{formatPercent(current.progressPercent)}</p>
               </div>
             </section>
           )}
@@ -238,7 +233,7 @@ export default function AccountLibraryPage() {
             ))}
           </ul>
           <p className={shared.muted}>
-            أنهيت {formatCount(data.stats.finishedThisYear)} من الكتب هذا العام.
+            {t('library.thisYear', { books: booksPhrase(data.stats.finishedThisYear) })}
           </p>
         </>
       )}

@@ -1,5 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm, useWatch } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 
 import { STORE_COUNTRY } from '@/app/locale';
 import type { AddressInput, SavedAddress } from '@/features/addresses/api';
@@ -36,6 +37,8 @@ export function AddressForm({
   onSubmit,
   onCancel,
 }: AddressFormProps) {
+  const { t } = useTranslation('account', { keyPrefix: 'addresses' });
+  const { t: tShared } = useTranslation('account', { keyPrefix: 'shared' });
   const {
     register,
     control,
@@ -87,26 +90,26 @@ export function AddressForm({
         })(event);
       }}
     >
-      <h2 className={styles.title}>{address ? 'تعديل العنوان' : 'عنوان جديد'}</h2>
+      <h2 className={styles.title}>{address ? t('form.editTitle') : t('form.newTitle')}</h2>
       {generalError && <FormAlert>{generalError}</FormAlert>}
 
       <div className={styles.fields}>
         <TextField
           className={styles.full}
-          label="اسم العنوان"
-          placeholder="المنزل، العمل…"
+          label={t('form.label')}
+          placeholder={t('form.labelPlaceholder')}
           maxLength={50}
           error={errors.label?.message ?? serverError('label')}
           {...register('label')}
         />
         <TextField
-          label="اسم المستلم"
+          label={t('form.recipient')}
           autoComplete="name"
           error={errors.recipientName?.message ?? serverError('recipientName')}
           {...register('recipientName')}
         />
         <TextField
-          label="رقم الجوال"
+          label={t('form.phone')}
           type="tel"
           dir="ltr"
           inputMode="tel"
@@ -117,7 +120,7 @@ export function AddressForm({
         />
         <div className={styles.full}>
           <label htmlFor="address-country" className={styles.label}>
-            البلد
+            {t('form.country')}
           </label>
           <Controller
             control={control}
@@ -129,33 +132,33 @@ export function AddressForm({
         </div>
         <TextField
           className={styles.full}
-          label="العنوان"
+          label={t('form.line1')}
           autoComplete="address-line1"
-          placeholder="الحي، الشارع، رقم المبنى"
+          placeholder={t('form.line1Placeholder')}
           error={errors.line1?.message ?? serverError('line1')}
           {...register('line1')}
         />
         <TextField
           className={styles.full}
-          label="تفاصيل إضافية (اختياري)"
+          label={t('form.line2')}
           autoComplete="address-line2"
           error={errors.line2?.message ?? serverError('line2')}
           {...register('line2')}
         />
         <TextField
-          label="المدينة"
+          label={t('form.city')}
           autoComplete="address-level2"
           error={errors.city?.message ?? serverError('city')}
           {...register('city')}
         />
         <TextField
-          label="المنطقة أو الولاية (اختياري)"
+          label={t('form.state')}
           autoComplete="address-level1"
           error={errors.stateOrProvince?.message ?? serverError('stateOrProvince')}
           {...register('stateOrProvince')}
         />
         <TextField
-          label="الرمز البريدي"
+          label={t('form.postal')}
           dir="ltr"
           inputMode={country === STORE_COUNTRY ? 'numeric' : 'text'}
           autoComplete="postal-code"
@@ -165,15 +168,15 @@ export function AddressForm({
       </div>
 
       {!address && !isFirst && (
-        <Checkbox {...register('isDefault')}>اجعله العنوان الافتراضي</Checkbox>
+        <Checkbox {...register('isDefault')}>{t('form.makeDefault')}</Checkbox>
       )}
 
       <div className={styles.actions}>
         <Button type="submit" variant="ink" disabled={busy}>
-          {busy ? 'جارٍ الحفظ…' : 'حفظ العنوان'}
+          {busy ? tShared('saving') : t('form.save')}
         </Button>
         <Button variant="ghost" onClick={onCancel}>
-          إلغاء
+          {tShared('cancel')}
         </Button>
       </div>
     </form>

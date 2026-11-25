@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { AccountHeader } from '@/features/account/components/AccountHeader';
 import shared from '@/features/account/components/account.module.css';
@@ -8,7 +9,7 @@ import { useAddressMutations, useSavedAddresses } from '@/features/addresses/que
 import { useSession } from '@/features/auth/session';
 import { errorMessage } from '@/shared/api/errorMessages';
 import { cx } from '@/shared/lib/cx';
-import { countryName, formatCount } from '@/shared/lib/format';
+import { countryName, formatCount, LIST_SEPARATOR } from '@/shared/lib/format';
 import { Button } from '@/shared/ui/Button/Button';
 import { FormAlert } from '@/shared/ui/form/Field';
 import { Icon } from '@/shared/ui/Icon/Icon';
@@ -18,6 +19,8 @@ import styles from './AccountAddressesPage.module.css';
 
 /** «العناوين» (API §7): up to 10, the first saved becomes the default. */
 export default function AccountAddressesPage() {
+  const { t } = useTranslation('account', { keyPrefix: 'addresses' });
+  const { t: tShared } = useTranslation('account', { keyPrefix: 'shared' });
   const { customer } = useSession();
   const addresses = useSavedAddresses();
   const { save, remove, makeDefault } = useAddressMutations();
@@ -58,7 +61,7 @@ export default function AccountAddressesPage() {
           {
             onSuccess: () => {
               setEditing(null);
-              toast.success(editingAddress ? 'حُفظ التعديل.' : 'أُضيف العنوان.');
+              toast.success(editingAddress ? t('saved') : t('added'));
             },
           },
         );
@@ -69,8 +72,8 @@ export default function AccountAddressesPage() {
   return (
     <>
       <AccountHeader
-        title="العناوين"
-        description={`احفظ حتى ${formatCount(MAX_ADDRESSES)} عناوين لتختار منها عند الدفع.`}
+        title={t('title')}
+        description={t('lead', { n: formatCount(MAX_ADDRESSES) })}
         action={
           <Button
             variant="ink"
@@ -80,11 +83,11 @@ export default function AccountAddressesPage() {
               startEdit('new');
             }}
           >
-            <Icon name="plus" size={16} /> عنوان جديد
+            <Icon name="plus" size={16} /> {t('new')}
           </Button>
         }
       />
-      {full && <p className={shared.muted}>وصلت إلى الحد الأقصى. احذف عنواناً لإضافة آخر.</p>}
+      {full && <p className={shared.muted}>{t('full')}</p>}
 
       {editing === 'new' && form}
 
@@ -93,7 +96,7 @@ export default function AccountAddressesPage() {
       )}
 
       {addresses.isPending ? (
-        <div className={shared.skeleton} aria-busy="true" aria-label="جارٍ تحميل العناوين" />
+        <div className={shared.skeleton} aria-busy="true" aria-label={t('loading')} />
       ) : addresses.isError ? (
         <div className={shared.empty} role="alert">
           <p>{errorMessage(addresses.error)}</p>
@@ -102,7 +105,7 @@ export default function AccountAddressesPage() {
         editing === null && (
           <div className={shared.empty}>
             <Icon name="pin" size={28} />
-            <p>لا توجد عناوين محفوظة بعد.</p>
+            <p>{t('none')}</p>
             <Button
               variant="ink"
               size="sm"
@@ -110,7 +113,7 @@ export default function AccountAddressesPage() {
                 startEdit('new');
               }}
             >
-              أضف أول عنوان
+              {t('addFirst')}
             </Button>
           </div>
         )
@@ -125,11 +128,11 @@ export default function AccountAddressesPage() {
               <li key={address.id} className={cx(styles.card, address.isDefault && styles.default)}>
                 <div className={styles.head}>
                   <h2 className={styles.label}>{address.label}</h2>
-                  {address.isDefault && <span className={styles.badge}>الافتراضي</span>}
+                  {address.isDefault && <span className={styles.badge}>{t('default')}</span>}
                 </div>
                 <p className={styles.lines}>
                   <span>{address.recipientName}</span>
-                  <span>{[address.line1, address.line2].filter(Boolean).join('، ')}</span>
+                  <span>{[address.line1, address.line2].filter(Boolean).join(LIST_SEPARATOR)}</span>
                   <span>
                     {[
                       address.city,
@@ -138,7 +141,7 @@ export default function AccountAddressesPage() {
                       countryName(address.countryCode),
                     ]
                       .filter(Boolean)
-                      .join('، ')}
+                      .join(LIST_SEPARATOR)}
                   </span>
                   <span dir="ltr" className={styles.phone}>
                     {address.phone}
@@ -147,7 +150,7 @@ export default function AccountAddressesPage() {
 
                 {confirmDelete === address.id ? (
                   <div className={styles.confirm}>
-                    <p>حذف «{address.label}»؟</p>
+                    <p>{t('confirmDelete', { label: address.label })}</p>
                     <div className={styles.actions}>
                       <Button
                         variant="red"
@@ -157,12 +160,12 @@ export default function AccountAddressesPage() {
                           remove.mutate(address.id, {
                             onSuccess: () => {
                               setConfirmDelete(null);
-                              toast.success('حُذف العنوان.');
+                              toast.success(t('deleted'));
                             },
                           });
                         }}
                       >
-                        {remove.isPending ? 'جارٍ الحذف…' : 'نعم، احذف'}
+                        {remove.isPending ? tShared('deleting') : tShared('yesDelete')}
                       </Button>
                       <Button
                         variant="ghost"
@@ -171,7 +174,7 @@ export default function AccountAddressesPage() {
                           setConfirmDelete(null);
                         }}
                       >
-                        تراجع
+                        {tShared('back')}
                       </Button>
                     </div>
                   </div>
@@ -184,7 +187,7 @@ export default function AccountAddressesPage() {
                         startEdit(address.id);
                       }}
                     >
-                      تعديل
+                      {tShared('edit')}
                     </Button>
                     {!address.isDefault && (
                       <Button
@@ -195,7 +198,7 @@ export default function AccountAddressesPage() {
                           makeDefault.mutate(address.id);
                         }}
                       >
-                        اجعله الافتراضي
+                        {t('makeDefault')}
                       </Button>
                     )}
                     <Button
@@ -205,7 +208,7 @@ export default function AccountAddressesPage() {
                         setConfirmDelete(address.id);
                       }}
                     >
-                      حذف
+                      {tShared('delete')}
                     </Button>
                   </div>
                 )}

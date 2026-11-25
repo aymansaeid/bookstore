@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Navigate, Outlet, useLocation } from 'react-router';
 
 import { paths } from '@/app/paths';
@@ -12,13 +13,14 @@ import styles from './AccountLayout.module.css';
  * with a return path, then shows the sidebar next to the page.
  */
 export default function AccountLayout() {
+  const { t } = useTranslation('account');
   const { status, customer } = useSession();
   const location = useLocation();
 
   if (status === 'unknown') {
     return (
       <p className={styles.checking} role="status">
-        جارٍ التحقق من حسابك…
+        {t('layout.checking')}
       </p>
     );
   }

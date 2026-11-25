@@ -218,6 +218,16 @@
       "FoundBetterPrice": "وجدت سعراً أفضل",
       "DeliveryTooSlow": "التوصيل بطيء",
       "Other": "سبب آخر"
+    },
+      "readingStatus": {
+      "NotStarted": "لم أبدأ بعد",
+      "Reading": "أقرأ الآن",
+      "Finished": "أنهيته"
+    },
+    "ownership": {
+      "Purchased": "اشتريته من كتاب أفندي",
+      "OnTheWay": "في الطريق إليك",
+      "AddedManually": "أضفته بنفسي"
     }
   },
   "validation": {

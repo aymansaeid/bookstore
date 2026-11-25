@@ -1,3 +1,5 @@
+import type { TFunction } from 'i18next';
+import { useTranslation } from 'react-i18next';
 import { Link, useSearchParams } from 'react-router';
 
 import { paths } from '@/app/paths';
@@ -17,30 +19,38 @@ import { Pagination } from '@/shared/ui/Pagination/Pagination';
 import styles from './AccountNotificationsPage.module.css';
 
 /** Each notification is facts; the sentence is ours (API §7c). */
-function describe(n: CustomerNotification): { text: string; to: string | null; icon: IconName } {
-  const book = n.bookTitle ? `«${n.bookTitle}»` : 'كتاب في مفضلتك';
+function describe(
+  t: TFunction<'account', 'notifications'>,
+  quote: (title: string) => string,
+  n: CustomerNotification,
+): { text: string; to: string | null; icon: IconName } {
+  const book = n.bookTitle ? quote(n.bookTitle) : t('someBook');
   const bookLink = n.bookSlug ? paths.book(n.bookSlug) : null;
   switch (n.type) {
     case 'OrderShipped':
       return {
-        text: `شُحن طلبك ${n.orderNumber ?? ''}. يمكنك متابعة الشحنة من صفحة الطلب.`,
+        text: t('shipped', { number: n.orderNumber ?? '' }),
         to: n.orderNumber ? paths.account.order(n.orderNumber) : paths.account.orders,
         icon: 'truck',
       };
     case 'BackInStock':
-      return { text: `عاد ${book} إلى المخزون.`, to: bookLink, icon: 'box' };
+      return { text: t('backInStock', { book }), to: bookLink, icon: 'box' };
     case 'PriceDrop':
       return {
         text:
           n.oldPrice !== null && n.newPrice !== null
-            ? `انخفض سعر ${book} من ${formatMoney(n.oldPrice, n.currency ?? 'TRY')} إلى ${formatMoney(n.newPrice, n.currency ?? 'TRY')}.`
-            : `انخفض سعر ${book}.`,
+            ? t('priceDropFrom', {
+                book,
+                old: formatMoney(n.oldPrice, n.currency ?? 'TRY'),
+                new: formatMoney(n.newPrice, n.currency ?? 'TRY'),
+              })
+            : t('priceDrop', { book }),
         to: bookLink,
         icon: 'gift',
       };
     case 'NewFromFollowedMuhaqqiq':
       return {
-        text: `صدر تحقيق جديد لـ${n.muhaqqiqName ?? 'محقّق تتابعه'}: ${book}.`,
+        text: t('newEdition', { name: n.muhaqqiqName ?? t('someMuhaqqiq'), book }),
         to: bookLink ?? (n.muhaqqiqSlug ? paths.muhaqqiq(n.muhaqqiqSlug) : null),
         icon: 'user',
       };
@@ -49,6 +59,9 @@ function describe(n: CustomerNotification): { text: string; to: string | null; i
 
 /** «الإشعارات» (API §7c): newest first, mark one or all as read. */
 export default function AccountNotificationsPage() {
+  const { t } = useTranslation('account', { keyPrefix: 'notifications' });
+  const { t: tShared } = useTranslation('account', { keyPrefix: 'shared' });
+  const quote = (title: string) => tShared('quoted', { title });
   const [params, setParams] = useSearchParams();
   const { page, hrefFor } = usePageParam();
   const unreadOnly = params.get('filter') === 'unread';
@@ -63,7 +76,7 @@ export default function AccountNotificationsPage() {
   return (
     <>
       <AccountHeader
-        title="الإشعارات"
+        title={t('title')}
         action={
           data && data.unreadCount > 0 ? (
             <Button
@@ -74,13 +87,13 @@ export default function AccountNotificationsPage() {
                 all.mutate();
               }}
             >
-              <Icon name="check" size={16} /> تعليم الكل كمقروء
+              <Icon name="check" size={16} /> {t('markAll')}
             </Button>
           ) : undefined
         }
       />
 
-      <div className={styles.filters} role="group" aria-label="تصفية الإشعارات">
+      <div className={styles.filters} role="group" aria-label={t('filter')}>
         <button
           type="button"
           className={cx(styles.filter, !unreadOnly && styles.on)}
@@ -89,7 +102,7 @@ export default function AccountNotificationsPage() {
             setFilter(false);
           }}
         >
-          الكل
+          {t('all')}
         </button>
         <button
           type="button"
@@ -99,7 +112,7 @@ export default function AccountNotificationsPage() {
             setFilter(true);
           }}
         >
-          غير المقروءة
+          {t('unread')}
         </button>
       </div>
 
@@ -108,20 +121,18 @@ export default function AccountNotificationsPage() {
           <p>{errorMessage(notifications.error)}</p>
         </div>
       ) : !data ? (
-        <div className={shared.skeleton} aria-busy="true" aria-label="جارٍ تحميل الإشعارات" />
+        <div className={shared.skeleton} aria-busy="true" aria-label={t('loading')} />
       ) : data.notifications.items.length === 0 ? (
         <div className={shared.empty}>
           <Icon name="bell" size={28} />
-          <p>{unreadOnly ? 'لا إشعارات غير مقروءة.' : 'لا إشعارات بعد.'}</p>
-          <p className={shared.muted}>
-            ننبّهك هنا عند شحن طلباتك، وعودة كتاب إلى المخزون، وانخفاض الأسعار، وإصدارات من تتابعهم.
-          </p>
+          <p>{unreadOnly ? t('noneUnread') : t('none')}</p>
+          <p className={shared.muted}>{t('hint')}</p>
         </div>
       ) : (
         <>
           <ul className={cx(styles.list, notifications.isPlaceholderData && styles.stale)}>
             {data.notifications.items.map((notification) => {
-              const { text, to, icon } = describe(notification);
+              const { text, to, icon } = describe(t, quote, notification);
               const markRead = () => {
                 if (!notification.isRead) one.mutate(notification.id);
               };
@@ -151,8 +162,8 @@ export default function AccountNotificationsPage() {
                     <button
                       type="button"
                       className={styles.read}
-                      aria-label="تعليم كمقروء"
-                      title="تعليم كمقروء"
+                      aria-label={t('markRead')}
+                      title={t('markRead')}
                       onClick={markRead}
                     >
                       <span className={styles.dot} aria-hidden="true" />

@@ -44,14 +44,4 @@ export const libraryApi = {
     }),
 };
 
-export const READING_STATUS_LABELS: Readonly<Record<ReadingStatus, string>> = {
-  NotStarted: 'لم أبدأ بعد',
-  Reading: 'أقرأ الآن',
-  Finished: 'أنهيته',
-};
 
-export const OWNERSHIP_LABELS: Readonly<Record<Ownership, string>> = {
-  Purchased: 'اشتريته من كتاب أفندي',
-  OnTheWay: 'في الطريق إليك',
-  AddedManually: 'أضفته بنفسي',
-};
