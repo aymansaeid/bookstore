@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+
 import type { Quote } from '@/features/checkout/types';
 import { cx } from '@/shared/lib/cx';
 import { formatMoney } from '@/shared/lib/format';
@@ -7,6 +9,7 @@ import styles from './FreeShippingBar.module.css';
 
 /** Spec 5.6 «مبروك! طلبك مؤهل للشحن المجاني». Hidden when the zone has no threshold. */
 export function FreeShippingBar({ quote }: { quote: Quote }) {
+  const { t } = useTranslation('checkout', { keyPrefix: 'freeShipping' });
   const free = quote.freeShipping;
   if (!free) return null;
   const percent = free.qualified
@@ -18,13 +21,13 @@ export function FreeShippingBar({ quote }: { quote: Quote }) {
       <p className={styles.text}>
         <Icon name="truck" size={18} />
         {free.qualified
-          ? 'مبروك! طلبك مؤهل للشحن المجاني.'
-          : `أضف كتباً بقيمة ${formatMoney(free.remaining, quote.currency)} لتحصل على شحن مجاني.`}
+          ? t('qualified')
+          : t('remaining', { amount: formatMoney(free.remaining, quote.currency) })}
       </p>
       <div
         className={styles.track}
         role="progressbar"
-        aria-label="التقدّم نحو الشحن المجاني"
+        aria-label={t('progress')}
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={Math.round(percent)}

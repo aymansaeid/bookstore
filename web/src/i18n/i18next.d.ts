@@ -3,6 +3,7 @@ import type arCatalog from './locales/ar/catalog.json';
 import type arCommon from './locales/ar/common.json';
 import type arHome from './locales/ar/home.json';
 import type arBook from './locales/ar/book.json';
+import type arCheckout from './locales/ar/checkout.json';
 /**
  * Arabic is the source of truth for keys: t('…') is type-checked against the
  * Arabic files, so a misspelled or removed key fails the build. Add each new
@@ -14,6 +15,7 @@ declare module 'i18next' {
     resources: {
        book: typeof arBook;
       catalog: typeof arCatalog;
+            checkout: typeof arCheckout;
       common: typeof arCommon;
       home: typeof arHome;
     };

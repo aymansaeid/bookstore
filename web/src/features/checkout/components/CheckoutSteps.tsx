@@ -1,23 +1,23 @@
+import { useTranslation } from 'react-i18next';
+
 import { cx } from '@/shared/lib/cx';
 import { formatCount } from '@/shared/lib/format';
+
 import styles from './CheckoutSteps.module.css';
 
-const STEPS = [
-  { id: 'cart', label: 'السلة' },
-  { id: 'checkout', label: 'الشحن والدفع' },
-  { id: 'done', label: 'التأكيد' },
-] as const;
+const STEPS = ['cart', 'checkout', 'done'] as const;
 
-export type CheckoutStep = (typeof STEPS)[number]['id'];
+export type CheckoutStep = (typeof STEPS)[number];
 
 /** «السلة ← الشحن والدفع ← التأكيد» (spec 5.6). */
 export function CheckoutSteps({ current }: { current: CheckoutStep }) {
-  const currentIndex = STEPS.findIndex((step) => step.id === current);
+  const { t } = useTranslation('checkout', { keyPrefix: 'steps' });
+  const currentIndex = STEPS.indexOf(current);
   return (
-    <ol className={styles.steps} aria-label="خطوات الطلب">
+    <ol className={styles.steps} aria-label={t('label')}>
       {STEPS.map((step, index) => (
         <li
-          key={step.id}
+          key={step}
           className={cx(
             styles.step,
             index < currentIndex && styles.done,
@@ -25,10 +25,10 @@ export function CheckoutSteps({ current }: { current: CheckoutStep }) {
           )}
           aria-current={index === currentIndex ? 'step' : undefined}
         >
-        <span className={styles.number}>
-  {index < currentIndex ? '✓' : formatCount(index + 1)}
-</span>
-          {step.label}
+          <span className={styles.number}>
+            {index < currentIndex ? '✓' : formatCount(index + 1)}
+          </span>
+          {t(step)}
         </li>
       ))}
     </ol>

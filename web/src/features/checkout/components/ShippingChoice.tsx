@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+
 import { STORE_COUNTRY, UI_LOCALE } from '@/app/locale';
 import { useCartStore } from '@/features/cart/cartStore';
 import { shippingOptionName } from '@/features/checkout/shipping';
@@ -7,7 +9,6 @@ import { cx } from '@/shared/lib/cx';
 import { deliveryWindow } from '@/shared/lib/dates';
 import { countryName, formatMoney } from '@/shared/lib/format';
 import { Icon } from '@/shared/ui/Icon/Icon';
-
 
 import styles from './ShippingChoice.module.css';
 
@@ -29,7 +30,7 @@ export function CountrySelect({
         ? -1
         : b.code === STORE_COUNTRY
           ? 1
-         : a.name.localeCompare(b.name, UI_LOCALE),
+          : a.name.localeCompare(b.name, UI_LOCALE),
     );
 
   return (
@@ -53,12 +54,13 @@ export function CountrySelect({
 
 /** Shipping options from the quote, as a radio list (spec 5.7 card 2). */
 export function ShippingOptions({ quote }: { quote: Quote }) {
+  const { t } = useTranslation('checkout', { keyPrefix: 'shipping' });
   const setShippingMethod = useCartStore((state) => state.setShippingMethod);
   if (quote.shippingOptions.length === 0) return null;
 
   return (
     <fieldset className={styles.options}>
-      <legend className="sr-only">طريقة الشحن</legend>
+      <legend className="sr-only">{t('method')}</legend>
       {quote.shippingOptions.map((option) => {
         const checked = option.code === quote.selectedShippingMethod;
         return (
@@ -77,17 +79,17 @@ export function ShippingOptions({ quote }: { quote: Quote }) {
               <span className={styles.name}>
                 <Icon name={option.isPickup ? 'pin' : 'truck'} size={18} />
                 {shippingOptionName(option)}
-                {option.isRecommended && <span className={styles.recommended}>موصى به</span>}
+                {option.isRecommended && <span className={styles.recommended}>{t('recommended')}</span>}
               </span>
               <span className={styles.detail}>
                 {option.carrier && <span lang="tr">{option.carrier} · </span>}
                 {option.isPickup
-                  ? 'جاهز للاستلام من مكتبتنا في إسطنبول'
+                  ? t('pickupReady')
                   : deliveryWindow(option.minDays, option.maxDays)}
               </span>
             </span>
             <span className={cx(styles.price, option.isFree && styles.free)}>
-              {option.isFree ? 'مجاني' : formatMoney(option.price, quote.currency)}
+              {option.isFree ? t('free') : formatMoney(option.price, quote.currency)}
             </span>
           </label>
         );

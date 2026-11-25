@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 
 import { paths } from '@/app/paths';
@@ -9,8 +10,8 @@ import { useToggleWishlist, useWishlistIds } from '@/features/wishlist/queries';
 import { cx } from '@/shared/lib/cx';
 import { formatMoney } from '@/shared/lib/format';
 import { Icon } from '@/shared/ui/Icon/Icon';
-import { QuantityStepper } from '@/shared/ui/QuantityStepper/QuantityStepper';
 import { OriginalTitle } from '@/shared/ui/OriginalTitle/OriginalTitle';
+import { QuantityStepper } from '@/shared/ui/QuantityStepper/QuantityStepper';
 import styles from './CartLineItem.module.css';
 
 const asCard = (line: QuoteLine, currency: string): BookCardData => ({
@@ -37,6 +38,7 @@ interface CartLineItemProps {
 }
 
 export function CartLineItem({ line, quantity, currency }: CartLineItemProps) {
+  const { t } = useTranslation('checkout', { keyPrefix: 'line' });
   const setQuantity = useCartStore((state) => state.setQuantity);
   const remove = useCartStore((state) => state.remove);
   const { status } = useSession();
@@ -62,14 +64,14 @@ export function CartLineItem({ line, quantity, currency }: CartLineItemProps) {
         <h3 className={styles.title}>
           <Link to={href}>{line.title}</Link>
         </h3>
-                  <OriginalTitle title={line.title} original={line.originalTitle} />
+        <OriginalTitle title={line.title} original={line.originalTitle} />
         <p className={styles.unit}>
           {formatMoney(line.unitPrice, currency)}
           {line.oldPrice !== null && <s>{formatMoney(line.oldPrice, currency)}</s>}
         </p>
         {!line.available && (
           <p className={styles.warning} role="alert">
-            الكمية المطلوبة غير متوفرة حالياً. قلّل الكمية أو احذف الكتاب.
+            {t('unavailable')}
           </p>
         )}
         <div className={styles.links}>
@@ -93,7 +95,7 @@ export function CartLineItem({ line, quantity, currency }: CartLineItemProps) {
                 );
               }}
             >
-              <Icon name="heart" size={16} /> نقل إلى المفضلة
+              <Icon name="heart" size={16} /> {t('toWishlist')}
             </button>
           )}
           <button
@@ -103,7 +105,7 @@ export function CartLineItem({ line, quantity, currency }: CartLineItemProps) {
               remove(line.bookId);
             }}
           >
-            <Icon name="x" size={16} /> حذف
+            <Icon name="x" size={16} /> {t('remove')}
           </button>
         </div>
       </div>
@@ -112,7 +114,7 @@ export function CartLineItem({ line, quantity, currency }: CartLineItemProps) {
         <QuantityStepper
           value={quantity}
           max={MAX_QUANTITY}
-          label={`كمية «${line.title}»`}
+          label={t('quantity', { title: line.title })}
           onChange={(value) => {
             setQuantity(line.bookId, value);
           }}

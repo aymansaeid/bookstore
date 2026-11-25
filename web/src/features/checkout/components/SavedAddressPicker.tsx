@@ -1,10 +1,11 @@
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 
 import { paths } from '@/app/paths';
 import type { SavedAddress } from '@/features/addresses/api';
 import type { AddressChoice } from '@/features/checkout/checkoutStore';
 import { cx } from '@/shared/lib/cx';
-import { countryName } from '@/shared/lib/format';
+import { countryName, LIST_SEPARATOR } from '@/shared/lib/format';
 
 import styles from './SavedAddressPicker.module.css';
 
@@ -16,9 +17,10 @@ interface SavedAddressPickerProps {
 
 /** A signed-in customer's address book as radio cards, plus «عنوان جديد». */
 export function SavedAddressPicker({ addresses, choice, onChoose }: SavedAddressPickerProps) {
+  const { t } = useTranslation('checkout', { keyPrefix: 'addresses' });
   return (
     <fieldset className={styles.list}>
-      <legend className="sr-only">عنوان الشحن</legend>
+      <legend className="sr-only">{t('legend')}</legend>
       {addresses.map((address) => {
         const checked = choice === address.id;
         return (
@@ -34,14 +36,14 @@ export function SavedAddressPicker({ addresses, choice, onChoose }: SavedAddress
             <span className={styles.radio} aria-hidden="true" />
             <span className={styles.label}>
               {address.label}
-              {address.isDefault && <span className={styles.default}>الافتراضي</span>}
+              {address.isDefault && <span className={styles.default}>{t('default')}</span>}
             </span>
             <span className={styles.details}>
               <span>{address.recipientName}</span>
               <span>
                 {[address.line1, address.line2, address.city, countryName(address.countryCode)]
                   .filter(Boolean)
-                  .join('، ')}
+                  .join(LIST_SEPARATOR)}
               </span>
               <span dir="ltr">{address.phone}</span>
             </span>
@@ -58,10 +60,10 @@ export function SavedAddressPicker({ addresses, choice, onChoose }: SavedAddress
           }}
         />
         <span className={styles.radio} aria-hidden="true" />
-        <span className={styles.label}>عنوان جديد لهذا الطلب</span>
+        <span className={styles.label}>{t('new')}</span>
       </label>
       <Link to={paths.account.addresses} className={styles.manage}>
-        إدارة العناوين المحفوظة
+        {t('manage')}
       </Link>
     </fieldset>
   );

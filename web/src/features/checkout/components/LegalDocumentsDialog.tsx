@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import type { RefObject } from 'react';
-
+import { useTranslation } from 'react-i18next';
 import { checkoutApi } from '@/features/checkout/api';
 import type { LegalDocumentType, LegalPreviewRequest } from '@/features/checkout/types';
 import { errorMessage } from '@/shared/api/errorMessages';
@@ -9,12 +9,14 @@ import { Icon } from '@/shared/ui/Icon/Icon';
 
 import styles from './LegalDocumentsDialog.module.css';
 
-const LEGAL_TABS: { type: LegalDocumentType; label: string }[] = [
-  { type: 'PreInformationForm', label: 'نموذج المعلومات المسبقة' },
-  { type: 'DistanceSalesContract', label: 'عقد البيع عن بُعد' },
-];
+const LEGAL_TABS = [
+  { type: 'PreInformationForm', key: 'preInformation' },
+  { type: 'DistanceSalesContract', key: 'contract' },
+] as const satisfies readonly { type: LegalDocumentType; key: string }[];
 
 function DocumentBody({ request, tab }: { request: LegalPreviewRequest; tab: LegalDocumentType }) {
+  const { t } = useTranslation('checkout', { keyPrefix: 'legal' });
+
   // Fetched on demand: this endpoint shares the quote's 30 requests a minute (§5c).
   const preview = useQuery({
     queryKey: ['legal-preview', request] as const,
@@ -26,7 +28,7 @@ function DocumentBody({ request, tab }: { request: LegalPreviewRequest; tab: Leg
   if (preview.isPending) {
     return (
       <p className={styles.state} aria-busy="true">
-        جارٍ تجهيز المستند بتفاصيل طلبك…
+        {t('preparing')}
       </p>
     );
   }
@@ -43,7 +45,7 @@ function DocumentBody({ request, tab }: { request: LegalPreviewRequest; tab: Leg
       ? preview.data.preInformationForm
       : preview.data.distanceSalesContract;
   if (!document) {
-    return <p className={styles.state}>لم يُنشر هذا المستند بعد.</p>;
+    return <p className={styles.state}>{t('notPublished')}</p>;
   }
   return (
     <article className={styles.document} aria-label={document.title}>
@@ -69,16 +71,18 @@ export function LegalDocumentsDialog({
   tab,
   onTab,
 }: LegalDocumentsDialogProps) {
+  const { t } = useTranslation('checkout');
+
   return (
     <dialog ref={dialogRef} className={styles.dialog} aria-labelledby="legal-dialog-title">
       <div className={styles.head}>
         <h2 id="legal-dialog-title" className={styles.title}>
-          مستندات الطلب
+          {t('legal.title')}
         </h2>
         <button
           type="button"
           className={styles.close}
-          aria-label="إغلاق"
+          aria-label={t('legal.close')}
           onClick={() => {
             dialogRef.current?.close();
           }}
@@ -97,7 +101,7 @@ export function LegalDocumentsDialog({
               onTab(item.type);
             }}
           >
-            {item.label}
+            {t(`checkout.${item.key}`)}
           </button>
         ))}
       </div>

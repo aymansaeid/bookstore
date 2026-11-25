@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 
 import { paths } from '@/app/paths';
@@ -11,8 +12,8 @@ import { buttonClass } from '@/shared/ui/Button/buttonClass';
 import { Checkbox } from '@/shared/ui/form/Field';
 import { Icon } from '@/shared/ui/Icon/Icon';
 
-import { CouponForm } from './CouponForm';
 import styles from './CartSummary.module.css';
+import { CouponForm } from './CouponForm';
 
 function Row({ label, value, tone }: { label: string; value: string; tone?: 'saving' }) {
   return (
@@ -24,6 +25,7 @@ function Row({ label, value, tone }: { label: string; value: string; tone?: 'sav
 }
 
 export function CartSummary({ quote, stale }: { quote: Quote | undefined; stale: boolean }) {
+  const { t } = useTranslation('checkout');
   const countryCode = useCartStore((state) => state.countryCode);
   const setCountry = useCartStore((state) => state.setCountry);
   const giftWrap = useCartStore((state) => state.giftWrap);
@@ -37,12 +39,12 @@ export function CartSummary({ quote, stale }: { quote: Quote | undefined; stale:
   return (
     <aside className={styles.summary} aria-labelledby="summary-title">
       <h2 id="summary-title" className={styles.heading}>
-        ملخّص الطلب
+        {t('summary.title')}
       </h2>
 
       <div className={styles.block}>
         <label htmlFor="cart-country" className={styles.label}>
-          الشحن إلى
+          {t('summary.shipTo')}
         </label>
         <CountrySelect id="cart-country" value={countryCode} onChange={setCountry} />
         {zoneUnsupported && (
@@ -64,10 +66,10 @@ export function CartSummary({ quote, stale }: { quote: Quote | undefined; stale:
               setGiftWrap(event.target.checked);
             }}
           >
-            <Icon name="gift" size={18} /> تغليف هدية فاخر (+
-            {formatMoney(quote.giftWrap.fee, quote.currency)})
+            <Icon name="gift" size={18} />{' '}
+            {t('summary.giftWrap', { fee: formatMoney(quote.giftWrap.fee, quote.currency) })}
           </Checkbox>
-          <p className={styles.hint}>يمكنك كتابة رسالة الإهداء في خطوة الدفع.</p>
+          <p className={styles.hint}>{t('summary.giftHint')}</p>
         </div>
       )}
 
@@ -77,36 +79,43 @@ export function CartSummary({ quote, stale }: { quote: Quote | undefined; stale:
 
       {quote && (
         <dl className={cx(styles.totals, stale && styles.stale)} aria-busy={stale}>
-          <Row label="المجموع" value={formatMoney(quote.subtotal, quote.currency)} />
+          <Row label={t('totals.subtotal')} value={formatMoney(quote.subtotal, quote.currency)} />
           {quote.pathDiscountAmount > 0 && (
             <Row
-              label={`خصم المسار${quote.pathDiscount ? ` «${quote.pathDiscount.title}»` : ''}`}
+              label={
+                quote.pathDiscount
+                  ? t('totals.pathDiscountNamed', { title: quote.pathDiscount.title })
+                  : t('totals.pathDiscount')
+              }
               value={`−${formatMoney(quote.pathDiscountAmount, quote.currency)}`}
               tone="saving"
             />
           )}
           {quote.discountAmount > 0 && (
             <Row
-              label="كود الخصم"
+              label={t('totals.coupon')}
               value={`−${formatMoney(quote.discountAmount, quote.currency)}`}
               tone="saving"
             />
           )}
           <Row
-            label="الشحن"
+            label={t('totals.shipping')}
             value={
               quote.selectedShippingMethod === null
                 ? '—'
                 : quote.shippingCost === 0
-                  ? 'مجاني'
+                  ? t('totals.free')
                   : formatMoney(quote.shippingCost, quote.currency)
             }
           />
           {quote.giftWrap.selected && (
-            <Row label="تغليف الهدية" value={formatMoney(quote.giftWrap.fee, quote.currency)} />
+            <Row
+              label={t('totals.giftWrap')}
+              value={formatMoney(quote.giftWrap.fee, quote.currency)}
+            />
           )}
           <div className={styles.totalRow}>
-            <dt>الإجمالي</dt>
+            <dt>{t('totals.total')}</dt>
             <dd>{formatMoney(quote.total, quote.currency)}</dd>
           </div>
         </dl>
@@ -114,14 +123,14 @@ export function CartSummary({ quote, stale }: { quote: Quote | undefined; stale:
 
       {canCheckout ? (
         <Link to={paths.checkout} className={buttonClass('red', 'md', styles.checkout)}>
-          <Icon name="lock" /> إتمام الطلب
+          <Icon name="lock" /> {t('cart.checkout')}
         </Link>
       ) : (
         <span className={buttonClass('red', 'md', styles.checkout)} aria-disabled="true">
-          <Icon name="lock" /> إتمام الطلب
+          <Icon name="lock" /> {t('cart.checkout')}
         </span>
       )}
-      <p className={styles.secure}>الدفع آمن عبر بوابة الدفع، ولا نحفظ بيانات بطاقتك.</p>
+      <p className={styles.secure}>{t('summary.secure')}</p>
     </aside>
   );
 }

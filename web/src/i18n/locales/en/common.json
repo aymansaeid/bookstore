@@ -178,5 +178,9 @@
     "following": "Following",
     "followed": "You now follow this editor. We'll tell you about every new edition.",
     "unfollowed": "You no longer follow this editor."
+  },
+   "delivery": {
+    "on": "Arrives {{date}}",
+    "between": "Arrives between {{from}} and {{to}}"
   }
 }

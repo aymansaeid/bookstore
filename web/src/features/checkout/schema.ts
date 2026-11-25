@@ -2,13 +2,30 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import type { Resolver } from 'react-hook-form';
 import { z } from 'zod';
 
+import { i18n } from '@/i18n';
 import { formatCount } from '@/shared/lib/format';
 
 /** Server limits (CheckoutCartCommandValidator, API §5). */
 export const GIFT_MESSAGE_MAX = 300;
 
-const tooLong = 'النص أطول من المسموح';
-const field = (max: number) => z.string().trim().max(max, tooLong);
+/** Looked up when validation runs, so messages follow the page's language. */
+type FormKey =
+  | 'tooLong'
+  | 'emailRequired'
+  | 'emailInvalid'
+  | 'nameRequired'
+  | 'phoneRequired'
+  | 'phoneInvalid'
+  | 'line1Required'
+  | 'cityRequired'
+  | 'postalRequired';
+const say = (key: FormKey) => i18n.t(`form.${key}`, { ns: 'checkout' });
+
+const field = (max: number) =>
+  z
+    .string()
+    .trim()
+    .max(max, { error: () => say('tooLong') });
 
 const checkoutBase = z.object({
   email: field(320),
@@ -22,7 +39,10 @@ const checkoutBase = z.object({
   giftMessage: z
     .string()
     .trim()
-    .max(GIFT_MESSAGE_MAX, `رسالة الإهداء ${formatCount(GIFT_MESSAGE_MAX)} حرف كحدٍّ أقصى`),
+    .max(GIFT_MESSAGE_MAX, {
+      error: () =>
+        i18n.t('form.giftTooLong', { ns: 'checkout', n: formatCount(GIFT_MESSAGE_MAX) }),
+    }),
 });
 
 export type CheckoutValues = z.infer<typeof checkoutBase>;
@@ -42,29 +62,27 @@ const PHONE = /^\+?[0-9\s()-]{7,30}$/;
 
 export function checkoutSchema(rules: CheckoutRules) {
   return checkoutBase.superRefine((values, ctx) => {
-    const fail = (path: keyof CheckoutValues, message: string) => {
-      ctx.addIssue({ code: 'custom', path: [path], message });
+    const fail = (path: keyof CheckoutValues, key: FormKey) => {
+      ctx.addIssue({ code: 'custom', path: [path], message: say(key) });
     };
-    const required = (path: keyof CheckoutValues, message: string) => {
-      if (values[path] === '') fail(path, message);
+    const required = (path: keyof CheckoutValues, key: FormKey) => {
+      if (values[path] === '') fail(path, key);
     };
 
     if (rules.guest) {
-      if (values.email === '') fail('email', 'أدخل بريدك الإلكتروني ليصلك تأكيد الطلب');
-      else if (!emailFormat.safeParse(values.email).success) {
-        fail('email', 'أدخل بريداً إلكترونياً صحيحاً');
-      }
+      if (values.email === '') fail('email', 'emailRequired');
+      else if (!emailFormat.safeParse(values.email).success) fail('email', 'emailInvalid');
     }
     if (rules.savedAddress) return;
 
-    required('recipientName', 'أدخل اسم المستلم');
-    if (values.phone === '') fail('phone', 'أدخل رقم الجوال، فشركات الشحن لا توصل بدونه');
-    else if (!PHONE.test(values.phone)) fail('phone', 'رقم الجوال غير صحيح');
+    required('recipientName', 'nameRequired');
+    if (values.phone === '') fail('phone', 'phoneRequired');
+    else if (!PHONE.test(values.phone)) fail('phone', 'phoneInvalid');
     if (rules.pickup) return;
 
-    required('line1', 'أدخل العنوان');
-    required('city', 'أدخل المدينة');
-    required('postalCode', 'أدخل الرمز البريدي');
+    required('line1', 'line1Required');
+    required('city', 'cityRequired');
+    required('postalCode', 'postalRequired');
   });
 }
 

@@ -1,5 +1,7 @@
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 
+import { UI_DIRECTION } from '@/app/locale';
 import { paths } from '@/app/paths';
 import { useCartStore } from '@/features/cart/cartStore';
 import { CartLineItem } from '@/features/cart/components/CartLineItem';
@@ -32,6 +34,8 @@ const HANDLED = new Set([
 ]);
 
 export default function CartPage() {
+  const { t } = useTranslation('checkout', { keyPrefix: 'cart' });
+  const { t: tc } = useTranslation();
   const lines = useCartStore((state) => state.lines);
   const quote = useQuote();
   const data = quote.data;
@@ -41,14 +45,14 @@ export default function CartPage() {
   if (lines.length === 0) {
     return (
       <div className={cx('wrap', styles.empty)}>
-        <DocumentTitle title="سلة التسوق" />
+        <DocumentTitle title={t('title')} />
         <span className={styles.emptyIcon} aria-hidden="true">
           <Icon name="cart" size={32} />
         </span>
-        <h1 className={styles.title}>سلتك فارغة</h1>
-        <p>تصفّح المكتبة وأضف ما يعجبك من كنوز التراث المحقَّق.</p>
+        <h1 className={styles.title}>{t('emptyTitle')}</h1>
+        <p>{t('emptyText')}</p>
         <ButtonLink to={paths.search} variant="ink">
-          تصفّح المكتبة
+          {t('browse')}
         </ButtonLink>
       </div>
     );
@@ -66,11 +70,11 @@ export default function CartPage() {
 
   return (
     <div className={cx('wrap', styles.page)}>
-      <DocumentTitle title="سلة التسوق" />
+      <DocumentTitle title={t('title')} />
 
       <header className={styles.header}>
         <h1 className={styles.title}>
-          سلة التسوق{' '}
+          {t('title')}{' '}
           <span className={styles.counts}>
             ({booksPhrase(lines.length)} · {copiesPhrase(copies)})
           </span>
@@ -88,7 +92,7 @@ export default function CartPage() {
               void quote.refetch();
             }}
           >
-            أعد المحاولة
+            {tc('ui.retry')}
           </Button>
         </div>
       )}
@@ -117,7 +121,7 @@ export default function CartPage() {
                     for (const id of path.missingBookIds) cart.add(id);
                   }}
                 >
-                  أضف الناقص للحصول على خصم المسار
+                  {t('addMissing')}
                 </button>
               ) : (
                 <button
@@ -127,7 +131,7 @@ export default function CartPage() {
                     useCartStore.getState().setReadingPath(null);
                   }}
                 >
-                  متابعة بدون خصم المسار
+                  {t('withoutPath')}
                 </button>
               )}
             </div>
@@ -135,8 +139,8 @@ export default function CartPage() {
 
           {path?.applied && (
             <p className={styles.pathApplied}>
-              <Icon name="route" size={18} /> خصم مسار «{path.title}» مطبّق (
-              {formatMoney(path.amount)}).
+              <Icon name="route" size={18} />{' '}
+              {t('pathApplied', { title: path.title, amount: formatMoney(path.amount) })}
             </p>
           )}
 
@@ -156,7 +160,7 @@ export default function CartPage() {
             </ul>
           ) : (
             !quote.isError && (
-              <ul className={styles.lines} aria-busy="true" aria-label="جارٍ حساب السلة">
+              <ul className={styles.lines} aria-busy="true" aria-label={t('calculating')}>
                 {lines.map((line) => (
                   <li key={line.bookId} className={styles.skeleton} />
                 ))}
@@ -165,7 +169,8 @@ export default function CartPage() {
           )}
 
           <Link to={paths.search} className={styles.continue}>
-            <Icon name="arrowr" size={16} /> متابعة التسوّق
+            {/* Back points against the reading direction. */}
+            <Icon name={UI_DIRECTION === 'rtl' ? 'arrowr' : 'arrow'} size={16} /> {t('continue')}
           </Link>
         </div>
 
@@ -175,16 +180,16 @@ export default function CartPage() {
       {data && (
         <div className={styles.mobileBar}>
           <div>
-            <p className={styles.mobileLabel}>الإجمالي</p>
+            <p className={styles.mobileLabel}>{t('total')}</p>
             <p className={styles.mobileTotal}>{formatMoney(data.total, data.currency)}</p>
           </div>
           {data.canCheckout ? (
             <Link to={paths.checkout} className={buttonClass('red', 'sm')}>
-              إتمام الطلب
+              {t('checkout')}
             </Link>
           ) : (
             <span className={buttonClass('red', 'sm', styles.disabled)} aria-disabled="true">
-              إتمام الطلب
+              {t('checkout')}
             </span>
           )}
         </div>

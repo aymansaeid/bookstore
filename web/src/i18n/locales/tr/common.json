@@ -178,5 +178,9 @@
     "following": "Takip ediliyor",
     "followed": "Bu muhakkiki artık takip ediyorsunuz. Her yeni baskısını size bildireceğiz.",
     "unfollowed": "Muhakkik takibi bırakıldı."
+  },
+   "delivery": {
+    "on": "{{date}} teslim",
+    "between": "{{from}} ile {{to}} arasında teslim"
   }
 }

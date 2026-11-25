@@ -1,16 +1,18 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { useCartStore } from '@/features/cart/cartStore';
 import { checkoutApi } from '@/features/checkout/api';
 import type { Quote } from '@/features/checkout/types';
 import { errorMessage } from '@/shared/api/errorMessages';
-import { formatCount, formatMoney } from '@/shared/lib/format';
+import { formatMoney, formatPercent } from '@/shared/lib/format';
 import { Icon } from '@/shared/ui/Icon/Icon';
 
 import styles from './CartSummary.module.css';
 
 /** Spec 5.6 dotted coupon box. Previews with /coupons/check, then the quote applies it. */
 export function CouponForm({ quote }: { quote: Quote | undefined }) {
+  const { t } = useTranslation('checkout', { keyPrefix: 'coupon' });
   const couponCode = useCartStore((state) => state.couponCode);
   const setCoupon = useCartStore((state) => state.setCoupon);
   const [code, setCode] = useState('');
@@ -26,9 +28,12 @@ export function CouponForm({ quote }: { quote: Quote | undefined }) {
           <Icon name={rejected ? 'x' : 'check'} size={16} />
           <span dir="ltr">{couponCode}</span>
           {rejected
-            ? ' لا يمكن استخدام هذا الكود الآن.'
+            ? t('rejected')
             : quote?.coupon &&
-              ` خصم ${formatCount(quote.coupon.discountPercentage)}٪ (−${formatMoney(quote.discountAmount, quote.currency)})`}
+              t('applied', {
+                percent: formatPercent(quote.coupon.discountPercentage),
+                amount: formatMoney(quote.discountAmount, quote.currency),
+              })}
         </p>
         <button
           type="button"
@@ -37,7 +42,7 @@ export function CouponForm({ quote }: { quote: Quote | undefined }) {
             setCoupon(null);
           }}
         >
-          إزالة
+          {t('remove')}
         </button>
       </div>
     );
@@ -67,7 +72,7 @@ export function CouponForm({ quote }: { quote: Quote | undefined }) {
       }}
     >
       <label htmlFor="coupon-code" className="sr-only">
-        كود الخصم
+        {t('label')}
       </label>
       <input
         id="coupon-code"
@@ -76,7 +81,7 @@ export function CouponForm({ quote }: { quote: Quote | undefined }) {
         dir="ltr"
         autoComplete="off"
         autoCapitalize="characters"
-        placeholder="كود الخصم"
+        placeholder={t('label')}
         maxLength={50}
         onChange={(event) => {
           setCode(event.target.value);
@@ -87,7 +92,7 @@ export function CouponForm({ quote }: { quote: Quote | undefined }) {
         className={styles.couponApply}
         disabled={checking || code.trim() === ''}
       >
-        {checking ? '…' : 'تطبيق'}
+        {checking ? '…' : t('apply')}
       </button>
       {error && (
         <p className={styles.couponError} role="alert">

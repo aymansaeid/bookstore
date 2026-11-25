@@ -1,6 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { Trans, useTranslation } from 'react-i18next';
 import { Link, Navigate } from 'react-router';
 
 import { STORE_COUNTRY, UI_LANGUAGE } from '@/app/locale';
@@ -11,8 +12,8 @@ import { endSessionLocally, getSession, useSession } from '@/features/auth/sessi
 import type { Customer } from '@/features/auth/types';
 import { useCartStore } from '@/features/cart/cartStore';
 import { useCheckoutStore } from '@/features/checkout/checkoutStore';
-import { CheckoutSteps } from '@/features/checkout/components/CheckoutSteps';
 import { CheckoutClosedNotice } from '@/features/checkout/components/CheckoutClosedNotice';
+import { CheckoutSteps } from '@/features/checkout/components/CheckoutSteps';
 import { LegalDocumentsDialog } from '@/features/checkout/components/LegalDocumentsDialog';
 import { QuoteTotals } from '@/features/checkout/components/QuoteTotals';
 import { SavedAddressPicker } from '@/features/checkout/components/SavedAddressPicker';
@@ -32,6 +33,7 @@ import type {
 import { quoteKeys, useQuote } from '@/features/checkout/useQuote';
 import { useQuoteSelfHeal } from '@/features/checkout/useQuoteSelfHeal';
 import { storeKeys, useStoreConfig } from '@/features/store/queries';
+import { i18n } from '@/i18n';
 import { ApiError } from '@/shared/api/ApiError';
 import { codeMessage, errorMessage } from '@/shared/api/errorMessages';
 import { serverFieldErrors } from '@/shared/api/formErrors';
@@ -102,6 +104,7 @@ function Card({ number, title, children }: { number: number; title: string; chil
 }
 
 function CheckoutForm({ customer }: { customer: Customer | null }) {
+  const { t } = useTranslation('checkout', { keyPrefix: 'checkout' });
   const guest = customer === null;
   const queryClient = useQueryClient();
   const config = useStoreConfig();
@@ -239,7 +242,7 @@ function CheckoutForm({ customer }: { customer: Customer | null }) {
     if (error instanceof ApiError) {
       if (REQUOTE.has(error.code)) void queryClient.invalidateQueries({ queryKey: quoteKeys.all });
       switch (error.code) {
-         case 'Checkout.TermsUnavailable':
+        case 'Checkout.TermsUnavailable':
           // Published or withdrawn since the page loaded: reload termsAvailable.
           void queryClient.invalidateQueries({ queryKey: storeKeys.config(UI_LANGUAGE) });
           break;
@@ -280,7 +283,7 @@ function CheckoutForm({ customer }: { customer: Customer | null }) {
     setSubmitError(null);
     if (!accepted) {
       setTermsError(true);
-      toast.error('يجب الموافقة على نموذج المعلومات المسبقة وعقد البيع عن بُعد.');
+      toast.error(i18n.t('checkout.termsRequired', { ns: 'checkout' }));
       return;
     }
     const termsVersion = config.data?.termsVersion;
@@ -340,6 +343,7 @@ function CheckoutForm({ customer }: { customer: Customer | null }) {
   const problems = (data?.problems ?? []).filter((problem) => !SELF_HEALED.has(problem.code));
   const quantities = new Map(lines.map((line) => [line.bookId, line.quantity]));
   const busy = isSubmitting || redirecting;
+  // Turkish checkout stays closed until the Turkish legal texts are published (API §2b).
   const termsClosed = config.data?.termsAvailable === false;
   const canPay =
     data !== undefined &&
@@ -348,10 +352,10 @@ function CheckoutForm({ customer }: { customer: Customer | null }) {
     config.data !== undefined &&
     !termsClosed;
   const payLabel = redirecting
-    ? 'جارٍ تحويلك إلى صفحة الدفع…'
+    ? t('redirecting')
     : data
-      ? `ادفع ${formatMoney(data.total, data.currency)} بأمان`
-      : 'ادفع بأمان';
+      ? t('payAmount', { amount: formatMoney(data.total, data.currency) })
+      : t('pay');
   const showAddressForm = guest || selectedAddress === null;
   const addressesLoading = !guest && addresses.isPending;
 
@@ -364,10 +368,10 @@ function CheckoutForm({ customer }: { customer: Customer | null }) {
         void handleSubmit(onValid, onInvalid)(event);
       }}
     >
-      <DocumentTitle title="الشحن والدفع" />
+      <DocumentTitle title={t('title')} />
 
       <header className={styles.header}>
-        <h1 className={styles.title}>الشحن والدفع</h1>
+        <h1 className={styles.title}>{t('title')}</h1>
         <CheckoutSteps current="checkout" />
       </header>
 
@@ -377,40 +381,52 @@ function CheckoutForm({ customer }: { customer: Customer | null }) {
             <p key={problem.code}>{codeMessage(problem.code)}</p>
           ))}
           <Link to={paths.cart} className={buttonClass('ghost', 'sm')}>
-            تعديل السلة
+            {t('editCart')}
           </Link>
         </div>
       )}
 
       <div className={styles.layout}>
         <div className={styles.cards}>
-          <Card number={1} title="العنوان">
+          <Card number={1} title={t('address')}>
             {guest ? (
               <>
                 <p className={styles.note}>
-                  لديك حساب؟ <Link to={paths.loginWithReturn(paths.checkout)}>سجّل الدخول</Link>{' '}
-                  لاستخدام عناوينك المحفوظة ومتابعة طلباتك.
+                  <Trans
+                    t={t}
+                    i18nKey="haveAccount"
+                    components={{ a: <Link to={paths.loginWithReturn(paths.checkout)} /> }}
+                  />
                 </p>
                 <TextField
-                  label="البريد الإلكتروني"
+                  label={t('email')}
                   type="email"
                   dir="ltr"
                   inputMode="email"
                   autoComplete="email"
                   placeholder="name@example.com"
-                  hint="نرسل إليه تأكيد الطلب ورقم التتبّع."
+                  hint={t('emailHint')}
                   error={errors.email?.message}
                   {...register('email')}
                 />
               </>
             ) : (
               <p className={styles.note}>
-                سيصلك تأكيد الطلب على <b dir="ltr">{customer.email}</b>
+                <Trans
+                  t={t}
+                  i18nKey="confirmationTo"
+                  values={{ email: customer.email }}
+                  components={{ b: <b dir="ltr" /> }}
+                />
               </p>
             )}
 
             {addressesLoading ? (
-              <div className={styles.skeleton} aria-busy="true" aria-label="جارٍ تحميل عناوينك" />
+              <div
+                className={styles.skeleton}
+                aria-busy="true"
+                aria-label={t('loadingAddresses')}
+              />
             ) : (
               savedAddresses.length > 0 && (
                 <SavedAddressPicker
@@ -424,13 +440,13 @@ function CheckoutForm({ customer }: { customer: Customer | null }) {
             {showAddressForm && !addressesLoading && (
               <div className={styles.fields}>
                 <TextField
-                  label={pickup ? 'اسم من سيستلم الطلب' : 'اسم المستلم'}
+                  label={pickup ? t('pickupName') : t('recipient')}
                   autoComplete="name"
                   error={errors.recipientName?.message}
                   {...register('recipientName')}
                 />
                 <TextField
-                  label="رقم الجوال"
+                  label={t('phone')}
                   type="tel"
                   dir="ltr"
                   inputMode="tel"
@@ -441,13 +457,13 @@ function CheckoutForm({ customer }: { customer: Customer | null }) {
                 />
                 {pickup ? (
                   <p className={cx(styles.note, styles.full)}>
-                    <Icon name="pin" size={16} /> ستستلم طلبك من مكتبتنا، فلا حاجة إلى عنوان.
+                    <Icon name="pin" size={16} /> {t('pickupNote')}
                   </p>
                 ) : (
                   <>
                     <div className={cx(styles.countryField, styles.full)}>
                       <label htmlFor="checkout-country" className={styles.label}>
-                        البلد
+                        {t('country')}
                       </label>
                       <CountrySelect
                         id="checkout-country"
@@ -457,34 +473,34 @@ function CheckoutForm({ customer }: { customer: Customer | null }) {
                     </div>
                     <TextField
                       className={styles.full}
-                      label="العنوان"
+                      label={t('line1')}
                       autoComplete="address-line1"
-                      placeholder="الحي، الشارع، رقم المبنى"
+                      placeholder={t('line1Placeholder')}
                       error={errors.line1?.message}
                       {...register('line1')}
                     />
                     <TextField
                       className={styles.full}
-                      label="تفاصيل إضافية (اختياري)"
+                      label={t('line2')}
                       autoComplete="address-line2"
-                      placeholder="الطابق، رقم الشقة"
+                      placeholder={t('line2Placeholder')}
                       error={errors.line2?.message}
                       {...register('line2')}
                     />
                     <TextField
-                      label="المدينة"
+                      label={t('city')}
                       autoComplete="address-level2"
                       error={errors.city?.message}
                       {...register('city')}
                     />
                     <TextField
-                      label="المنطقة أو الولاية (اختياري)"
+                      label={t('state')}
                       autoComplete="address-level1"
                       error={errors.stateOrProvince?.message}
                       {...register('stateOrProvince')}
                     />
                     <TextField
-                      label="الرمز البريدي"
+                      label={t('postalCode')}
                       dir="ltr"
                       inputMode={countryCode === STORE_COUNTRY ? 'numeric' : 'text'}
                       autoComplete="postal-code"
@@ -497,7 +513,7 @@ function CheckoutForm({ customer }: { customer: Customer | null }) {
             )}
           </Card>
 
-          <Card number={2} title="الشحن">
+          <Card number={2} title={t('shipping')}>
             {data && data.shippingOptions.length > 0 ? (
               <ShippingOptions quote={data} />
             ) : data ? (
@@ -505,7 +521,11 @@ function CheckoutForm({ customer }: { customer: Customer | null }) {
                 {codeMessage('Checkout.ShippingZoneNotSupported')}
               </p>
             ) : (
-              <div className={styles.skeleton} aria-busy="true" aria-label="جارٍ حساب الشحن" />
+              <div
+                className={styles.skeleton}
+                aria-busy="true"
+                aria-label={t('calculatingShipping')}
+              />
             )}
 
             {data?.giftWrap.available && (
@@ -516,13 +536,16 @@ function CheckoutForm({ customer }: { customer: Customer | null }) {
                     setGiftWrap(event.target.checked);
                   }}
                 >
-                  <Icon name="gift" size={18} /> تغليف هدية فاخر (+
-                  {formatMoney(data.giftWrap.fee, data.currency)})
+                  <Icon name="gift" size={18} />{' '}
+                  {i18n.t('summary.giftWrap', {
+                    ns: 'checkout',
+                    fee: formatMoney(data.giftWrap.fee, data.currency),
+                  })}
                 </Checkbox>
                 {giftWrap && (
                   <TextAreaField
-                    label="رسالة الإهداء (اختياري)"
-                    hint={`تُطبع وتوضع مع الهدية، حتى ${formatCount(GIFT_MESSAGE_MAX)} حرف.`}
+                    label={t('giftMessage')}
+                    hint={t('giftMessageHint', { n: formatCount(GIFT_MESSAGE_MAX) })}
                     maxLength={GIFT_MESSAGE_MAX}
                     rows={3}
                     error={errors.giftMessage?.message}
@@ -533,26 +556,20 @@ function CheckoutForm({ customer }: { customer: Customer | null }) {
             )}
           </Card>
 
-          <Card number={3} title="الدفع">
+          <Card number={3} title={t('payment')}>
             <div className={styles.payment}>
               <span className={styles.paymentIcon} aria-hidden="true">
                 <Icon name="lock" size={22} />
               </span>
               <div>
-                <p className={styles.paymentTitle}>الدفع بالبطاقة عبر صفحة دفع آمنة</p>
-                <p className={styles.note}>
-                  بعد الضغط على «ادفع» ننقلك إلى صفحة بوابة الدفع لإدخال بيانات بطاقتك، ثم تعود إلى
-                  هنا لتأكيد الطلب. لا نرى بيانات بطاقتك ولا نحفظها.
-                </p>
+                <p className={styles.paymentTitle}>{t('paymentTitle')}</p>
+                <p className={styles.note}>{t('paymentText')}</p>
                 {config.data && (
                   <p className={styles.note}>
-                    نحجز الكتب لك {formatCount(config.data.checkoutSessionMinutes)} دقيقة أثناء
-                    الدفع.
+                    {t('hold', { n: formatCount(config.data.checkoutSessionMinutes) })}
                   </p>
                 )}
-                {config.data?.isTestMode && (
-                  <p className={styles.testMode}>وضع تجريبي: لن يُسحب أي مبلغ.</p>
-                )}
+                {config.data?.isTestMode && <p className={styles.testMode}>{t('testMode')}</p>}
               </div>
             </div>
           </Card>
@@ -561,11 +578,11 @@ function CheckoutForm({ customer }: { customer: Customer | null }) {
         <aside className={styles.summary} aria-labelledby="checkout-summary-title">
           <div className={styles.summaryHead}>
             <h2 id="checkout-summary-title" className={styles.summaryTitle}>
-              ملخّص الطلب
+              {t('summary')}
             </h2>
             <Link to={paths.cart} className={styles.edit}>
-              تعديل
-            </Link> 
+              {t('edit')}
+            </Link>
           </div>
 
           {data ? (
@@ -596,7 +613,7 @@ function CheckoutForm({ customer }: { customer: Customer | null }) {
               {errorMessage(quote.error)}
             </p>
           ) : (
-            <div className={styles.skeleton} aria-busy="true" aria-label="جارٍ حساب الطلب" />
+            <div className={styles.skeleton} aria-busy="true" aria-label={t('calculating')} />
           )}
 
           <div className={styles.terms}>
@@ -609,7 +626,7 @@ function CheckoutForm({ customer }: { customer: Customer | null }) {
                 if (event.target.checked) setTermsError(false);
               }}
             >
-              قرأت نموذج المعلومات المسبقة وعقد البيع عن بُعد وأوافق عليهما.
+              {t('accept')}
             </Checkbox>
             <p id="terms-documents" className={styles.documents}>
               <button
@@ -619,7 +636,7 @@ function CheckoutForm({ customer }: { customer: Customer | null }) {
                   openDocument('PreInformationForm');
                 }}
               >
-                نموذج المعلومات المسبقة
+                {t('preInformation')}
               </button>
               <span aria-hidden="true">·</span>
               <button
@@ -629,15 +646,16 @@ function CheckoutForm({ customer }: { customer: Customer | null }) {
                   openDocument('DistanceSalesContract');
                 }}
               >
-                عقد البيع عن بُعد
+                {t('contract')}
               </button>
             </p>
             {termsError && !accepted && (
               <p className={styles.termsError} role="alert">
-                يجب الموافقة على المستندين قبل الدفع.
+                {t('acceptRequired')}
               </p>
             )}
           </div>
+
           {termsClosed && <CheckoutClosedNotice />}
           {submitError && <FormAlert>{submitError}</FormAlert>}
 
@@ -649,7 +667,7 @@ function CheckoutForm({ customer }: { customer: Customer | null }) {
             <Icon name="lock" /> {payLabel}
           </button>
           <p className={styles.secure}>
-            <Icon name="shield" size={16} /> اتصال مشفّر، والدفع عبر بوابة دفع آمنة.
+            <Icon name="shield" size={16} /> {t('secure')}
           </p>
         </aside>
       </div>
@@ -657,11 +675,11 @@ function CheckoutForm({ customer }: { customer: Customer | null }) {
       {data && (
         <div className={styles.mobileBar}>
           <div>
-            <p className={styles.mobileLabel}>الإجمالي</p>
+            <p className={styles.mobileLabel}>{i18n.t('cart.total', { ns: 'checkout' })}</p>
             <p className={styles.mobileTotal}>{formatMoney(data.total, data.currency)}</p>
           </div>
           <button type="submit" className={buttonClass('red', 'sm')} disabled={!canPay || busy}>
-            <Icon name="lock" size={16} /> {redirecting ? 'جارٍ التحويل…' : 'ادفع بأمان'}
+            <Icon name="lock" size={16} /> {redirecting ? t('redirectingShort') : t('pay')}
           </button>
         </div>
       )}
@@ -677,6 +695,7 @@ function CheckoutForm({ customer }: { customer: Customer | null }) {
 }
 
 export default function CheckoutPage() {
+  const { t } = useTranslation('checkout', { keyPrefix: 'checkout' });
   const { status, customer } = useSession();
   const hasLines = useCartStore((state) => state.lines.length > 0);
 
@@ -684,7 +703,7 @@ export default function CheckoutPage() {
   if (status === 'unknown') {
     return (
       <div className={cx('wrap', styles.page)} aria-busy="true">
-        <DocumentTitle title="الشحن والدفع" />
+        <DocumentTitle title={t('title')} />
         <div className={styles.skeletonPage} />
       </div>
     );

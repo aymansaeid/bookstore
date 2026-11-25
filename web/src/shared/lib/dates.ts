@@ -1,5 +1,5 @@
 import { STORE_TIME_ZONE, UI_LOCALE } from '@/app/locale';
-
+import { i18n } from '@/i18n';
 const dayFormat = new Intl.DateTimeFormat(UI_LOCALE, {
   timeZone: STORE_TIME_ZONE,
   weekday: 'long',
@@ -22,6 +22,9 @@ export function addBusinessDays(from: Date, days: number): Date {
 /** «يصلك الثلاثاء ١٤ أكتوبر» or «يصلك بين … و…». */
 export function deliveryWindow(minDays: number, maxDays: number, now: Date = new Date()): string {
   const first = dayFormat.format(addBusinessDays(now, minDays));
-  if (maxDays <= minDays) return `يصلك ${first}`;
-  return `يصلك بين ${first} و${dayFormat.format(addBusinessDays(now, maxDays))}`;
+  if (maxDays <= minDays) return i18n.t('delivery.on', { date: first });
+  return i18n.t('delivery.between', {
+    from: first,
+    to: dayFormat.format(addBusinessDays(now, maxDays)),
+  });
 }

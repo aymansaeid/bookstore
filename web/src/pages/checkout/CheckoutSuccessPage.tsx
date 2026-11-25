@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
+import { Trans, useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router';
 
 import { paths } from '@/app/paths';
@@ -28,6 +29,9 @@ const MAX_POLLS = 7;
 const CONFIRMED = new Set(['Paid', 'Shipped', 'Delivered']);
 
 function OrderStatusView({ orderNumber, email }: { orderNumber: string; email: string }) {
+  const { t } = useTranslation('checkout', { keyPrefix: 'result' });
+  const { t: tc } = useTranslation();
+
   const order = useQuery({
     queryKey: ['order-status', orderNumber, email] as const,
     queryFn: () => ordersApi.track(orderNumber, email),
@@ -57,7 +61,7 @@ function OrderStatusView({ orderNumber, email }: { orderNumber: string; email: s
     return (
       <div className={styles.state} aria-busy="true">
         <span className={styles.spinner} aria-hidden="true" />
-        <h1 className={styles.title}>جارٍ تأكيد طلبك…</h1>
+        <h1 className={styles.title}>{t('confirming')}</h1>
       </div>
     );
   }
@@ -65,7 +69,7 @@ function OrderStatusView({ orderNumber, email }: { orderNumber: string; email: s
   if (order.isError) {
     return (
       <div className={styles.state}>
-        <h1 className={styles.title}>تعذّر عرض الطلب</h1>
+        <h1 className={styles.title}>{t('loadFailed')}</h1>
         <FormAlert>{errorMessage(order.error)}</FormAlert>
         <div className={styles.actions}>
           <Button
@@ -74,10 +78,10 @@ function OrderStatusView({ orderNumber, email }: { orderNumber: string; email: s
               void order.refetch();
             }}
           >
-            أعد المحاولة
+            {tc('ui.retry')}
           </Button>
           <ButtonLink to={trackOrderUrl(orderNumber)} state={{ email }} variant="ghost">
-            تتبّع الطلب
+            {t('track')}
           </ButtonLink>
         </div>
       </div>
@@ -90,13 +94,15 @@ function OrderStatusView({ orderNumber, email }: { orderNumber: string; email: s
     return (
       <div className={styles.state}>
         <span className={styles.spinner} aria-hidden="true" />
-        <h1 className={styles.title}>جارٍ تأكيد الدفع</h1>
-        <p>
-          لم يصلنا تأكيد الدفع من البوابة بعد، وقد يستغرق ذلك لحظات. لا تُعِد الدفع؛ سنرسل التأكيد
-          إلى بريدك فور وصوله.
-        </p>
+        <h1 className={styles.title}>{t('pendingTitle')}</h1>
+        <p>{t('pendingText')}</p>
         <p className={styles.orderNumber}>
-          رقم الطلب <b dir="ltr">{data.orderNumber}</b>
+          <Trans
+            t={t}
+            i18nKey="orderNumber"
+            values={{ number: data.orderNumber }}
+            components={{ b: <b dir="ltr" /> }}
+          />
         </p>
         <div className={styles.actions}>
           <Button
@@ -106,10 +112,10 @@ function OrderStatusView({ orderNumber, email }: { orderNumber: string; email: s
               void order.refetch();
             }}
           >
-            تحقّق مجدداً
+            {t('checkAgain')}
           </Button>
           <ButtonLink to={trackOrderUrl(data.orderNumber)} state={{ email }} variant="ghost">
-            تتبّع الطلب لاحقاً
+            {t('trackLater')}
           </ButtonLink>
         </div>
       </div>
@@ -122,15 +128,11 @@ function OrderStatusView({ orderNumber, email }: { orderNumber: string; email: s
         <span className={cx(styles.badge, styles.badgeMuted)} aria-hidden="true">
           <Icon name="x" size={28} />
         </span>
-        <h1 className={styles.title}>لم يكتمل هذا الطلب</h1>
-        <p>
-          {data.status === 'Expired'
-            ? 'انتهت مهلة الدفع وأُلغي الحجز. ما زالت كتبك في السلة إن أردت المحاولة من جديد.'
-            : 'أُلغي هذا الطلب. إن خُصم أي مبلغ فسيُعاد إليك تلقائياً.'}
-        </p>
+        <h1 className={styles.title}>{t('notCompleted')}</h1>
+        <p>{data.status === 'Expired' ? t('expired') : t('cancelled')}</p>
         <div className={styles.actions}>
           <ButtonLink to={paths.cart} variant="ink">
-            العودة إلى السلة
+            {t('backToCart')}
           </ButtonLink>
         </div>
       </div>
@@ -143,22 +145,26 @@ function OrderStatusView({ orderNumber, email }: { orderNumber: string; email: s
         <span className={styles.badge} aria-hidden="true">
           <Icon name="check" size={30} />
         </span>
-        <h1 className={styles.title}>شكراً لك! تم استلام طلبك</h1>
+        <h1 className={styles.title}>{t('thanks')}</h1>
         <p>
-          أرسلنا التأكيد ومستندات الطلب إلى <b dir="ltr">{email}</b>، وسنراسلك برقم التتبّع عند
-          الشحن.
+          <Trans t={t} i18nKey="sentTo" values={{ email }} components={{ b: <b dir="ltr" /> }} />
         </p>
         <p className={styles.orderNumber}>
-          رقم الطلب <b dir="ltr">{data.orderNumber}</b>
+          <Trans
+            t={t}
+            i18nKey="orderNumber"
+            values={{ number: data.orderNumber }}
+            components={{ b: <b dir="ltr" /> }}
+          />
         </p>
       </div>
       <OrderSummary order={data} />
       <div className={styles.actions}>
         <ButtonLink to={trackOrderUrl(data.orderNumber)} state={{ email }} variant="ink">
-          <Icon name="truck" /> تتبّع الطلب
+          <Icon name="truck" /> {t('track')}
         </ButtonLink>
         <ButtonLink to={paths.search} variant="ghost">
-          متابعة التسوّق
+          {t('continueShopping')}
         </ButtonLink>
       </div>
     </div>
@@ -167,6 +173,7 @@ function OrderStatusView({ orderNumber, email }: { orderNumber: string; email: s
 
 /** Opened in another tab or device: the email isn't in this tab, so ask for it. */
 function EmailPrompt({ onEmail }: { onEmail: (email: string) => void }) {
+  const { t } = useTranslation('checkout', { keyPrefix: 'result' });
   const [value, setValue] = useState('');
   const [error, setError] = useState<string | null>(null);
   return (
@@ -177,17 +184,17 @@ function EmailPrompt({ onEmail }: { onEmail: (email: string) => void }) {
         event.preventDefault();
         const email = value.trim();
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-          setError('أدخل بريداً إلكترونياً صحيحاً');
+          setError(t('emailInvalid'));
           return;
         }
         onEmail(email);
       }}
     >
-      <h1 className={styles.title}>اعرض طلبك</h1>
-      <p>أدخل البريد الإلكتروني الذي استخدمته في الطلب.</p>
+      <h1 className={styles.title}>{t('viewTitle')}</h1>
+      <p>{t('viewText')}</p>
       <TextField
         className={styles.emailField}
-        label="البريد الإلكتروني"
+        label={t('email')}
         type="email"
         dir="ltr"
         inputMode="email"
@@ -199,13 +206,14 @@ function EmailPrompt({ onEmail }: { onEmail: (email: string) => void }) {
         }}
       />
       <Button type="submit" variant="ink">
-        عرض الطلب
+        {t('view')}
       </Button>
     </form>
   );
 }
 
 export default function CheckoutSuccessPage() {
+  const { t } = useTranslation('checkout', { keyPrefix: 'result' });
   const [params] = useSearchParams();
   const orderNumber = params.get('order')?.trim() ?? '';
   const attempt = useAttemptForOrder(orderNumber);
@@ -214,13 +222,13 @@ export default function CheckoutSuccessPage() {
 
   return (
     <div className={cx('wrap', styles.page)}>
-      <DocumentTitle title="تأكيد الطلب" />
+      <DocumentTitle title={t('confirmTitle')} />
       <CheckoutSteps current="done" />
       {orderNumber === '' ? (
         <div className={styles.state}>
-          <h1 className={styles.title}>لا يوجد طلب لعرضه</h1>
+          <h1 className={styles.title}>{t('noOrder')}</h1>
           <ButtonLink to={paths.trackOrder} variant="ink">
-            تتبّع طلباً
+            {t('trackAny')}
           </ButtonLink>
         </div>
       ) : email ? (

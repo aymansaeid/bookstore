@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Trans, useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router';
 
 import { paths } from '@/app/paths';
@@ -18,6 +19,7 @@ import styles from './CheckoutResult.module.css';
 
 /** Back from the payment page without paying (API §5, cancel page). */
 export default function CheckoutCancelPage() {
+  const { t } = useTranslation('checkout', { keyPrefix: 'result' });
   const [params] = useSearchParams();
   const orderNumber = params.get('order')?.trim() ?? null;
   const attempt = useAttemptForOrder(orderNumber);
@@ -54,47 +56,52 @@ export default function CheckoutCancelPage() {
 
   return (
     <div className={cx('wrap', styles.page)}>
-      <DocumentTitle title="لم يكتمل الدفع" />
+      <DocumentTitle title={t('unpaidTitle')} />
       <CheckoutSteps current="checkout" />
       <div className={styles.state}>
         <span className={cx(styles.badge, styles.badgeMuted)} aria-hidden="true">
           <Icon name="lock" size={28} />
         </span>
-        <h1 className={styles.title}>لم يكتمل الدفع</h1>
+        <h1 className={styles.title}>{t('unpaidTitle')}</h1>
         {attempt ? (
           <>
             <p>
-              لم يُخصم أي مبلغ.
+              {t('noCharge')}
               {attempt.expiresAtUtc &&
-                ` كتبك محجوزة لك حتى ${formatDateTime(attempt.expiresAtUtc)}، ويمكنك العودة إلى الدفع الآن.`}
+                t('heldUntil', { time: formatDateTime(attempt.expiresAtUtc) })}
             </p>
             {attempt.orderNumber && (
               <p className={styles.orderNumber}>
-                رقم الطلب <b dir="ltr">{attempt.orderNumber}</b>
+                <Trans
+                  t={t}
+                  i18nKey="orderNumber"
+                  values={{ number: attempt.orderNumber }}
+                  components={{ b: <b dir="ltr" /> }}
+                />
               </p>
             )}
             {error && <FormAlert>{error}</FormAlert>}
             <div className={styles.actions}>
               {needsCheckout ? (
                 <ButtonLink to={paths.checkout} variant="red">
-                  مراجعة الطلب
+                  {t('review')}
                 </ButtonLink>
               ) : (
                 <Button variant="red" disabled={busy} onClick={resume}>
-                  <Icon name="lock" /> {busy ? 'جارٍ التحويل…' : 'العودة إلى الدفع'}
+                  <Icon name="lock" /> {busy ? t('redirecting') : t('resume')}
                 </Button>
               )}
               <ButtonLink to={paths.checkout} variant="ghost">
-                تعديل بيانات الشحن
+                {t('editShipping')}
               </ButtonLink>
             </div>
           </>
         ) : (
           <>
-            <p>لم يُخصم أي مبلغ، وما زالت كتبك في السلة.</p>
+            <p>{t('noChargeInCart')}</p>
             <div className={styles.actions}>
               <ButtonLink to={paths.cart} variant="ink">
-                العودة إلى السلة
+                {t('backToCart')}
               </ButtonLink>
             </div>
           </>
