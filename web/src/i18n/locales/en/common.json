@@ -173,6 +173,88 @@
     "interests": "Choose at most {{n}} interests",
     "mismatch": "The passwords don't match"
   },
+    "errors": {
+    "Network": "We couldn't reach the server. Check your internet connection and try again.",
+    "RateLimited": "Too many attempts. Please try again in a minute.",
+    "Validation": "Some fields need correcting.",
+    "Checkout": {
+      "InsufficientStock": "The quantity you asked for of one of the books isn't available right now.",
+      "BookNotFound": "One of the books is no longer available, so we removed it from your cart.",
+      "ShippingCountryMissing": "Choose the shipping country to work out the cost.",
+      "ShippingZoneNotSupported": "We don't ship to this country at the moment.",
+      "ShippingMethodUnavailable": "This shipping method isn't available for your country. Please choose another.",
+      "GiftWrapUnavailable": "Gift wrapping isn't available right now.",
+      "CouponInvalid": "This discount code can't be used.",
+      "TermsUnavailable": "Ordering in this language isn't available yet. You can complete your order in Arabic.",
+      "TermsOutdated": "The terms have been updated. Please review and accept them again.",
+      "SavedAddressNotFound": "That saved address no longer exists. Please choose another.",
+      "CustomerNotFound": "Your session has ended. Please sign in again.",
+      "IdempotencyKeyReused": "Your order changed. Please try paying again.",
+      "PaymentGatewayFailure": "We couldn't reach the payment provider. Please try again shortly.",
+      "PathIncomplete": "Some of the path's books aren't in your cart.",
+      "PathAlreadyOwned": "You already own every book on this path.",
+      "PathUnavailable": "This path isn't available right now."
+    },
+    "Coupon": { "Invalid": "This discount code can't be used." },
+    "Order": {
+      "TrackingNotFound": "We couldn't find an order with this number and email.",
+      "AlreadyShipped": "The order has already shipped. You can request a return once it arrives.",
+      "PaymentJustCompleted": "Payment has just completed. Refresh the page and try again.",
+      "InvalidStatus": "The order's status has changed. Please reload the page.",
+      "NotFound": "We couldn't find this order."
+    },
+    "Customer": {
+      "InvalidCredentials": "The email or password is incorrect.",
+      "EmailNotVerified": "Please activate your account from the link we emailed you first.",
+      "AccountUnavailable": "This account isn't available.",
+      "InvalidToken": "This link is invalid or has expired.",
+      "CurrentPasswordIncorrect": "Your current password is incorrect.",
+      "AddressLimitReached": "You've reached the limit of 10 addresses. Delete one to add another.",
+      "AddressNotFound": "This address no longer exists.",
+      "UnknownInterests": "One of the interests is no longer available. Refresh the page and choose again."
+    },
+    "Auth": { "InvalidCredentials": "The email or password is incorrect." },
+    "Review": {
+      "NotEligible": "Only customers who bought the book can review it.",
+      "AlreadyReviewed": "You've already reviewed this book.",
+      "NotFound": "We couldn't find this review. Please refresh the page."
+    },
+    "Return": {
+      "WindowClosed": "The return period (14 days from delivery) has ended.",
+      "AlreadyRequested": "A return has already been requested for this order.",
+      "OrderNotReturnable": "This order can't be returned.",
+      "InvalidItems": "The quantities you chose are more than you bought.",
+      "InvalidStatus": "The return's status has changed. Please reload the page.",
+      "NoReturnForOrder": "There's no return request for this order.",
+      "NotFound": "We couldn't find the return request."
+    },
+    "StockNotification": { "AlreadyInStock": "The book is in stock now. You can add it to your cart." },
+    "Library": { "NotInLibrary": "This book isn't in your library." },
+    "Book": { "NotFound": "We couldn't find this book." },
+    "ReadingPath": { "NotFound": "We couldn't find this path. Please refresh the page." }
+  },
+  "errorStatus": {
+    "401": "Please sign in to continue.",
+    "403": "You don't have permission to do this.",
+    "404": "We couldn't find what you're looking for.",
+    "409": "The data changed while we were working. Please try again.",
+    "fallback": "Something went wrong. Please try again shortly.",
+    "field": "Check the value of this field."
+  },
+  "errorPage": {
+    "updatedTitle": "The site has been updated",
+    "updatedText": "A newer version of the site is out. Reload the page to continue.",
+    "title": "Something went wrong",
+    "text": "Sorry, we couldn't show this page. Please try again shortly.",
+    "code": "Error code: <c>{{id}}</c>",
+    "reload": "Reload the page",
+    "home": "Back to the home page"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "text": "This page may have moved, or the link may be wrong.",
+    "home": "Back to the home page"
+  },
   "ui": {
     "home": "Home",
     "library": "Library",

@@ -1,5 +1,5 @@
 import { ApiError } from './ApiError';
-
+import { i18n } from '@/i18n';
 /**
  * API guide §2: validation keys are C# paths ("ShippingAddress.Phone",
  * "Lines[0].Quantity", "$.lines"). Converts them to form paths
@@ -25,7 +25,7 @@ export function serverFieldErrors(error: unknown): Record<string, string> {
   const result: Record<string, string> = {};
   for (const key of Object.keys(error.fieldErrors)) {
     const path = toFormPath(key);
-    if (path) result[path] = 'تحقّق من قيمة هذا الحقل.';
+    if (path) result[path] = i18n.t('errorStatus.field');
   }
   return result;
 }

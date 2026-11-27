@@ -173,6 +173,88 @@
     "interests": "En fazla {{n}} ilgi alanı seçin",
     "mismatch": "Şifreler eşleşmiyor"
   },
+    "errors": {
+    "Network": "Sunucuya ulaşılamadı. İnternet bağlantınızı kontrol edip tekrar deneyin.",
+    "RateLimited": "Çok fazla deneme yapıldı. Lütfen bir dakika sonra tekrar deneyin.",
+    "Validation": "Bazı alanların düzeltilmesi gerekiyor.",
+    "Checkout": {
+      "InsufficientStock": "Kitaplardan birinin istediğiniz adedi şu anda stokta yok.",
+      "BookNotFound": "Kitaplardan biri artık satışta değil; sepetinizden çıkardık.",
+      "ShippingCountryMissing": "Kargo ücretini hesaplamak için gönderim ülkesini seçin.",
+      "ShippingZoneNotSupported": "Şu anda bu ülkeye gönderim yapmıyoruz.",
+      "ShippingMethodUnavailable": "Bu gönderim yöntemi ülkeniz için kullanılamıyor; başka bir yöntem seçin.",
+      "GiftWrapUnavailable": "Hediye paketi şu anda kullanılamıyor.",
+      "CouponInvalid": "Bu indirim kodu kullanılamıyor.",
+      "TermsUnavailable": "Bu dilde sipariş henüz mümkün değil. Siparişinizi Arapça tamamlayabilirsiniz.",
+      "TermsOutdated": "Koşullar güncellendi. Lütfen gözden geçirip yeniden onaylayın.",
+      "SavedAddressNotFound": "Kayıtlı adres artık yok; başka bir adres seçin.",
+      "CustomerNotFound": "Oturumunuz sona erdi. Lütfen yeniden giriş yapın.",
+      "IdempotencyKeyReused": "Siparişiniz değişti. Lütfen ödemeyi yeniden deneyin.",
+      "PaymentGatewayFailure": "Ödeme sağlayıcısına ulaşılamadı. Biraz sonra tekrar deneyin.",
+      "PathIncomplete": "Yolun bazı kitapları sepetinizde değil.",
+      "PathAlreadyOwned": "Bu yolun tüm kitaplarına zaten sahipsiniz.",
+      "PathUnavailable": "Bu yol şu anda kullanılamıyor."
+    },
+    "Coupon": { "Invalid": "Bu indirim kodu kullanılamıyor." },
+    "Order": {
+      "TrackingNotFound": "Bu numara ve e-postayla bir sipariş bulamadık.",
+      "AlreadyShipped": "Sipariş zaten kargoya verildi. Teslim aldıktan sonra iade talep edebilirsiniz.",
+      "PaymentJustCompleted": "Ödeme az önce tamamlandı. Sayfayı yenileyip tekrar deneyin.",
+      "InvalidStatus": "Siparişin durumu değişti. Lütfen sayfayı yeniden yükleyin.",
+      "NotFound": "Bu siparişi bulamadık."
+    },
+    "Customer": {
+      "InvalidCredentials": "E-posta veya şifre hatalı.",
+      "EmailNotVerified": "Önce e-postanıza gönderilen bağlantıyla hesabınızı etkinleştirin.",
+      "AccountUnavailable": "Bu hesap kullanılamıyor.",
+      "InvalidToken": "Bağlantı geçersiz veya süresi dolmuş.",
+      "CurrentPasswordIncorrect": "Mevcut şifreniz hatalı.",
+      "AddressLimitReached": "10 adres sınırına ulaştınız. Yeni adres eklemek için birini silin.",
+      "AddressNotFound": "Bu adres artık yok.",
+      "UnknownInterests": "İlgi alanlarından biri artık mevcut değil. Sayfayı yenileyip yeniden seçin."
+    },
+    "Auth": { "InvalidCredentials": "E-posta veya şifre hatalı." },
+    "Review": {
+      "NotEligible": "Yalnızca kitabı satın alanlar değerlendirme yazabilir.",
+      "AlreadyReviewed": "Bu kitap için zaten değerlendirme yazdınız.",
+      "NotFound": "Bu değerlendirmeyi bulamadık. Lütfen sayfayı yenileyin."
+    },
+    "Return": {
+      "WindowClosed": "İade süresi (teslimattan itibaren 14 gün) doldu.",
+      "AlreadyRequested": "Bu sipariş için daha önce iade talep edildi.",
+      "OrderNotReturnable": "Bu sipariş iade edilemez.",
+      "InvalidItems": "Seçtiğiniz adetler satın aldığınızdan fazla.",
+      "InvalidStatus": "İadenin durumu değişti. Lütfen sayfayı yeniden yükleyin.",
+      "NoReturnForOrder": "Bu sipariş için iade talebi yok.",
+      "NotFound": "İade talebini bulamadık."
+    },
+    "StockNotification": { "AlreadyInStock": "Kitap artık stokta; sepetinize ekleyebilirsiniz." },
+    "Library": { "NotInLibrary": "Bu kitap kitaplığınızda değil." },
+    "Book": { "NotFound": "Bu kitabı bulamadık." },
+    "ReadingPath": { "NotFound": "Bu yolu bulamadık. Lütfen sayfayı yenileyin." }
+  },
+  "errorStatus": {
+    "401": "Devam etmek için lütfen giriş yapın.",
+    "403": "Bu işlem için yetkiniz yok.",
+    "404": "Aradığınızı bulamadık.",
+    "409": "İşlem sırasında veriler değişti. Lütfen tekrar deneyin.",
+    "fallback": "Beklenmeyen bir hata oluştu. Lütfen biraz sonra tekrar deneyin.",
+    "field": "Bu alanın değerini kontrol edin."
+  },
+  "errorPage": {
+    "updatedTitle": "Site güncellendi",
+    "updatedText": "Sitenin daha yeni bir sürümü yayımlandı. Devam etmek için sayfayı yeniden yükleyin.",
+    "title": "Beklenmeyen bir hata oluştu",
+    "text": "Üzgünüz, bu sayfayı gösteremedik. Lütfen biraz sonra tekrar deneyin.",
+    "code": "Hata kodu: <c>{{id}}</c>",
+    "reload": "Sayfayı yeniden yükle",
+    "home": "Ana sayfaya dön"
+  },
+  "notFound": {
+    "title": "Sayfa bulunamadı",
+    "text": "Bu sayfa taşınmış olabilir ya da bağlantı hatalı olabilir.",
+    "home": "Ana sayfaya dön"
+  },
   "ui": {
     "home": "Ana sayfa",
     "library": "Kütüphane",

@@ -1,6 +1,8 @@
+import { Trans, useTranslation } from 'react-i18next';
 import { isRouteErrorResponse, useRouteError } from 'react-router';
 
 import { env } from '@/app/env';
+import { pathInLanguage, UI_LANGUAGE } from '@/app/locale';
 import { isChunkLoadError } from '@/app/isChunkLoadError';
 import NotFoundPage from '@/pages/not-found/NotFoundPage';
 import { DocumentTitle } from '@/shared/ui/DocumentTitle';
@@ -15,6 +17,7 @@ import { supportRequestId } from '@/shared/api/errorMessages';
  * reload on purpose: after an error the router state may not be trustworthy.
  */
 export function RouteErrorBoundary() {
+  const { t } = useTranslation(undefined, { keyPrefix: 'errorPage' });
   const error = useRouteError();
 
   if (
@@ -34,10 +37,8 @@ export function RouteErrorBoundary() {
 
   const chunkFailed = isChunkLoadError(error);
   const requestId = supportRequestId(error);
-  const heading = chunkFailed ? 'تحدّث الموقع' : 'حدث خطأ غير متوقع';
-  const message = chunkFailed
-    ? 'صدرت نسخة أحدث من الموقع. أعد تحميل الصفحة للمتابعة.'
-    : 'نعتذر، لم نتمكّن من عرض هذه الصفحة. أعد المحاولة بعد قليل.';
+  const heading = chunkFailed ? t('updatedTitle') : t('title');
+  const message = chunkFailed ? t('updatedText') : t('text');
 
   return (
     <main id="main-content" className={styles.root}>
@@ -46,7 +47,12 @@ export function RouteErrorBoundary() {
       <p className={styles.text}>{message}</p>
       {requestId && (
         <p className={styles.code}>
-          رمز الخطأ: <span dir="ltr">{requestId}</span>
+          <Trans
+            t={t}
+            i18nKey="code"
+            values={{ id: requestId }}
+            components={{ c: <span dir="ltr" /> }}
+          />
         </p>
       )}
       <div className={styles.actions}>
@@ -57,10 +63,10 @@ export function RouteErrorBoundary() {
             window.location.reload();
           }}
         >
-          إعادة تحميل الصفحة
+          {t('reload')}
         </button>
-        <a className={styles.action} href="/">
-          العودة إلى الرئيسية
+        <a className={styles.action} href={pathInLanguage(UI_LANGUAGE, '/')}>
+          {t('home')}
         </a>
       </div>
     </main>

@@ -1,67 +1,28 @@
+import { i18n } from '@/i18n';
+
 import { ApiError } from './ApiError';
 
-/** API guide: map ProblemDetails `title` codes to Arabic. Never show `detail`. */
-const MESSAGES: Readonly<Record<string, string>> = {
-  Network: 'تعذّر الاتصال بالخادم. تحقّق من اتصالك بالإنترنت وحاول مجدداً.',
-  RateLimited: 'محاولات كثيرة، حاول بعد دقيقة.',
-  Validation: 'بعض الحقول تحتاج إلى تصحيح.',
+/*
+ * API guide: ProblemDetails `title` codes become a sentence in the page's
+ * language. Never show `detail` (it's English and meant for developers).
+ */
 
-  'Checkout.InsufficientStock': 'الكمية المطلوبة من أحد الكتب غير متوفرة حالياً.',
-  'Checkout.BookNotFound': 'أحد الكتب لم يعد متاحاً، وأزلناه من سلتك.',
-  'Checkout.ShippingCountryMissing': 'اختر بلد الشحن لحساب التكلفة.',
-  'Checkout.ShippingZoneNotSupported': 'لا نشحن إلى هذا البلد حالياً.',
-  'Checkout.ShippingMethodUnavailable': 'طريقة الشحن هذه غير متاحة لبلدك، اختر طريقة أخرى.',
-  'Checkout.GiftWrapUnavailable': 'تغليف الهدايا غير متاح حالياً.',
-  'Checkout.CouponInvalid': 'لا يمكن استخدام كود الخصم هذا.',
-    'Checkout.TermsUnavailable': 'الطلب بهذه اللغة غير متاح بعد. يمكنك إتمامه بالعربية.',
-  'Checkout.TermsOutdated': 'تم تحديث الشروط. يرجى مراجعتها والموافقة عليها من جديد.',
-  'Checkout.SavedAddressNotFound': 'العنوان المحفوظ لم يعد موجوداً، اختر عنواناً آخر.',
-  'Checkout.CustomerNotFound': 'انتهت جلستك، يرجى تسجيل الدخول من جديد.',
-  'Checkout.IdempotencyKeyReused': 'تغيّر طلبك، حاول الدفع مرة أخرى.',
-  'Checkout.PaymentGatewayFailure': 'تعذّر الوصول إلى بوابة الدفع، حاول بعد قليل.',
-  'Checkout.PathIncomplete': 'بعض كتب المسار ليست في سلتك.',
-  'Checkout.PathAlreadyOwned': 'تملك جميع كتب هذا المسار بالفعل.',
-  'Checkout.PathUnavailable': 'هذا المسار غير متاح حالياً.',
-  'Coupon.Invalid': 'لا يمكن استخدام كود الخصم هذا.',
-
-  'Order.TrackingNotFound': 'لم نجد طلباً بهذا الرقم وهذا البريد الإلكتروني.',
-  'Order.AlreadyShipped': 'شُحن الطلب بالفعل، ويمكنك طلب الإرجاع بعد استلامه.',
-  'Order.PaymentJustCompleted': 'اكتمل الدفع للتو. حدّث الصفحة وحاول مجدداً.',
-  'Order.InvalidStatus': 'تغيّرت حالة الطلب. أعد تحميل الصفحة.',
-  'Order.NotFound': 'لم نعثر على هذا الطلب.',
+/**
+ * Admin-only codes. The admin panel is Arabic only (/en/admin… redirects to
+ * /admin…), so these stay here; every code a shopper can see is in
+ * common.json → errors, in all three languages.
+ */
+const ADMIN_MESSAGES: Readonly<Record<string, string>> = {
   'Order.NoPaymentReference':
     'لا يوجد مرجع دفع لهذا الطلب، فلا يمكن استرداده تلقائياً. استرده يدوياً من مزوّد الدفع.',
-
-  'Customer.InvalidCredentials': 'البريد الإلكتروني أو كلمة المرور غير صحيحة.',
-  'Customer.EmailNotVerified': 'فعّل حسابك من الرابط المرسل إلى بريدك أولاً.',
-  'Customer.AccountUnavailable': 'هذا الحساب غير متاح.',
-  'Customer.InvalidToken': 'الرابط غير صالح أو انتهت صلاحيته.',
-  'Customer.CurrentPasswordIncorrect': 'كلمة المرور الحالية غير صحيحة.',
-  'Customer.AddressLimitReached': 'وصلت إلى الحد الأقصى: ١٠ عناوين. احذف عنواناً لإضافة آخر.',
-  'Customer.AddressNotFound': 'لم يعد هذا العنوان موجوداً.',
-    'Customer.NotFound': 'لم نعثر على هذا العميل.',
+  'Customer.NotFound': 'لم نعثر على هذا العميل.',
   'Customer.Anonymized': 'حذف صاحب هذا الحساب حسابه، فلا يمكن تعديله.',
   'Customer.AlreadyVerified': 'فعّل العميل بريده بالفعل.',
   'Loyalty.InsufficientBalance': 'رصيد العميل من النقاط لا يكفي لهذا الخصم.',
-  'Customer.UnknownInterests': 'أحد الاهتمامات لم يعد متاحاً. حدّث الصفحة واختر من جديد.',
-  'Auth.InvalidCredentials': 'البريد الإلكتروني أو كلمة المرور غير صحيحة.',
-
-  'Review.NotEligible': 'يمكن فقط لمن اشترى الكتاب كتابة مراجعة.',
-  'Review.AlreadyReviewed': 'كتبتَ مراجعة لهذا الكتاب من قبل.',
-  'Return.WindowClosed': 'انتهت مهلة الإرجاع (١٤ يوماً من الاستلام).',
-  'Return.AlreadyRequested': 'قُدّم طلب إرجاع لهذا الطلب من قبل.',
-  'Return.OrderNotReturnable': 'لا يمكن إرجاع هذا الطلب.',
-  'Return.InvalidItems': 'الكميات المختارة أكبر من الكميات المشتراة.',
-  'Return.InvalidStatus': 'تغيّرت حالة طلب الإرجاع. أعد تحميل الصفحة.',
-  'Return.NoReturnForOrder': 'لا يوجد طلب إرجاع لهذا الطلب.',
-  'Return.NotFound': 'لم نعثر على طلب الإرجاع.',
   'Return.IncompleteInspection': 'حدّد حالة كل كتاب مرتجع قبل إكمال الإرجاع.',
-  'StockNotification.AlreadyInStock': 'الكتاب متوفر الآن، يمكنك إضافته إلى السلة.',
-  'Library.NotInLibrary': 'هذا الكتاب ليس في مكتبتك.',
- 'Translation.NotFound': 'لا توجد ترجمة بهذه اللغة بعد.',
+  'Translation.NotFound': 'لا توجد ترجمة بهذه اللغة بعد.',
   'Translation.Invalid': 'بعض نصوص الترجمة غير مقبولة. راجع الأطوال.',
   'Translation.UnsupportedLanguage': 'لغة الترجمة غير مدعومة. الترجمة للإنجليزية والتركية فقط.',
-    'Book.NotFound': 'لم نعثر على هذا الكتاب.',
   'Book.DuplicateIsbn': 'يوجد كتاب آخر بهذا الرقم ISBN.',
   'Book.DuplicateSlug': 'يوجد كتاب آخر بهذا الرابط. غيّر الرابط أو العنوان.',
   'Book.InvalidSlug': 'لا يصلح هذا الرابط. استخدم حروفاً أو أرقاماً.',
@@ -87,8 +48,6 @@ const MESSAGES: Readonly<Record<string, string>> = {
   'Muhaqqiq.DuplicateSlug': 'يوجد محقق آخر بهذا الرابط.',
   'Muhaqqiq.InUse': 'لهذا المحقق أعمال في المتجر. أزله من كتبه أولاً، أو أخفِه بدلاً من حذفه.',
   'Inventory.BookNotFound': 'لم نعثر على هذا الكتاب.',
-
-    'ReadingPath.NotFound': 'لم نعثر على هذا المسار. حدّث الصفحة.',
   'ReadingPath.DuplicateSlug': 'يوجد مسار آخر بهذا الرابط.',
   'ReadingPath.InvalidSlug': 'لا يصلح هذا الرابط. استخدم حروفاً أو أرقاماً.',
   'ReadingPath.UnknownBooks': 'أحد كتب المسار لم يعد موجوداً. حدّث الصفحة.',
@@ -98,32 +57,37 @@ const MESSAGES: Readonly<Record<string, string>> = {
   'Coupon.DuplicateCode': 'يوجد كوبون آخر بهذا الكود.',
   'Coupon.MaxBelowRedeemed': 'حد الاستخدام أقل من عدد مرات استخدام الكوبون حتى الآن.',
   'Coupon.CannotDeleteUsed': 'استُخدم هذا الكوبون ويبقى للتقارير. أوقفه بدلاً من حذفه.',
-    'Legal.NotFound': 'لم نعثر على هذه النسخة. حدّث الصفحة.',
+  'Legal.NotFound': 'لم نعثر على هذه النسخة. حدّث الصفحة.',
   'Legal.DuplicateVersion': 'رقم النسخة هذا مستخدم لهذا النص بهذه اللغة. اختر رقماً آخر.',
   'Legal.NotADraft': 'النسخ المنشورة والمؤرشفة لا تُعدَّل. أنشئ نسخة جديدة لتغيير النص.',
   'Legal.UnknownPlaceholders': 'في النص حقول تلقائية غير معروفة. صحّحها قبل النشر.',
   'Legal.Invalid': 'تحقّق من رقم النسخة والعنوان والنص.',
-    'Review.NotFound': 'لم نعثر على هذه المراجعة. حدّث الصفحة.',
-    'ShippingZone.NotFound': 'لم نعثر على منطقة الشحن هذه. حدّث الصفحة.',
+  'ShippingZone.NotFound': 'لم نعثر على منطقة الشحن هذه. حدّث الصفحة.',
   'ShippingZone.DuplicateName': 'توجد منطقة شحن أخرى بهذا الاسم.',
   'ShippingZone.CountriesAlreadyAssigned': 'بعض الدول تابعة لمنطقة أخرى. أزلها من هناك أولاً.',
   'ShippingZone.InvalidDelivery':
     'تحقّق من بيانات التوصيل: رموز الخيارات، وأيام التوصيل من الأقل إلى الأكثر حتى ٦٠ يوماً.',
 };
 
-const BY_STATUS: Readonly<Record<number, string>> = {
-  401: 'يرجى تسجيل الدخول للمتابعة.',
-  403: 'لا تملك صلاحية لهذا الإجراء.',
-  404: 'لم نعثر على ما تبحث عنه.',
-  409: 'تغيّرت البيانات أثناء العملية. أعد المحاولة.',
-};
+/** A code's sentence from common.json → errors, or '' when it has none. */
+const shopperMessage = (code: string): string => i18n.t(`errors.${code}`, { defaultValue: '' });
 
-const FALLBACK = 'حدث خطأ غير متوقع. حاول مرة أخرى بعد قليل.';
+const STATUSES = new Set([401, 403, 404, 409]);
+const fallback = (): string => i18n.t('errorStatus.fallback');
 
-/** The Arabic sentence to show for any thrown value. */
+function messageFor(code: string, status: number | null): string {
+  const text = shopperMessage(code) || ADMIN_MESSAGES[code];
+  if (text) return text;
+  if (status !== null && STATUSES.has(status)) {
+    return i18n.t(`errorStatus.${String(status) as '401' | '403' | '404' | '409'}`);
+  }
+  return fallback();
+}
+
+/** The sentence to show for any thrown value. */
 export function errorMessage(error: unknown): string {
-  if (!(error instanceof ApiError)) return FALLBACK;
-  return MESSAGES[error.code] ?? BY_STATUS[error.status] ?? FALLBACK;
+  if (!(error instanceof ApiError)) return fallback();
+  return messageFor(error.code, error.status);
 }
 
 /** Show «رمز الخطأ» only for failures support must investigate (5xx). */
@@ -131,7 +95,7 @@ export function supportRequestId(error: unknown): string | null {
   return error instanceof ApiError && error.status >= 500 ? error.requestId : null;
 }
 
-/** Arabic text for a bare code (e.g. a quote problem), not a thrown error. */
+/** The sentence for a bare code (e.g. a quote problem), not a thrown error. */
 export function codeMessage(code: string): string {
-  return MESSAGES[code] ?? FALLBACK;
+  return messageFor(code, null);
 }

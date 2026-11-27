@@ -1,6 +1,8 @@
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 
 import { paths } from '@/app/paths';
+import { formatYear } from '@/shared/lib/format';
 import { DocumentTitle } from '@/shared/ui/DocumentTitle';
 
 import styles from './NotFoundPage.module.css';
@@ -11,22 +13,20 @@ interface NotFoundPageProps {
   backLabel?: string;
 }
 
-export default function NotFoundPage({
-  backTo = paths.home,
-  backLabel = 'العودة إلى الرئيسية',
-}: NotFoundPageProps) {
+export default function NotFoundPage({ backTo = paths.home, backLabel }: NotFoundPageProps) {
+  const { t } = useTranslation(undefined, { keyPrefix: 'notFound' });
   return (
     <section className={styles.root} aria-labelledby="not-found-title">
-      <DocumentTitle title="الصفحة غير موجودة" />
+      <DocumentTitle title={t('title')} />
       <p className={styles.code} aria-hidden="true">
-        {(404).toLocaleString('ar-EG')}
+        {formatYear(404)}
       </p>
       <h1 id="not-found-title" className={styles.title}>
-        الصفحة غير موجودة
+        {t('title')}
       </h1>
-      <p className={styles.text}>ربما نُقلت هذه الصفحة، أو أن الرابط غير صحيح.</p>
+      <p className={styles.text}>{t('text')}</p>
       <Link className={styles.link} to={backTo}>
-        {backLabel}
+        {backLabel ?? t('home')}
       </Link>
     </section>
   );
