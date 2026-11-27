@@ -1,33 +1,12 @@
 import { paths } from '@/app/paths';
+import { i18n } from '@/i18n';
 
 /** Spec 5.2 conversation modes. They change the suggestions and the auto-reply links. */
 export type ChatMode = 'purchase' | 'content' | 'orders';
 
-export const CHAT_MODES: readonly { id: ChatMode; label: string; suggestions: string[] }[] = [
-  {
-    id: 'purchase',
-    label: 'نصيحة شراء',
-    suggestions: [
-      'ما أفضل طبعة من زاد المعاد؟',
-      'هدية لطالب علم بميزانية ١٠٠٠ ₺',
-      'من أين أبدأ في علوم الحديث؟',
-    ],
-  },
-  {
-    id: 'content',
-    label: 'شرح ومحتوى',
-    suggestions: [
-      'ما الفرق بين الشرح والحاشية؟',
-      'هل في هذا الكتاب مجلد فهارس؟',
-      'ما أبرز موضوعات رياض الصالحين؟',
-    ],
-  },
-  {
-    id: 'orders',
-    label: 'تتبع طلباتي',
-    suggestions: ['أين طلبي الآن؟', 'كم يستغرق الشحن إلى ألمانيا؟', 'كيف أُرجع كتاباً؟'],
-  },
-];
+/** Labels and three suggestions each live in efendi.json → modes.<id>. */
+export const CHAT_MODES: readonly ChatMode[] = ['purchase', 'content', 'orders'];
+export const SUGGESTION_KEYS = ['s1', 's2', 's3'] as const;
 
 export interface ReplyLink {
   label: string;
@@ -46,7 +25,7 @@ export interface ChatMessage {
 const searchLink = (query: string): ReplyLink => {
   const q = query.trim().slice(0, 100);
   return {
-    label: `ابحث في المكتبة عن «${q.length > 40 ? `${q.slice(0, 40)}…` : q}»`,
+    label: i18n.t('reply.search', { ns: 'efendi', q: q.length > 40 ? `${q.slice(0, 40)}…` : q }),
     to: `${paths.search}?${new URLSearchParams({ q }).toString()}`,
   };
 };
@@ -61,16 +40,21 @@ export function automaticReply(
   book: { slug: string; title: string } | null,
 ): Omit<ChatMessage, 'id'> {
   const links: ReplyLink[] = [];
-  if (book) links.push({ label: `صفحة «${book.title}»`, to: paths.book(book.slug) });
+  if (book)
+    links.push({
+      label: i18n.t('reply.bookPage', { ns: 'efendi', title: book.title }),
+      to: paths.book(book.slug),
+    });
 
   if (mode === 'orders') {
     links.push(
-      { label: 'تتبّع طلبك', to: paths.trackOrder },
-      { label: 'طلب إرجاع', to: paths.returns },
+      { label: i18n.t('reply.track', { ns: 'efendi' }), to: paths.trackOrder },
+      { label: i18n.t('reply.return', { ns: 'efendi' }), to: paths.returns },
     );
   } else {
     links.push(searchLink(question));
-    if (mode === 'purchase') links.push({ label: 'مسارات القراءة', to: paths.readingPaths });
+    if (mode === 'purchase')
+      links.push({ label: i18n.t('reply.paths', { ns: 'efendi' }), to: paths.readingPaths });
   }
 
   return {
@@ -78,8 +62,8 @@ export function automaticReply(
     automatic: true,
     text:
       mode === 'orders'
-        ? 'لا أستطيع الاطلاع على طلبك بعد، فأنا قيد الإعداد. يمكنك متابعة طلبك أو إرجاعه من هنا:'
-        : 'لا أستطيع الإجابة عن سؤالك بعد، فأنا قيد الإعداد. إلى أن أُطلق، هذا ما يمكنك فعله الآن:',
+        ? i18n.t('reply.orders', { ns: 'efendi' })
+        : i18n.t('reply.other', { ns: 'efendi' }),
     links,
   };
 }

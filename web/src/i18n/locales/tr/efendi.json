@@ -1,0 +1,89 @@
+{
+  "modes": {
+    "label": "Soru türü",
+    "purchase": {
+      "label": "Satın alma tavsiyesi",
+      "s1": "Zâdü'l-Meâd'ın en iyi baskısı hangisi?",
+      "s2": "1.000 ₺ bütçeyle bir ilim talebesine hediye",
+      "s3": "Hadis ilimlerine nereden başlamalıyım?"
+    },
+    "content": {
+      "label": "Açıklama ve içerik",
+      "s1": "Şerh ile hâşiye arasındaki fark nedir?",
+      "s2": "Bu kitabın fihrist cildi var mı?",
+      "s3": "Riyâzü's-Sâlihîn'in başlıca konuları neler?"
+    },
+    "orders": {
+      "label": "Siparişlerimi takip et",
+      "s1": "Siparişim şu an nerede?",
+      "s2": "Almanya'ya kargo ne kadar sürer?",
+      "s3": "Bir kitabı nasıl iade ederim?"
+    }
+  },
+  "reply": {
+    "search": "Kütüphanede “{{q}}” ara",
+    "bookPage": "“{{title}}” sayfası",
+    "track": "Siparişini takip et",
+    "return": "İade talebi",
+    "paths": "Okuma yolları",
+    "orders": "Henüz hazırlandığım için siparişinizi göremiyorum. Siparişinizi buradan takip edebilir veya iade edebilirsiniz:",
+    "other": "Henüz hazırlandığım için sorunuzu yanıtlayamıyorum. Kullanıma açılana kadar şunları yapabilirsiniz:"
+  },
+  "welcome": {
+    "helloName": "Hoş geldiniz, {{name}}.",
+    "hello": "Hoş geldiniz.",
+    "intro": "Ben Efendi, Kitap Efendi'nin akıllı kitapçısıyım. Henüz hazırlanıyorum ve soruları yanıtlamıyorum; ama sorunuzu yazabilirsiniz, sizi aramaya ve mevcut sayfalara yönlendiririm.",
+    "photo": "Kapak fotoğrafıyla arama bana bağlı ve ben henüz hazırlanıyorum; şimdilik kitabın adını yazın, sizi arama sonuçlarına yönlendireyim.",
+    "voice": "Sesle soru sormak bana bağlı ve ben henüz hazırlanıyorum; şimdilik sorunuzu yazın, işinize yarayacak yere yönlendireyim."
+  },
+  "chat": {
+    "name": "Akıllı Efendi",
+    "status": "Hazırlanıyor",
+    "newChat": "Yeni sohbet",
+    "log": "Sohbet",
+    "auto": "Otomatik yanıt · yapay zekâ değil",
+    "about": "Sorunuzun konusu: <b>{{title}}</b>",
+    "suggestions": "Önerilen sorular",
+    "inputLabel": "Efendi'ye sorunuzu yazın",
+    "placeholder": "Efendi'ye sorunuzu yazın…",
+    "soon": "Yakında",
+    "photo": "Kapak fotoğrafı ekle (yakında)",
+    "voice": "Sesle sor (yakında)",
+    "send": "Gönder",
+    "note": "Efendi hazırlanıyor. Buradaki yanıtlar otomatiktir ve sizi aramaya ve mevcut sayfalara yönlendirir; sohbet kaydedilmez."
+  },
+  "page": {
+    "title": "Efendi'ye sor",
+    "history": "Sohbetleriniz",
+    "historySignedIn": "Efendi kullanıma açıldığında sohbetleriniz burada ve “Hesabım”da saklanacak.",
+    "historyGuest": "Efendi kullanıma açıldığında sohbetlerinizin saklanması için giriş yapın.",
+    "soon": "Efendi, Claude ile çalışır ve hazırlanıyor. Kullanıma açıldığında size haber vereceğiz.",
+    "myChats": "Hesabımdaki sohbetlerim",
+    "loading": "Yükleniyor",
+    "context": "Bağlamınız",
+    "contextToggle": "Efendi'nin sizinle ilgili bildikleri · kitaplığınız · sepetiniz"
+  },
+  "profile": {
+    "title": "Efendi'nin sizinle ilgili bildikleri",
+    "saved": "Efendi'nin sizinle ilgili bildikleri kaydedildi.",
+    "level": "İlmî seviyeniz",
+    "budget": "Aylık bütçe",
+    "budgetNone": "Belirtilmedi",
+    "budgetUpTo": "En fazla {{amount}}",
+    "interests": "İlgi alanlarınız",
+    "save": "Kaydet",
+    "saving": "Kaydediliyor…",
+    "guest": "Efendi'nin seviyenizi, ilgi alanlarınızı ve bütçenizi bilmesi ve önerilerini size göre yapması için giriş yapın.",
+    "signIn": "Giriş yap"
+  },
+  "panels": {
+    "library": "Kitaplığınızdan",
+    "myLibrary": "Kitaplığım",
+    "reading": "Okuyorum · {{percent}}",
+    "cart": "Şu anki sepetiniz",
+    "more": "+ {{books}}",
+    "total": "Toplam",
+    "checkout": "Siparişi tamamla",
+    "viewCart": "Sepeti görüntüle"
+  }
+}

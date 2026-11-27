@@ -1,0 +1,89 @@
+{
+  "modes": {
+    "label": "Type of question",
+    "purchase": {
+      "label": "Buying advice",
+      "s1": "Which is the best edition of Zad al-Ma'ad?",
+      "s2": "A gift for a student of knowledge on a ₺1,000 budget",
+      "s3": "Where do I start in the sciences of hadith?"
+    },
+    "content": {
+      "label": "Explanation and content",
+      "s1": "What's the difference between a sharh and a hashiyah?",
+      "s2": "Does this book have an index volume?",
+      "s3": "What are the main topics of Riyad al-Salihin?"
+    },
+    "orders": {
+      "label": "Track my orders",
+      "s1": "Where is my order now?",
+      "s2": "How long does shipping to Germany take?",
+      "s3": "How do I return a book?"
+    }
+  },
+  "reply": {
+    "search": "Search the library for “{{q}}”",
+    "bookPage": "The page for “{{title}}”",
+    "track": "Track your order",
+    "return": "Request a return",
+    "paths": "Reading paths",
+    "orders": "I can't look at your order yet, because I'm still being set up. You can follow or return your order here:",
+    "other": "I can't answer your question yet, because I'm still being set up. Until I launch, here's what you can do now:"
+  },
+  "welcome": {
+    "helloName": "Welcome, {{name}}.",
+    "hello": "Welcome.",
+    "intro": "I'm Efendi, Kitap Efendi's smart bookseller. I'm still being set up and don't answer questions yet, but you can type your question and I'll point you to search and the pages available.",
+    "photo": "Searching by a cover photo needs me, and I'm still being set up; type the book's name now and I'll point you to the search results.",
+    "voice": "Asking by voice needs me, and I'm still being set up; type your question now and I'll point you to what helps."
+  },
+  "chat": {
+    "name": "Smart Efendi",
+    "status": "Being set up",
+    "newChat": "New chat",
+    "log": "Conversation",
+    "auto": "Automatic reply · not AI",
+    "about": "Your question is about: <b>{{title}}</b>",
+    "suggestions": "Suggested questions",
+    "inputLabel": "Type your question for Efendi",
+    "placeholder": "Type your question for Efendi…",
+    "soon": "Coming soon",
+    "photo": "Attach a cover photo (coming soon)",
+    "voice": "Ask by voice (coming soon)",
+    "send": "Send",
+    "note": "Efendi is being set up. Replies here are automatic and point you to search and the pages available; the chat isn't saved."
+  },
+  "page": {
+    "title": "Ask Efendi",
+    "history": "Your chats",
+    "historySignedIn": "Your chats will be saved here and in “My account” once Efendi launches.",
+    "historyGuest": "Sign in so your chats are saved once Efendi launches.",
+    "soon": "Efendi runs on Claude and is being set up. We'll notify you when it launches.",
+    "myChats": "My chats in my account",
+    "loading": "Loading",
+    "context": "Your context",
+    "contextToggle": "What Efendi knows about you · your library · your cart"
+  },
+  "profile": {
+    "title": "What Efendi knows about you",
+    "saved": "Saved what Efendi knows about you.",
+    "level": "Your level of study",
+    "budget": "Monthly budget",
+    "budgetNone": "Not set",
+    "budgetUpTo": "Up to {{amount}}",
+    "interests": "Your interests",
+    "save": "Save",
+    "saving": "Saving…",
+    "guest": "Sign in so Efendi knows your level, interests and budget, and its suggestions fit you.",
+    "signIn": "Sign in"
+  },
+  "panels": {
+    "library": "From your library",
+    "myLibrary": "My library",
+    "reading": "Reading now · {{percent}}",
+    "cart": "Your cart now",
+    "more": "+ {{books}}",
+    "total": "Total",
+    "checkout": "Checkout",
+    "viewCart": "View cart"
+  }
+}

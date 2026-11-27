@@ -9,6 +9,7 @@ import type arHome from './locales/ar/home.json';
 import type arOrders from './locales/ar/orders.json';
 import type arAccount from './locales/ar/account.json';
 import type arPaths from './locales/ar/paths.json';
+import type arEfendi from './locales/ar/efendi.json';
 
 /**
  * Arabic is the source of truth for keys: t('…') is type-checked against the
@@ -25,6 +26,7 @@ declare module 'i18next' {
       catalog: typeof arCatalog;
       checkout: typeof arCheckout;
       common: typeof arCommon;
+      efendi: typeof arEfendi;
       home: typeof arHome;
       orders: typeof arOrders;
       paths: typeof arPaths;

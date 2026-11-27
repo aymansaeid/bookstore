@@ -1,13 +1,22 @@
 import { type KeyboardEvent, useEffect, useRef, useState } from 'react';
+import { Trans, useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 
 import { useSession } from '@/features/auth/session';
+import { i18n } from '@/i18n';
 import { cx } from '@/shared/lib/cx';
 import { Button } from '@/shared/ui/Button/Button';
 import { EffendiAvatar } from '@/shared/ui/EffendiAvatar/EffendiAvatar';
+import { ForwardArrow } from '@/shared/ui/ForwardArrow/ForwardArrow';
 import { Icon } from '@/shared/ui/Icon/Icon';
 
-import { automaticReply, CHAT_MODES, type ChatMessage, type ChatMode } from '../modes';
+import {
+  automaticReply,
+  CHAT_MODES,
+  type ChatMessage,
+  type ChatMode,
+  SUGGESTION_KEYS,
+} from '../modes';
 
 import styles from './EfendiChat.module.css';
 
@@ -24,23 +33,21 @@ interface EfendiChatProps {
 }
 
 function welcome(firstName: string | null, inputMode: EfendiChatProps['inputMode']): ChatMessage {
-  const hello = firstName ? `أهلاً بك يا ${firstName}.` : 'أهلاً بك.';
-  const mode =
-    inputMode === 'photo'
-      ? ' البحث بصورة الغلاف يحتاجني، وأنا قيد الإعداد؛ اكتب اسم الكتاب الآن وأدلّك على نتائج البحث.'
-      : inputMode === 'voice'
-        ? ' السؤال بالصوت يحتاجني، وأنا قيد الإعداد؛ اكتب سؤالك الآن وأدلّك على ما يفيدك.'
-        : '';
+  const t = (key: 'helloName' | 'hello' | 'intro' | 'photo' | 'voice') =>
+    i18n.t(`welcome.${key}`, { ns: 'efendi', name: firstName ?? '' });
+  const parts = [firstName ? t('helloName') : t('hello'), t('intro')];
+  if (inputMode) parts.push(t(inputMode));
   return {
     id: 0,
     role: 'efendi',
     automatic: true,
-    text: `${hello} أنا أفندي، بائع الكتب الذكي في كتاب أفندي. ما زلت قيد الإعداد ولا أجيب عن الأسئلة بعد، لكن يمكنك أن تكتب سؤالك وأدلّك على البحث والصفحات المتاحة.${mode}`,
+    text: parts.join(' '),
   };
 }
 
 /** The middle column of «اسأل أفندي» (spec 5.2): header, modes, messages, composer. */
 export function EfendiChat({ initialQuestion, inputMode, book, onNewChat }: EfendiChatProps) {
+  const { t } = useTranslation('efendi');
   const { customer } = useSession();
   const [mode, setMode] = useState<ChatMode>(book ? 'content' : 'purchase');
   const [draft, setDraft] = useState(initialQuestion.slice(0, MAX_LENGTH));
@@ -49,7 +56,7 @@ export function EfendiChat({ initialQuestion, inputMode, book, onNewChat }: Efen
   ]);
   const endRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const suggestions = CHAT_MODES.find((item) => item.id === mode)?.suggestions ?? [];
+  const suggestions = SUGGESTION_KEYS.map((key) => t(`modes.${mode}.${key}`));
 
   useEffect(() => {
     if (messages.length > 1) endRef.current?.scrollIntoView({ block: 'end' });
@@ -81,41 +88,41 @@ export function EfendiChat({ initialQuestion, inputMode, book, onNewChat }: Efen
           <EffendiAvatar size={44} />
           <div>
             <h1 id="efendi-title" className={styles.name}>
-              أفندي الذكي
+              {t('chat.name')}
             </h1>
             <p className={styles.status}>
-              <span className={styles.statusDot} aria-hidden="true" /> قيد الإعداد
+              <span className={styles.statusDot} aria-hidden="true" /> {t('chat.status')}
             </p>
           </div>
           <Button
             variant="ghost"
             size="sm"
             className={styles.newChat}
-            aria-label="محادثة جديدة"
+            aria-label={t('chat.newChat')}
             onClick={onNewChat}
           >
             <Icon name="plus" size={16} />
-            <span className={styles.newChatText}>محادثة جديدة</span>
+            <span className={styles.newChatText}>{t('chat.newChat')}</span>
           </Button>
         </div>
-        <div className={styles.modes} role="group" aria-label="نوع السؤال">
+        <div className={styles.modes} role="group" aria-label={t('modes.label')}>
           {CHAT_MODES.map((item) => (
             <button
-              key={item.id}
+              key={item}
               type="button"
-              className={cx(styles.mode, mode === item.id && styles.modeOn)}
-              aria-pressed={mode === item.id}
+              className={cx(styles.mode, mode === item && styles.modeOn)}
+              aria-pressed={mode === item}
               onClick={() => {
-                setMode(item.id);
+                setMode(item);
               }}
             >
-              {item.label}
+              {t(`modes.${item}.label`)}
             </button>
           ))}
         </div>
       </header>
 
-      <div className={styles.log} role="log" aria-live="polite" aria-label="المحادثة">
+      <div className={styles.log} role="log" aria-live="polite" aria-label={t('chat.log')}>
         {messages.map((message) =>
           message.role === 'user' ? (
             <div key={message.id} className={styles.userRow}>
@@ -125,16 +132,14 @@ export function EfendiChat({ initialQuestion, inputMode, book, onNewChat }: Efen
             <div key={message.id} className={styles.efendiRow}>
               <EffendiAvatar size={32} className={styles.efendiAvatar} />
               <div className={styles.efendi}>
-                {message.automatic && (
-                  <p className={styles.auto}>رد آلي · ليس من الذكاء الاصطناعي</p>
-                )}
+                {message.automatic && <p className={styles.auto}>{t('chat.auto')}</p>}
                 <p>{message.text}</p>
                 {message.links && message.links.length > 0 && (
                   <ul className={styles.links}>
                     {message.links.map((link) => (
                       <li key={link.to}>
                         <Link to={link.to} className={styles.link}>
-                          {link.label} <span aria-hidden="true">←</span>
+                          {link.label} <ForwardArrow />
                         </Link>
                       </li>
                     ))}
@@ -150,10 +155,15 @@ export function EfendiChat({ initialQuestion, inputMode, book, onNewChat }: Efen
       <div className={styles.dock}>
         {book && (
           <p className={styles.about}>
-            سؤالك عن: <b>{book.title}</b>
+            <Trans
+              t={t}
+              i18nKey="chat.about"
+              values={{ title: book.title }}
+              components={{ b: <b /> }}
+            />
           </p>
         )}
-        <ul className={styles.suggestions} aria-label="أسئلة مقترحة">
+        <ul className={styles.suggestions} aria-label={t('chat.suggestions')}>
           {suggestions.map((suggestion) => (
             <li key={suggestion}>
               <button
@@ -178,7 +188,7 @@ export function EfendiChat({ initialQuestion, inputMode, book, onNewChat }: Efen
           }}
         >
           <label htmlFor="efendi-input" className="sr-only">
-            اكتب سؤالك لأفندي
+            {t('chat.inputLabel')}
           </label>
           <textarea
             ref={inputRef}
@@ -186,7 +196,7 @@ export function EfendiChat({ initialQuestion, inputMode, book, onNewChat }: Efen
             className={styles.input}
             rows={1}
             maxLength={MAX_LENGTH}
-            placeholder="اكتب سؤالك لأفندي…"
+            placeholder={t('chat.placeholder')}
             value={draft}
             onChange={(event) => {
               setDraft(event.target.value);
@@ -198,8 +208,8 @@ export function EfendiChat({ initialQuestion, inputMode, book, onNewChat }: Efen
               type="button"
               className={styles.tool}
               disabled
-              title="قريباً"
-              aria-label="أرفق صورة غلاف (قريباً)"
+              title={t('chat.soon')}
+              aria-label={t('chat.photo')}
             >
               <Icon name="cam" size={20} />
             </button>
@@ -207,8 +217,8 @@ export function EfendiChat({ initialQuestion, inputMode, book, onNewChat }: Efen
               type="button"
               className={styles.tool}
               disabled
-              title="قريباً"
-              aria-label="اسأل بصوتك (قريباً)"
+              title={t('chat.soon')}
+              aria-label={t('chat.voice')}
             >
               <Icon name="mic" size={20} />
             </button>
@@ -216,15 +226,13 @@ export function EfendiChat({ initialQuestion, inputMode, book, onNewChat }: Efen
               type="submit"
               className={styles.send}
               disabled={draft.trim() === ''}
-              aria-label="إرسال"
+              aria-label={t('chat.send')}
             >
               <Icon name="send" size={20} />
             </button>
           </div>
         </form>
-        <p className={styles.note}>
-          أفندي قيد الإعداد. الردود هنا آلية تدلّك على البحث والصفحات المتاحة، ولا تُحفظ المحادثة.
-        </p>
+        <p className={styles.note}>{t('chat.note')}</p>
       </div>
     </section>
   );

@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router';
 
 import { paths } from '@/app/paths';
@@ -24,6 +25,7 @@ const sameIds = (a: readonly number[], b: readonly number[]) =>
   a.length === b.length && a.every((id) => b.includes(id));
 
 function ProfileForm({ customer }: { customer: Customer }) {
+  const { t } = useTranslation('efendi', { keyPrefix: 'profile' });
   const queryClient = useQueryClient();
   const categories = useCategories();
   const [level, setLevel] = useState<ReaderLevel | null>(customer.readingLevel);
@@ -42,7 +44,7 @@ function ProfileForm({ customer }: { customer: Customer }) {
       updateSessionCustomer(updated);
       // Personalised picks use the profile (API §7d).
       void queryClient.invalidateQueries({ queryKey: ['me', 'recommendations'] });
-      toast.success('حُفظ ما يعرفه أفندي عنك.');
+      toast.success(t('saved'));
     },
     onError: (error) => {
       toast.error(errorMessage(error));
@@ -58,7 +60,7 @@ function ProfileForm({ customer }: { customer: Customer }) {
       }}
     >
       <fieldset className={styles.group}>
-        <legend className={styles.label}>مستواك العلمي</legend>
+        <legend className={styles.label}>{t('level')}</legend>
         <div className={styles.levels}>
           {LEVELS.map((value) => (
             <label key={value} className={cx(styles.level, level === value && styles.on)}>
@@ -78,7 +80,7 @@ function ProfileForm({ customer }: { customer: Customer }) {
 
       <div className={styles.group}>
         <label htmlFor="efendi-budget" className={styles.label}>
-          الميزانية الشهرية
+          {t('budget')}
         </label>
         <input
           id="efendi-budget"
@@ -88,19 +90,21 @@ function ProfileForm({ customer }: { customer: Customer }) {
           max={BUDGET_MAX}
           step={BUDGET_STEP}
           value={Math.min(budget ?? 0, BUDGET_MAX)}
-          aria-valuetext={budget ? formatMoney(budget) : 'غير محددة'}
+          aria-valuetext={budget ? formatMoney(budget) : t('budgetNone')}
           onChange={(event) => {
             const value = Number(event.target.value);
             setBudget(value === 0 ? null : value);
           }}
         />
-        <p className={styles.budget}>{budget ? `حتى ${formatMoney(budget)}` : 'غير محددة'}</p>
+        <p className={styles.budget}>
+          {budget ? t('budgetUpTo', { amount: formatMoney(budget) }) : t('budgetNone')}
+        </p>
       </div>
 
       {categories.data && categories.data.length > 0 && (
         <fieldset className={styles.group}>
           <legend className={styles.label}>
-            اهتماماتك{' '}
+            {t('interests')}{' '}
             <span className={styles.hint}>
               ({formatCount(interests.length)} / {formatCount(MAX_INTERESTS)})
             </span>
@@ -132,7 +136,7 @@ function ProfileForm({ customer }: { customer: Customer }) {
 
       {dirty && (
         <Button type="submit" variant="ink" size="sm" disabled={save.isPending}>
-          {save.isPending ? 'جارٍ الحفظ…' : 'حفظ'}
+          {save.isPending ? t('saving') : t('save')}
         </Button>
       )}
     </form>
@@ -141,13 +145,14 @@ function ProfileForm({ customer }: { customer: Customer }) {
 
 /** «ما يعرفه أفندي عنك» (spec 5.2, API §7b): the reader profile, editable here. */
 export function ReaderProfileCard() {
+  const { t } = useTranslation('efendi', { keyPrefix: 'profile' });
   const { status, customer } = useSession();
   const location = useLocation();
 
   return (
     <section className={styles.panel} aria-labelledby="profile-title">
       <h2 id="profile-title" className={styles.title}>
-        ما يعرفه أفندي عنك
+        {t('title')}
       </h2>
       {status === 'authenticated' && customer ? (
         // Remount when the profile changes elsewhere (another tab, a save here).
@@ -157,11 +162,9 @@ export function ReaderProfileCard() {
         />
       ) : status === 'guest' ? (
         <div className={styles.card}>
-          <p className={styles.text}>
-            سجّل الدخول ليعرف أفندي مستواك واهتماماتك وميزانيتك، فتأتي اقتراحاته على مقاسك.
-          </p>
+          <p className={styles.text}>{t('guest')}</p>
           <ButtonLink to={paths.loginWithReturn(location.pathname)} variant="ink" size="sm">
-            تسجيل الدخول
+            {t('signIn')}
           </ButtonLink>
         </div>
       ) : (

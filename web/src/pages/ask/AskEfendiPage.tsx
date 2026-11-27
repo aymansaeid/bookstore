@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router';
 
 import { paths } from '@/app/paths';
@@ -24,6 +25,8 @@ const inputModeOf = (value: string | null) =>
  * doesn't exist yet, so replies are honest and rule-based (modes.ts).
  */
 export default function AskEfendiPage() {
+  const { t } = useTranslation('efendi', { keyPrefix: 'page' });
+  const { t: tChat } = useTranslation('efendi', { keyPrefix: 'chat' });
   const [params, setParams] = useSearchParams();
   const { status } = useSession();
   const [chatKey, setChatKey] = useState(0);
@@ -39,34 +42,32 @@ export default function AskEfendiPage() {
 
   return (
     <div className={cx('wrap', styles.page)}>
-      <DocumentTitle title="اسأل أفندي" />
+      <DocumentTitle title={t('title')} />
 
       <aside className={styles.history} aria-labelledby="history-title">
         <Button variant="ink" className={styles.newChat} onClick={newChat}>
-          <Icon name="plus" size={18} /> محادثة جديدة
+          <Icon name="plus" size={18} /> {tChat('newChat')}
         </Button>
         <h2 id="history-title" className={styles.historyTitle}>
-          محادثاتك
+          {t('history')}
         </h2>
         <p className={styles.historyEmpty}>
-          {status === 'authenticated'
-            ? 'ستُحفظ محادثاتك هنا وفي «حسابي» بعد إطلاق أفندي.'
-            : 'سجّل الدخول لتُحفظ محادثاتك بعد إطلاق أفندي.'}
+          {status === 'authenticated' ? t('historySignedIn') : t('historyGuest')}
         </p>
         <div className={styles.soon}>
           <Spark size={16} />
-          <p>أفندي يعتمد على Claude، وهو قيد الإعداد. سيصلك إشعار عند إطلاقه.</p>
+          <p>{t('soon')}</p>
         </div>
         {status === 'authenticated' && (
           <ButtonLink to={paths.account.chats} variant="ghost" size="sm">
-            محادثاتي في حسابي
+            {t('myChats')}
           </ButtonLink>
         )}
       </aside>
 
       {/* Wait for ?book= so the chat starts in the right mode and context. */}
       {bookSlug !== '' && book.isPending ? (
-        <div className={styles.loading} aria-busy="true" aria-label="جارٍ التحميل" />
+        <div className={styles.loading} aria-busy="true" aria-label={t('loading')} />
       ) : (
         <EfendiChat
           key={`${params.toString()}#${String(chatKey)}`}
@@ -77,7 +78,7 @@ export default function AskEfendiPage() {
         />
       )}
 
-      <aside className={cx(styles.context, contextOpen && styles.open)} aria-label="سياقك">
+      <aside className={cx(styles.context, contextOpen && styles.open)} aria-label={t('context')}>
         <button
           type="button"
           className={styles.contextToggle}
@@ -87,7 +88,7 @@ export default function AskEfendiPage() {
             setContextOpen((open) => !open);
           }}
         >
-          <span>ما يعرفه أفندي عنك · مكتبتك · سلتك</span>
+          <span>{t('contextToggle')}</span>
           <Icon name="arrow" size={16} className={styles.chevron} />
         </button>
         <div id="efendi-context" className={styles.contextBody}>
