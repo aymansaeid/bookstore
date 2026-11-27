@@ -12,6 +12,18 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
     {
         switch (exception)
         {
+            // The browser left (page reload, language switch, closed tab), so
+            // ASP.NET cancelled the work on purpose. EF throws
+            // TaskCanceledException; SqlClient throws SqlException "Operation
+            // cancelled by user". Neither is an error, and nobody is waiting
+            // for an answer.
+            case Exception when httpContext.RequestAborted.IsCancellationRequested:
+                {
+                    logger.LogDebug("Request {Path} cancelled by the client", httpContext.Request.Path);
+                    httpContext.Response.StatusCode = 499; // "client closed request"
+                    return true;
+                }
+
             case ValidationException validationException:
                 {
                     var errors = validationException.Errors
