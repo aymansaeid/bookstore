@@ -1,10 +1,11 @@
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 
 import { paths } from '@/app/paths';
 import { BookCover } from '@/features/catalog/components/BookCover';
 import { levelLabel } from '@/shared/api/enums';
 import { cx } from '@/shared/lib/cx';
-import { booksPhrase, formatCount, formatMoney } from '@/shared/lib/format';
+import { booksPhrase, formatCount, formatMoney, formatPercent } from '@/shared/lib/format';
 import { buttonClass } from '@/shared/ui/Button/buttonClass';
 
 import type { ReadingPathSummary } from '../api';
@@ -17,6 +18,7 @@ import styles from './PathCard.module.css';
  * first four covers on a dotted line, numbered. The most chosen path is dark.
  */
 export function PathCard({ path }: { path: ReadingPathSummary }) {
+  const { t } = useTranslation('paths', { keyPrefix: 'card' });
   const dark = path.isMostChosen;
   const { pricing } = path;
   const titleId = `path-${String(path.id)}`;
@@ -26,7 +28,7 @@ export function PathCard({ path }: { path: ReadingPathSummary }) {
       <div className={styles.top}>
         <span className={styles.chip}>
           {dark && <span aria-hidden="true">✦ </span>}
-          {dark ? 'الأكثر اختياراً' : `${levelLabel(path.level)} · ${booksPhrase(path.stageCount)}`}
+          {dark ? t('mostChosen') : `${levelLabel(path.level)} · ${booksPhrase(path.stageCount)}`}
         </span>
         <span className={styles.duration}>{durationPhrase(path.estimatedWeeks)}</span>
       </div>
@@ -38,7 +40,7 @@ export function PathCard({ path }: { path: ReadingPathSummary }) {
       </h3>
       {path.description && <p className={styles.description}>{path.description}</p>}
 
-      <ol className={styles.covers} aria-label="أول كتب المسار">
+      <ol className={styles.covers} aria-label={t('firstBooks')}>
         {path.covers.map((cover) => (
           <li key={cover.stageNumber} className={styles.cover}>
             <BookCover title={cover.title} src={cover.coverThumbnailUrl} sizes="80px" />
@@ -46,7 +48,7 @@ export function PathCard({ path }: { path: ReadingPathSummary }) {
               {formatCount(cover.stageNumber)}
             </span>
             <span className="sr-only">
-              المرحلة {formatCount(cover.stageNumber)}: {cover.title}
+              {t('stage', { n: formatCount(cover.stageNumber), title: cover.title })}
             </span>
           </li>
         ))}
@@ -57,13 +59,13 @@ export function PathCard({ path }: { path: ReadingPathSummary }) {
           <p className={styles.price}>{formatMoney(pricing.discountedPrice, pricing.currency)}</p>
           <p className={styles.discount}>
             {pricing.discountPercentage > 0
-              ? `خصم المسار ${formatCount(pricing.discountPercentage)}٪`
+              ? t('discount', { percent: formatPercent(pricing.discountPercentage) })
               : booksPhrase(path.stageCount)}
           </p>
         </div>
         {/* The whole card is clickable through this link's ::after. */}
         <span className={buttonClass(dark ? 'red' : 'ink', 'sm')} aria-hidden="true">
-          ابدأ المسار
+          {t('start')}
         </span>
       </div>
     </article>

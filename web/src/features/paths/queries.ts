@@ -4,7 +4,7 @@ import { useCustomerId } from '@/features/account/queries';
 import { useSession } from '@/features/auth/session';
 import { errorMessage } from '@/shared/api/errorMessages';
 import { toast } from '@/shared/ui/toast/toastStore';
-
+import { i18n } from '@/i18n';
 import { myPathsApi, readingPathsApi } from './api';
 
 export const pathKeys = {
@@ -44,7 +44,7 @@ export function useEnrollment(pathId: number) {
   const start = useMutation({
     mutationFn: () => myPathsApi.start(pathId),
     onSuccess: () => {
-      toast.success('بدأت المسار. تقدّمك يُحسب من مكتبتك.');
+      toast.success(i18n.t('enroll.startedToast', { ns: 'paths' }));
     },
     onError: (error) => {
       toast.error(errorMessage(error));
@@ -54,7 +54,7 @@ export function useEnrollment(pathId: number) {
   const leave = useMutation({
     mutationFn: () => myPathsApi.leave(pathId),
     onSuccess: () => {
-      toast.success('تركت المسار. يمكنك العودة إليه متى شئت.');
+      toast.success(i18n.t('enroll.leftToast', { ns: 'paths' }));
     },
     onError: (error) => {
       toast.error(errorMessage(error));

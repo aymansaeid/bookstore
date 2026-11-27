@@ -1,5 +1,7 @@
+import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router';
 
+import { UI_DIRECTION } from '@/app/locale';
 import { paths } from '@/app/paths';
 import { EnrollCard } from '@/features/paths/components/EnrollCard';
 import { PathStageItem } from '@/features/paths/components/PathStageItem';
@@ -12,7 +14,7 @@ import { isApiError } from '@/shared/api/ApiError';
 import { levelLabel } from '@/shared/api/enums';
 import { errorMessage } from '@/shared/api/errorMessages';
 import { cx } from '@/shared/lib/cx';
-import { booksPhrase, formatCount } from '@/shared/lib/format';
+import { booksPhrase, formatPercent } from '@/shared/lib/format';
 import { Button } from '@/shared/ui/Button/Button';
 import { DocumentTitle } from '@/shared/ui/DocumentTitle';
 import { Icon } from '@/shared/ui/Icon/Icon';
@@ -21,6 +23,8 @@ import styles from './ReadingPath.module.css';
 
 /** A reading path (spec 5.5, API §7d): timeline, your progress, and the path price. */
 export default function ReadingPathPage() {
+  const { t } = useTranslation('paths', { keyPrefix: 'page' });
+  const { t: tCommon } = useTranslation();
   const { slug = '' } = useParams();
   const query = useReadingPath(slug);
   const path = query.data;
@@ -37,7 +41,7 @@ export default function ReadingPathPage() {
             void query.refetch();
           }}
         >
-          أعد المحاولة
+          {tCommon('ui.retry')}
         </Button>
       </div>
     );
@@ -48,36 +52,43 @@ export default function ReadingPathPage() {
 
   return (
     <>
-      <DocumentTitle title={summary?.title ?? 'مسار القراءة'} />
+      <DocumentTitle title={summary?.title ?? t('tabTitle')} />
       <section className={styles.hero} aria-labelledby="path-title">
         <div className="wrap">
           <Link to={paths.readingPaths} className={styles.back}>
-            <Icon name="arrowr" size={16} /> كل المسارات
+            <Icon name={UI_DIRECTION === 'rtl' ? 'arrowr' : 'arrow'} size={16} /> {t('all')}
           </Link>
-          <p className={styles.kicker}>مسار قراءة{summary && ` · ${levelLabel(summary.level)}`}</p>
+          <p className={styles.kicker}>
+            {t('kicker')}
+            {summary && ` · ${levelLabel(summary.level)}`}
+          </p>
           <h1 id="path-title" className={styles.title}>
-            {summary?.title ?? 'جارٍ التحميل…'}
+            {summary?.title ?? t('loadingTitle')}
           </h1>
           {summary?.description && <p className={styles.lead}>{summary.description}</p>}
           {summary && (
             <dl className={styles.stats}>
               <div>
-                <dt>المدة</dt>
+                <dt>{t('duration')}</dt>
                 <dd>{durationPhrase(summary.estimatedWeeks)}</dd>
               </div>
               <div>
-                <dt>الكتب</dt>
+                <dt>{t('books')}</dt>
                 <dd>{booksPhrase(summary.stageCount)}</dd>
               </div>
               {progress?.enrolled ? (
                 <div>
-                  <dt>أنجزت</dt>
-                  <dd>{formatCount(progress.percent)}٪</dd>
+                  <dt>{t('done')}</dt>
+                  <dd>{formatPercent(progress.percent)}</dd>
                 </div>
               ) : (
                 <div>
-                  <dt>القرّاء</dt>
-                  <dd>{readersPhrase(summary.enrollmentCount)}</dd>
+                  <dt>{t('readers')}</dt>
+                  <dd>
+                    {summary.enrollmentCount === 0
+                      ? t('beFirst')
+                      : t('startedBy', { readers: readersPhrase(summary.enrollmentCount) })}
+                  </dd>
                 </div>
               )}
             </dl>
@@ -87,7 +98,7 @@ export default function ReadingPathPage() {
 
       <div className={cx('wrap', styles.layout)}>
         {!path ? (
-          <div className={styles.loading} aria-busy="true" aria-label="جارٍ تحميل المسار" />
+          <div className={styles.loading} aria-busy="true" aria-label={t('loading')} />
         ) : (
           <>
             <div className={styles.side}>
@@ -95,7 +106,7 @@ export default function ReadingPathPage() {
             </div>
 
             <div className={styles.main}>
-              <h2 className={styles.sectionTitle}>مراحل المسار</h2>
+              <h2 className={styles.sectionTitle}>{t('stages')}</h2>
               <ol className={timeline.timeline}>
                 {path.stages.map((stage) => (
                   <PathStageItem key={stage.stageNumber} stage={stage} />
@@ -110,8 +121,8 @@ export default function ReadingPathPage() {
                     <Icon name="route" size={20} />
                   </span>
                   <div>
-                    <b>تقدّم من مكتبتك</b>
-                    <p>كل كتاب تُنهيه في «مكتبتي» يُتمّ مرحلته تلقائياً.</p>
+                    <b>{t('perkLibraryTitle')}</b>
+                    <p>{t('perkLibraryText')}</p>
                   </div>
                 </li>
                 <li>
@@ -119,8 +130,8 @@ export default function ReadingPathPage() {
                     <Icon name="book" size={20} />
                   </span>
                   <div>
-                    <b>لا تدفع مرتين</b>
-                    <p>ما تملكه من كتب المسار لا يدخل في سعره.</p>
+                    <b>{t('perkOwnedTitle')}</b>
+                    <p>{t('perkOwnedText')}</p>
                   </div>
                 </li>
                 {path.summary.pricing.discountPercentage > 0 && (
@@ -129,10 +140,11 @@ export default function ReadingPathPage() {
                       <Icon name="gift" size={20} />
                     </span>
                     <div>
-                      <b>خصم المسار</b>
+                      <b>{t('perkDiscountTitle')}</b>
                       <p>
-                        {formatCount(path.summary.pricing.discountPercentage)}٪ على كتب المسار حين
-                        تشتريها معاً.
+                        {t('perkDiscountText', {
+                          percent: formatPercent(path.summary.pricing.discountPercentage),
+                        })}
                       </p>
                     </div>
                   </li>

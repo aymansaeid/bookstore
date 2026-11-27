@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 
 import { paths } from '@/app/paths';
@@ -15,6 +16,7 @@ import styles from './PathTimeline.module.css';
 
 /** One stage on the vertical timeline (spec 5.5). */
 export function PathStageItem({ stage }: { stage: PathStage }) {
+  const { t } = useTranslation('paths', { keyPrefix: 'stage' });
   const { book } = stage;
   const edition =
     book.editionLabel ?? (book.volumes && book.volumes > 1 ? volumesLabel(book.volumes) : null);
@@ -44,8 +46,8 @@ export function PathStageItem({ stage }: { stage: PathStage }) {
 
         <div className={styles.body}>
           <p className={styles.kicker}>
-            المرحلة {formatCount(stage.stageNumber)}
-            {stage.isCurrent && <b> · أنت هنا</b>}
+            {t('kicker', { n: formatCount(stage.stageNumber) })}
+            {stage.isCurrent && <b>{t('here')}</b>}
           </p>
           <h3 className={styles.title}>
             <Link to={paths.book(book.slug)}>{book.title}</Link>
@@ -55,7 +57,7 @@ export function PathStageItem({ stage }: { stage: PathStage }) {
             {edition && ` · ${edition}`}
           </p>
           <p className={styles.reason}>
-            <span className={styles.why}>لماذا هذا الكتاب؟</span> {stage.reason}
+            <span className={styles.why}>{t('why')}</span> {stage.reason}
           </p>
           <ul className={styles.tags}>
             {stage.estimatedWeeks !== null && (
@@ -71,15 +73,15 @@ export function PathStageItem({ stage }: { stage: PathStage }) {
         <div className={styles.action}>
           {stage.finished ? (
             <p className={styles.done}>
-              <Icon name="check" size={16} /> اكتملت القراءة
+              <Icon name="check" size={16} /> {t('done')}
             </p>
           ) : stage.owned ? (
             <>
               <p className={styles.owned}>
-                <Icon name="book" size={16} /> في مكتبتك
+                <Icon name="book" size={16} /> {t('inLibrary')}
               </p>
               <Link to={paths.account.library} className={styles.textLink}>
-                تحديث التقدّم
+                {t('updateProgress')}
               </Link>
             </>
           ) : (
@@ -94,18 +96,18 @@ export function PathStageItem({ stage }: { stage: PathStage }) {
                 <Button
                   variant={stage.isCurrent ? 'red' : 'ghost'}
                   size="sm"
-                  aria-label={`أضف «${book.title}» إلى السلة`}
+                  aria-label={t('addLabel', { title: book.title })}
                   onClick={() => {
                     addToCartWithFeedback({ id: book.id, title: book.title });
                   }}
                 >
-                  أضف إلى السلة
+                  {t('add')}
                 </Button>
               ) : (
                 <>
-                  <span className={styles.out}>غير متوفر حالياً</span>
+                  <span className={styles.out}>{t('out')}</span>
                   <Link to={paths.book(book.slug)} className={styles.textLink}>
-                    نبّهني عند توفّره
+                    {t('notify')}
                   </Link>
                 </>
               )}

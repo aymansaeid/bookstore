@@ -1,7 +1,8 @@
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
 import { paths } from '@/app/paths';
-import { booksPhrase, formatMoney } from '@/shared/lib/format';
+import { booksPhrase, formatMoney, LIST_SEPARATOR } from '@/shared/lib/format';
 import { Button, ButtonLink } from '@/shared/ui/Button/Button';
 
 import type { ReadingPathDetail } from '../api';
@@ -14,6 +15,7 @@ import styles from './PathPanels.module.css';
  * own (remainingPricing); the cart quote then matches it exactly (API §7d).
  */
 export function PathTotal({ path }: { path: ReadingPathDetail }) {
+  const { t } = useTranslation('paths', { keyPrefix: 'total' });
   const navigate = useNavigate();
   const signedIn = path.myProgress !== null;
   const pricing = path.myProgress?.remainingPricing ?? path.summary.pricing;
@@ -22,23 +24,26 @@ export function PathTotal({ path }: { path: ReadingPathDetail }) {
 
   if (needed.length === 0) {
     return (
-      <section className={styles.total} aria-label="إجمالي المسار">
-        <p className={styles.totalLabel}>تملك كل كتب هذا المسار</p>
-        <p className={styles.totalNote}>لا شيء لتشتريه؛ تابع القراءة وحدّث تقدّمك من مكتبتك.</p>
+      <section className={styles.total} aria-label={t('label')}>
+        <p className={styles.totalLabel}>{t('ownAll')}</p>
+        <p className={styles.totalNote}>{t('ownAllNote')}</p>
         <ButtonLink to={paths.account.library} variant="gold">
-          إلى مكتبتي
+          {t('toLibrary')}
         </ButtonLink>
       </section>
     );
   }
 
-  const missing = unavailable.map((stage) => `«${stage.book.title}»`).join('، ');
+  const missing = unavailable
+    .map((stage) => t('quoted', { title: stage.book.title }))
+    .join(LIST_SEPARATOR);
+  const books = booksPhrase(needed.length);
 
   return (
-    <section className={styles.total} aria-label="إجمالي المسار">
+    <section className={styles.total} aria-label={t('label')}>
       <div className={styles.totalInfo}>
         <p className={styles.totalLabel}>
-          {signedIn ? 'إجمالي ما تبقّى' : 'إجمالي المسار'} ({booksPhrase(needed.length)})
+          {signedIn ? t('remaining', { books }) : t('whole', { books })}
         </p>
         <p className={styles.totalPrice}>
           {formatMoney(pricing.discountedPrice, pricing.currency)}
@@ -48,7 +53,7 @@ export function PathTotal({ path }: { path: ReadingPathDetail }) {
         </p>
         {pricing.savings > 0 && (
           <p className={styles.saved}>
-            وفّر {formatMoney(pricing.savings, pricing.currency)} بخصم المسار
+            {t('saved', { amount: formatMoney(pricing.savings, pricing.currency) })}
           </p>
         )}
       </div>
@@ -66,14 +71,14 @@ export function PathTotal({ path }: { path: ReadingPathDetail }) {
             void navigate(paths.cart);
           }}
         >
-          اشترِ المسار كاملاً
+          {t('buy')}
         </Button>
         <p className={styles.totalNote}>
           {unavailable.length > 0
-            ? `${missing} ${unavailable.length === 1 ? 'غير متوفر' : 'غير متوفرة'} حالياً، فلا يمكن شراء المسار كاملاً الآن. يمكنك شراء بقية الكتب منفردة.`
+            ? t('unavailable', { count: unavailable.length, titles: missing })
             : signedIn
-              ? 'نضيف إلى سلتك نسخة من كل كتاب لا تملكه، مع خصم المسار.'
-              : 'نضيف إلى سلتك نسخة من كل كتب المسار، مع خصم المسار. سجّل الدخول ليُستثنى ما تملكه.'}
+              ? t('noteSignedIn')
+              : t('noteGuest')}
         </p>
       </div>
     </section>

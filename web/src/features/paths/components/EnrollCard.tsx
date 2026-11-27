@@ -1,8 +1,9 @@
+import { Trans, useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router';
 
 import { paths } from '@/app/paths';
 import { useSession } from '@/features/auth/session';
-import { formatCount, formatDate } from '@/shared/lib/format';
+import { formatCount, formatDate, formatPercent } from '@/shared/lib/format';
 import { Button, ButtonLink } from '@/shared/ui/Button/Button';
 import { Icon } from '@/shared/ui/Icon/Icon';
 
@@ -13,6 +14,7 @@ import styles from './PathPanels.module.css';
 
 /** «ابدأ المسار» and your progress (API §7d). Free; nothing is bought here. */
 export function EnrollCard({ path }: { path: ReadingPathDetail }) {
+  const { t } = useTranslation('paths', { keyPrefix: 'enroll' });
   const { status } = useSession();
   const location = useLocation();
   const { start, leave } = useEnrollment(path.summary.id);
@@ -22,29 +24,24 @@ export function EnrollCard({ path }: { path: ReadingPathDetail }) {
   return (
     <section className={styles.enroll} aria-labelledby="enroll-title">
       <h2 id="enroll-title" className={styles.enrollTitle}>
-        <Icon name="route" size={20} /> مسارك
+        <Icon name="route" size={20} /> {t('title')}
       </h2>
 
       {status === 'guest' ? (
         <>
-          <p className={styles.text}>
-            سجّل الدخول لتبدأ المسار: نحسب تقدّمك من مكتبتك، ونريك أين وصلت وما الكتاب التالي، ولا
-            نطلب منك شراء ما تملكه.
-          </p>
+          <p className={styles.text}>{t('guestText')}</p>
           <ButtonLink to={paths.loginWithReturn(location.pathname)} variant="ink">
-            سجّل الدخول لتبدأ
+            {t('signIn')}
           </ButtonLink>
         </>
       ) : !progress ? (
         <div className={styles.skeleton} aria-busy="true" />
       ) : !progress.enrolled ? (
         <>
-          <p className={styles.text}>
-            ابدأ المسار مجاناً لتتابع تقدّمك. كل كتاب تُنهيه في «مكتبتي» يُتمّ مرحلته تلقائياً.
-          </p>
+          <p className={styles.text}>{t('startText')}</p>
           {progress.completedStages > 0 && (
             <p className={styles.text}>
-              أنهيت {formatCount(progress.completedStages)} من كتبه بالفعل.
+              {t('alreadyDone', { n: formatCount(progress.completedStages) })}
             </p>
           )}
           <Button
@@ -54,7 +51,7 @@ export function EnrollCard({ path }: { path: ReadingPathDetail }) {
               start.mutate();
             }}
           >
-            {start.isPending ? 'جارٍ البدء…' : 'ابدأ المسار'}
+            {start.isPending ? t('starting') : t('start')}
           </Button>
         </>
       ) : (
@@ -62,7 +59,7 @@ export function EnrollCard({ path }: { path: ReadingPathDetail }) {
           <div
             className={styles.bar}
             role="progressbar"
-            aria-label="تقدّمك في المسار"
+            aria-label={t('progressLabel')}
             aria-valuemin={0}
             aria-valuemax={100}
             aria-valuenow={progress.percent}
@@ -70,24 +67,34 @@ export function EnrollCard({ path }: { path: ReadingPathDetail }) {
             <span style={{ inlineSize: `${String(progress.percent)}%` }} />
           </div>
           <p className={styles.text}>
-            أنجزت {formatCount(progress.completedStages)} من {formatCount(progress.totalStages)}{' '}
-            مراحل · {formatCount(progress.percent)}٪
+            {t('done', {
+              done: formatCount(progress.completedStages),
+              total: formatCount(progress.totalStages),
+              percent: formatPercent(progress.percent),
+            })}
           </p>
           {progress.startedAtUtc && (
-            <p className={styles.muted}>بدأته في {formatDate(progress.startedAtUtc)}</p>
+            <p className={styles.muted}>
+              {t('started', { date: formatDate(progress.startedAtUtc) })}
+            </p>
           )}
           {current ? (
             <p className={styles.text}>
-              التالي: <b>{current.book.title}</b>
+              <Trans
+                t={t}
+                i18nKey="next"
+                values={{ title: current.book.title }}
+                components={{ b: <b /> }}
+              />
             </p>
           ) : (
             <p className={styles.complete}>
-              <Icon name="check" size={16} /> أتممت هذا المسار. بارك الله في علمك.
+              <Icon name="check" size={16} /> {t('finished')}
             </p>
           )}
           <div className={styles.actions}>
             <ButtonLink to={paths.account.library} variant="ink" size="sm">
-              حدّث تقدّمك في مكتبتي
+              {t('update')}
             </ButtonLink>
             <Button
               variant="ghost"
@@ -97,7 +104,7 @@ export function EnrollCard({ path }: { path: ReadingPathDetail }) {
                 leave.mutate();
               }}
             >
-              ترك المسار
+              {t('leave')}
             </Button>
           </div>
         </>

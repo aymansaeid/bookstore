@@ -140,7 +140,15 @@
     "books_one": "1 book",
     "books_other": "{{n}} books",
     "copies_one": "1 copy",
-    "copies_other": "{{n}} copies"
+    "copies_other": "{{n}} copies",
+        "weeks_one": "{{n}} week",
+    "weeks_other": "{{n}} weeks",
+    "months_one": "{{n}} month",
+    "months_other": "{{n}} months",
+    "pages_one": "{{n}} page",
+    "pages_other": "{{n}} pages",
+    "readers_one": "{{n}} reader",
+    "readers_other": "{{n}} readers"
   } ,
     "enums": {
     "orderStatus": { "PendingPayment": "Awaiting payment", "Paid": "Being prepared", "Shipped": "Shipped", "Delivered": "Delivered", "Cancelled": "Cancelled", "Expired": "Payment time expired", "Refunded": "Refunded" },

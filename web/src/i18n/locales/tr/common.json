@@ -140,7 +140,15 @@
     "books_one": "1 kitap",
     "books_other": "{{n}} kitap",
     "copies_one": "1 nüsha",
-    "copies_other": "{{n}} nüsha"
+    "copies_other": "{{n}} nüsha",
+        "weeks_one": "{{n}} hafta",
+    "weeks_other": "{{n}} hafta",
+    "months_one": "{{n}} ay",
+    "months_other": "{{n}} ay",
+    "pages_one": "{{n}} sayfa",
+    "pages_other": "{{n}} sayfa",
+    "readers_one": "{{n}} okur",
+    "readers_other": "{{n}} okur"
   },
     "enums": {
     "orderStatus": { "PendingPayment": "Ödeme bekleniyor", "Paid": "Hazırlanıyor", "Shipped": "Kargoya verildi", "Delivered": "Teslim edildi", "Cancelled": "İptal edildi", "Expired": "Ödeme süresi doldu", "Refunded": "İade edildi" },

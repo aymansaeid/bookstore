@@ -80,14 +80,24 @@ export function countryName(code: string): string {
 }
 
 /** Nouns counted in the page's language (common.json → count). */
-type Counted = 'countries' | 'volumes' | 'results' | 'editions' | 'works' | 'books' | 'copies';
-
+type Counted =
+| 'countries'
+| 'volumes'
+| 'results'
+| 'editions'
+| 'works'
+| 'books'
+| 'copies'
+| 'weeks'
+| 'months'
+| 'pages'
+| 'readers';
 /**
 - "٥ دول" / "5 countries" / "5 ülke". Arabic has six plural forms (zero,
 - one, two, few 3–10, many 11–99, other), English and Turkish two; i18next
 - picks the form from `count`, and `n` is the number in the page's digits.
  */
-const counted = (noun: Counted, count: number): string =>
+export const counted = (noun: Counted, count: number): string =>
   i18n.t(`count.${noun}`, { count, n: formatCount(count) });
 
 /** دولة واحدة، دولتين، ٥ دول، ٦٢ دولة. */

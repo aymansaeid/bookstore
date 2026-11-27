@@ -1,3 +1,4 @@
+import { Trans, useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router';
 
 import { paths } from '@/app/paths';
@@ -19,6 +20,8 @@ const isLevel = (value: string | null): value is ReaderLevel =>
 
 /** «مسارات القراءة» (spec 5.5, API §7d): every curated path, filterable by level. */
 export default function ReadingPathsPage() {
+  const { t } = useTranslation('paths', { keyPrefix: 'list' });
+  const { t: tCommon } = useTranslation();
   const [params, setParams] = useSearchParams();
   const raw = params.get('level');
   const level = isLevel(raw) ? raw : null;
@@ -31,19 +34,16 @@ export default function ReadingPathsPage() {
 
   return (
     <>
-      <DocumentTitle title="مسارات القراءة" />
+      <DocumentTitle title={t('title')} />
       <section className={styles.hero} aria-labelledby="paths-title">
         <div className="wrap">
-          <p className={styles.kicker}>مسارات القراءة</p>
+          <p className={styles.kicker}>{t('title')}</p>
           <h1 id="paths-title" className={styles.heroTitle}>
-            لا تعرف من أين تبدأ؟
+            {t('heroTitle')}
             <br />
-            <span>اتبع طريقاً مرسوماً</span>
+            <span>{t('heroTitleEm')}</span>
           </h1>
-          <p className={styles.lead}>
-            مسارات متدرّجة يرتّبها طلاب علم متخصصون: لكل كتاب سبب، وتقدّمك يُحسب من مكتبتك، وخصم عند
-            شراء المسار كاملاً.
-          </p>
+          <p className={styles.lead}>{t('lead')}</p>
         </div>
       </section>
 
@@ -51,14 +51,14 @@ export default function ReadingPathsPage() {
         <aside className={styles.soon}>
           <Spark size={18} />
           <p>
-            <b>قريباً:</b> أفندي يرسم لك مساراً على مقاس هدفك ووقتك وميزانيتك.
+            <Trans t={t} i18nKey="soon" components={{ b: <b /> }} />
           </p>
           <ButtonLink to={paths.askEfendi} variant="ghost" size="sm">
-            تعرّف على أفندي
+            {t('meet')}
           </ButtonLink>
         </aside>
 
-        <div className={styles.filters} role="group" aria-label="مستوى القارئ">
+        <div className={styles.filters} role="group" aria-label={t('levels')}>
           <button
             type="button"
             className={cx(styles.filter, level === null && styles.on)}
@@ -67,7 +67,7 @@ export default function ReadingPathsPage() {
               setLevel(null);
             }}
           >
-            كل المستويات
+            {t('allLevels')}
           </button>
           {LEVELS.map((value) => (
             <button
@@ -94,20 +94,18 @@ export default function ReadingPathsPage() {
                 void query.refetch();
               }}
             >
-              أعد المحاولة
+              {tCommon('ui.retry')}
             </Button>
           </div>
         ) : !shown ? (
-          <div className={styles.grid} aria-busy="true" aria-label="جارٍ تحميل المسارات">
+          <div className={styles.grid} aria-busy="true" aria-label={t('loading')}>
             {[0, 1, 2].map((key) => (
               <div key={key} className={styles.skeleton} />
             ))}
           </div>
         ) : shown.length === 0 ? (
           <div className={styles.state}>
-            <p>
-              {level ? `لا مسارات لمستوى «${levelLabel(level)}» بعد.` : 'لا مسارات منشورة بعد.'}
-            </p>
+            <p>{level ? t('noneLevel', { level: levelLabel(level) }) : t('none')}</p>
             {level && (
               <Button
                 variant="ghost"
@@ -116,13 +114,13 @@ export default function ReadingPathsPage() {
                   setLevel(null);
                 }}
               >
-                عرض كل المسارات
+                {t('showAll')}
               </Button>
             )}
           </div>
         ) : (
           <>
-            <h2 className="sr-only">المسارات</h2>
+            <h2 className="sr-only">{t('heading')}</h2>
             <ul className={styles.grid}>
               {shown.map((path) => (
                 <li key={path.id} className={styles.item}>
