@@ -1,0 +1,13 @@
+{
+  "nav": "Koşullar ve politikalar",
+  "links": {
+    "distanceSales": "Mesafeli satış sözleşmesi",
+    "preInformation": "Ön bilgilendirme formu",
+    "privacy": "Gizlilik politikası",
+    "terms": "Kullanım koşulları"
+  },
+  "meta": "Sürüm <v>{{version}}</v> · {{date}} tarihinde yayımlandı",
+  "notPublished": "Bu metnin Türkçesi henüz yayımlanmadı.",
+  "fallback": "Bu metin henüz Türkçe yayımlanmadı. Aşağıda yürürlükteki Arapça metin yer alıyor.",
+  "readArabic": "Arapça metni okuyun"
+}

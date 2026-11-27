@@ -1,0 +1,13 @@
+{
+  "nav": "Terms and policies",
+  "links": {
+    "distanceSales": "Distance sales agreement",
+    "preInformation": "Pre-information form",
+    "privacy": "Privacy policy",
+    "terms": "Terms of use"
+  },
+  "meta": "Version <v>{{version}}</v> · published on {{date}}",
+  "notPublished": "This document hasn't been published yet.",
+  "fallback": "This document hasn't been published in English yet. Below is the Arabic text, which is the version in force.",
+  "readArabic": "Read the Arabic text"
+}

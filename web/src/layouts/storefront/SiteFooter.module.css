@@ -10,6 +10,8 @@
   position: relative;
   overflow: hidden;
   display: grid;
+  /* minmax(0, …): the email field's natural width must not widen the card on phones. */
+  grid-template-columns: minmax(0, 1fr);
   align-items: center;
   gap: 24px;
   padding: 32px 20px;

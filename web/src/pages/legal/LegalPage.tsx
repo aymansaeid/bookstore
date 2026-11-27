@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
+import { Trans, useTranslation } from 'react-i18next';
 import { NavLink, useParams } from 'react-router';
 
-import { UI_LANGUAGE } from '@/app/locale';
+import { DEFAULT_LANGUAGE, pathInLanguage, UI_LANGUAGE } from '@/app/locale';
 import { paths } from '@/app/paths';
 import { LEGAL_LINKS, LEGAL_TYPE_BY_SLUG, legalApi } from '@/features/legal/api';
 import NotFoundPage from '@/pages/not-found/NotFoundPage';
@@ -15,11 +16,20 @@ import { Prose } from '@/shared/ui/Prose/Prose';
 
 import styles from './LegalPage.module.css';
 
-/** /legal/:slug: the live published text (API §5c GET /api/legal/{type}). */
+/**
+ * /legal/:slug: the live published text (API §5c GET /api/legal/{type}).
+ * The backend's language rules (LegalLanguagePolicy): English falls back to
+ * the Arabic text, which the page then says; Turkish never falls back (the
+ * Turkish texts are the ones a Turkish buyer accepts), so a missing Turkish
+ * text is "not published yet" with a link to the Arabic page.
+ */
 export default function LegalPage() {
+  const { t } = useTranslation('legal');
+  const { t: tCommon } = useTranslation();
   const { slug = '' } = useParams();
   const type = LEGAL_TYPE_BY_SLUG[slug];
-  const label = LEGAL_LINKS.find((link) => link.slug === slug)?.label ?? '';
+  const link = LEGAL_LINKS.find((item) => item.slug === slug);
+  const label = link ? t(`links.${link.key}`) : '';
 
   const document = useQuery({
     queryKey: ['legal', type, UI_LANGUAGE] as const,
@@ -31,20 +41,25 @@ export default function LegalPage() {
   if (!type) return <NotFoundPage />;
 
   const notPublished = document.error instanceof ApiError && document.error.status === 404;
+  const data = document.data;
+  // English may be served the Arabic text (it applies until a translation is published).
+  const fallback = data ? data.language !== UI_LANGUAGE : false;
+  const arabicPage =
+    UI_LANGUAGE === DEFAULT_LANGUAGE ? null : pathInLanguage(DEFAULT_LANGUAGE, paths.legal(slug));
 
   return (
     <div className={cx('wrap', styles.page)}>
-      <DocumentTitle title={document.data?.title ?? label} />
+      <DocumentTitle title={data?.title ?? label} />
 
-      <nav className={styles.nav} aria-label="الشروط والسياسات">
+      <nav className={styles.nav} aria-label={t('nav')}>
         <ul>
-          {LEGAL_LINKS.map((link) => (
-            <li key={link.slug}>
+          {LEGAL_LINKS.map((item) => (
+            <li key={item.slug}>
               <NavLink
-                to={paths.legal(link.slug)}
+                to={paths.legal(item.slug)}
                 className={({ isActive }) => cx(styles.navLink, isActive && styles.active)}
               >
-                {link.label}
+                {t(`links.${item.key}`)}
               </NavLink>
             </li>
           ))}
@@ -57,21 +72,41 @@ export default function LegalPage() {
             <h1 className={styles.title}>{label}</h1>
             <div className={styles.skeleton} />
           </>
-        ) : document.data ? (
+        ) : data ? (
           <>
-            <h1 className={styles.title}>{document.data.title}</h1>
+            {fallback && <p className={styles.notice}>{t('fallback')}</p>}
+            <h1
+              className={styles.title}
+              lang={fallback ? data.language : undefined}
+              dir={fallback ? 'rtl' : undefined}
+            >
+              {data.title}
+            </h1>
             <p className={styles.meta}>
-              الإصدار <span dir="ltr">{document.data.version}</span> · نُشر في{' '}
-              {formatDate(document.data.publishedAtUtc)}
+              <Trans
+                t={t}
+                i18nKey="meta"
+                values={{ version: data.version, date: formatDate(data.publishedAtUtc) }}
+                components={{ v: <span dir="ltr" /> }}
+              />
             </p>
-            <Prose html={document.data.html} />
+            <Prose
+              html={data.html}
+              lang={fallback ? data.language : undefined}
+              dir={fallback ? 'rtl' : undefined}
+            />
           </>
         ) : (
           <>
             <h1 className={styles.title}>{label}</h1>
             <p className={styles.state} role={notPublished ? undefined : 'alert'}>
-              {notPublished ? 'لم يُنشر هذا المستند بعد.' : errorMessage(document.error)}
+              {notPublished ? t('notPublished') : errorMessage(document.error)}
             </p>
+            {notPublished && arabicPage && (
+              <a href={arabicPage} hrefLang={DEFAULT_LANGUAGE} className={styles.arabicLink}>
+                {t('readArabic')}
+              </a>
+            )}
             {!notPublished && (
               <Button
                 variant="ghost"
@@ -80,7 +115,7 @@ export default function LegalPage() {
                   void document.refetch();
                 }}
               >
-                أعد المحاولة
+                {tCommon('ui.retry')}
               </Button>
             )}
           </>

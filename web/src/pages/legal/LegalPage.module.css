@@ -4,6 +4,11 @@
   padding-block: 20px 64px;
 }
 
+.nav {
+  /* A grid item: without this the pill row widens the page instead of scrolling. */
+  min-inline-size: 0;
+}
+
 .nav ul {
   display: flex;
   gap: 8px;
@@ -56,6 +61,28 @@
 .state {
   margin-block: 12px;
   color: var(--gray);
+}
+
+
+/* English page showing the Arabic text in force (backend fallback). */
+.notice {
+  margin-block-end: 18px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--goldl);
+  color: var(--ink2);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.arabicLink {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 44px;
+  color: var(--red);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .skeleton {

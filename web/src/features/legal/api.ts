@@ -23,12 +23,12 @@ export const LEGAL_TYPE_BY_SLUG: Readonly<Record<string, PublicLegalType>> = {
   [legalSlugs.preInformation]: 'PreInformationForm',
 };
 
-export const LEGAL_LINKS: { slug: string; label: string }[] = [
-  { slug: legalSlugs.distanceSales, label: 'عقد البيع عن بُعد' },
-  { slug: legalSlugs.preInformation, label: 'نموذج المعلومات المسبقة' },
-  { slug: legalSlugs.privacy, label: 'سياسة الخصوصية' },
-  { slug: legalSlugs.terms, label: 'شروط الاستخدام' },
-];
+export const LEGAL_LINKS = [
+  { slug: legalSlugs.distanceSales, key: 'distanceSales' },
+  { slug: legalSlugs.preInformation, key: 'preInformation' },
+  { slug: legalSlugs.privacy, key: 'privacy' },
+  { slug: legalSlugs.terms, key: 'terms' },
+] as const;
 
 export const legalApi = {
   /** 404 when nothing is published for that type and language yet. */

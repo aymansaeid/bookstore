@@ -22,9 +22,25 @@ function toFragment(html: string): string {
  * Renders a server-made HTML fragment (legal documents, API §5c). The API
  * guarantees these are safe fragments with no script; never pass user input.
  */
-export function Prose({ html, className }: { html: string; className?: string }) {
+export function Prose({
+  html,
+  className,
+  lang,
+  dir,
+}: {
+  html: string;
+  className?: string;
+  /** The text's own language, when it differs from the page's (e.g. Arabic on /en). */
+  lang?: string;
+  dir?: 'rtl' | 'ltr';
+}) {
   const fragment = useMemo(() => toFragment(html), [html]);
   return (
-    <div className={cx(styles.prose, className)} dangerouslySetInnerHTML={{ __html: fragment }} />
+    <div
+      className={cx(styles.prose, className)}
+      lang={lang}
+      dir={dir}
+      dangerouslySetInnerHTML={{ __html: fragment }}
+    />
   );
 }
